@@ -137,14 +137,316 @@ In order to be able to experiment with compilation and installation of the neces
   ```
 
 ## Raspberry Pi
+Source: https://www.raspberrypi.org/documentation/installation/installing-images/linux.md
 
-# Connection
+1. Download and Unzip: Raspbian Jessie Lite (~292Mb)
 
-## Network settings
+  ```
+  XCS~$ cd ~/rpi/img
+  XCS~$ wget https://downloads.raspberrypi.org/raspbian_lite_latest
+  XCS~$ unzip raspbian_lite_latest
+  ```
+  NOTE: the download is the lite version of raspbian and hence does not include a GUI or commonly used application. If a GUI is required, you can add it later, or download a different raspbian version.
+1. Connect SDCard to the VM.
+1. Detect SDCard & install img
 
-## SSH
+  ```
+  XCS~$ lsblk
+    NAME                        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+    sda                           8:0    0   25G  0 disk 
+    ├─sda1                        8:1    0  487M  0 part /boot
+    ├─sda2                        8:2    0    1K  0 part 
+    └─sda5                        8:5    0 24.5G  0 part 
+      ├─XCS--rpizero--vg-root   252:0    0 20.5G  0 lvm  /
+      └─XCS--rpizero--vg-swap_1 252:1    0    4G  0 lvm  [SWAP]
+    sdb                           8:16   1  7.3G  0 disk       <=== Our 8Gb SDCard!
+    ├─sdb1                        8:17   1   63M  0 part 
+    └─sdb2                        8:18   1  7.3G  0 part 
+    sr0                          11:0    1 55.7M  0 rom  
+    
+  XCS~$ sudo dd bs=4M if=/home/pi/rpi/img/2017-03-02-raspbian-jessie-lite.img of=/dev/sdb
+  ```
+- Validate that image is properly copied
 
-# Raspberry Pi Peripherals
+  ```
+  XCS~$ sudo dd bs=4M if=/dev/sdb of=from-sd-card.img
+  XCS~$ sudo truncate --reference 2017-03-02-raspbian-jessie-lite.img  from-sd-card.img
+  XCS~$ sudo diff -s from-sd-card.img 2017-03-02-raspbian-jessie-lite.img 
+  XCS~$ sync
+  ```
+- Remove images, we do not need these anymore
+
+  ```
+  XCS~$ sudo rm *.img
+  ```
+
+## Connection
+
+After installing raspbian on the image, lets setup a connection!  
+
+### Network settings
+
+1. If not connected, connect SDCard to the VM.
+1. Detect SDCard & find largest partition (the rpi filesystem)
+
+  ```
+  XCS~$ lsblk
+    NAME                        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+    sda                           8:0    0   25G  0 disk 
+    ├─sda1                        8:1    0  487M  0 part /boot
+    ├─sda2                        8:2    0    1K  0 part 
+    └─sda5                        8:5    0 24.5G  0 part 
+      ├─XCS--rpizero--vg-root   252:0    0 20.5G  0 lvm  /
+      └─XCS--rpizero--vg-swap_1 252:1    0    4G  0 lvm  [SWAP]
+    sdb                           8:16   1  7.3G  0 disk 
+    ├─sdb1                        8:17   1   63M  0 part 
+    └─sdb2                        8:18   1  7.3G  0 part       <=== Largest partion
+    sr0                          11:0    1 55.7M  0 rom  
+  ```
+1. Mount SDCard
+
+  ```
+  XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt 
+  ```
+1. If required, setup static ipadress, DNS-servers and/or router IP:
+  
+  ```
+  XCS~$ sudo nano /home/pi/rpi/mnt/etc/dhcpcd.conf
+  ```
+  - Edit and add the following lines to `dhcpcd.conf` as is required for your setup: 
+  
+  ```
+  # we do not use eth0, only wifi
+  #interface eth0
+
+  profile static_wlan0
+  static ip_address=172.16.60.200
+  static routers=172.16.254.254
+  static domain_name_servers=172.16.1.11 172.16.1.9
+
+  # 1) try static settings
+  # 2) if fails, just settle with dhcp
+  interface wlan0
+  arping static_wlan0
+  ```
+  
+1. Setup WiFi credentials
+
+  ```
+  XCS~$ sudo nano /home/pi/rpi/mnt/etc/wpa_supplicant/wpa_supplicant.conf
+  ```
+  - Add the required credentials. In this example, the order equals connection order. So first `network1` is tried, after which `network2` is tested if `network1` cannot be reached.
+  ```
+  network={
+    ssid="<network1>"
+    psk="<password_of_network1>"
+  }
+
+  network={
+    ssid="<network2>"
+    psk="<password_of_network2>"
+  }
+  ```
+
+### Hostname
+
+By default, the hostname of a rpi is `raspberrypi`, hence the rpi can be accessed via the dns `raspberrypi.local`. As multiple rpi's migh be functioning in the environment, it might be a good idea to change the hostname.
+
+
+1. Mount largest partion of the SDCard if it isn't mounted anymore.
+
+  ```
+  XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt 
+  ```
+1. Edit `hostname`
+
+  ```
+  XCS~$ nano /home/pi/rpi/mnt/etc/hostname
+  ```
+1. Change `raspberrypi` in e.g. `rpizw`
+1. Edit `hosts`
+
+  ```
+  XCS~$ nano /home/pi/rpi/mnt/etc/hosts
+  ```
+1. Change `127.0.0.1 raspberrypi` in e.g. `127.0.0.1 rpizw`. Note that the hostname should equal the name you've chosen previously.
+1. Finish setup by unmounting the mounted partition
+
+  ```
+  XCS~$ sudo umount /home/pi/rpi/mnt
+  ```
+
+### Enable SSH
+
+1. To enable SSH on the rpi, detect disk & mount SMALLEST partition
+
+  ```
+  XCS~$ lsblk
+    NAME                        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+    sda                           8:0    0   25G  0 disk 
+    ├─sda1                        8:1    0  487M  0 part /boot
+    ├─sda2                        8:2    0    1K  0 part 
+    └─sda5                        8:5    0 24.5G  0 part 
+      ├─XCS--rpizero--vg-root   252:0    0 20.5G  0 lvm  /
+      └─XCS--rpizero--vg-swap_1 252:1    0    4G  0 lvm  [SWAP]
+    sdb                           8:16   1  7.3G  0 disk 
+    ├─sdb1                        8:17   1   63M  0 part       <=== Smallest partition
+    └─sdb2                        8:18   1  7.3G  0 part
+    sr0                          11:0    1 55.7M  0 rom  
+
+  XCS~$ sudo mount /dev/sdb1 /home/pi/rpi/mnt 
+  ```
+1. Add ssh file
+
+  ```
+  XCS~$ sudo touch /home/pi/rpi/mnt/ssh
+  ```
+1. Finish setup by unmounting the mounted partition
+
+  ```
+  XCS~$ sudo umount /home/pi/rpi/mnt
+  ```
+
+## First Boot
+Hooray! We can now finally boot the rpi. Insert the SDCard and power it up.
+Before we can continue our quest to cross-compiling, we need to do some maintenance. 
+
+1. SSH to the rpi (use hostname or ipadress if known)
+
+  ```
+  XCS~$ ssh pi@rpizw.local
+  ```
+1. Expand filesystem & reboot
+
+  ```
+  RPI~$ sudo sudo raspi-config --expand-rootfs
+  RPI~$ sudo reboot now
+  ```
+1. After boot, connect again & update rpi
+
+  ```
+  XCS~$ ssh pi@rpizw.local
+  RPI~$ sudo apt-get update
+  RPI~$ sudo apt-get dist-upgrade
+  ```
+  
+## Setup SSH-keys
+Currently, you need to type your password each time you connect with the rpi. With the use of ssh-keys, we can automate this process.
+
+1. Generate ssh-keys in the VM. Optionally you can choose a different rsa-name (required if you are planning to use multie keys for different systems) and set a passphrase (increasing security). In my setup I left the passphrase empty (just hitting enter). 
+
+  ```
+  XCS~$ cd~/.ssh
+  XCS~$ ssh-keygen -t rsa
+    Generating public/private rsa key pair.
+    Enter file in which to save the key (/home/pi/.ssh/id_rsa): rpizero_rsa
+    Enter passphrase (empty for no passphrase): <empty>
+    Enter same passphrase again: <empty>
+    Your identification has been saved in rpizero_rsa.
+    Your public key has been saved in rpizero_rsa.pub.
+    ...
+  ```
+1. Set correct permisions of the key-set
+
+  ```
+  XCS~$ chmod 700 rpizero_rsa rpizero_rsa.pub
+  ```
+1. Send a copy of the public key to the rpi so it can verify the connection  
+
+  ```
+  cat ~/.ssh/rpizero_rsa.pub | ssh pi@rpizw.local "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+  ```
+1. Configure ssh connection in `ssh_config`
+
+  ```
+  XCS~$ sudo nano /etc/ssh/ssh_config
+  ```
+  - Depending on the configuration of `dhcpcd.conf` on the rpi, add the following lines:
+  
+  ```
+  #connect via static ip
+  Host rpizero
+    HostName 172.16.60.200
+    IdentityFile ~/.ssh/rpizero_rsa
+    User pi
+    Port 22
+  
+  # connect via hostname
+  Host rpizero-local
+    HostName rpizw.local
+    IdentityFile ~/.ssh/rpizero_rsa
+    User pi
+    Port 22
+  ```
+1. Allow bash to invoke the config upon a ssh-call
+
+  ```
+  XCS~$ ssh-agent bash
+  XCS~$ ssh-add /home/pi/.ssh/rpizero_rsa
+  ```
+1. Test connection:
+
+  ```
+  XCS~$ ssh rpizero-local 
+  ```
+  - You should now be logged in onto the rpi via ssh, without entering your password.
+
+## Setup SSH-keys: root
+For synchronisation of the rpi-rootfs in our cross-compile environment and the root of the 'real' rpi, ssh needs root acces.
+
+1. Configure ssh connection in `ssh_config`
+
+  ```
+  XCS~$ sudo nano /etc/ssh/ssh_config
+  ```
+  - Depending on the configuration of `dhcpcd.conf` on the rpi, add the following lines:
+  
+  ```
+  #connect via static ip
+  Host rpizero-root
+    HostName 172.16.60.200
+    IdentityFile ~/.ssh/rpizero_rsa
+    User root
+    Port 22
+  
+  # connect via hostname
+  Host rpizero-local-root
+    HostName rpizw.local
+    IdentityFile ~/.ssh/rpizero_rsa
+    User root
+    Port 22
+  ```
+1. Login to the rpi the enable root.
+
+  ```
+  XCS~$ ssh rpizero-local
+  ```
+1. Setup root-password. Note: this should be the same as the password for the user `pi` !!
+  
+  ```
+  RPI~$ sudo passwd root
+  ```
+1. Enable root-login
+
+  ```
+  RPI~$ sudo nano /etc/ssh/sshd_config
+  ```
+  - set `PermitRootLogin XXXX` to `PermitRootLogin yes`.
+1. Restart ssh service
+
+  ```
+  RPI~$ sudo service ssh restart
+  ```
+1. Send a copy of the ssh-keys for the root user to the rpi:
+
+  ```
+  XCS~$ cat ~/.ssh/rpizero_rsa.pub | ssh root@rpizw.local "mkdir -p ~/.ssh && cat >>  ~/.ssh/authorized_keys"
+  ```
+
+
+## Raspberry Pi Peripherals
+
+
 
 ## Real-time Clock
 ### Enable i2c
