@@ -727,7 +727,7 @@ Using the toolchain the userland libraries can be compiled and installed in `~/r
 1. Edit the `userland` toolchain to invoke the proper compiler
 
   ```
-  nano /home/pi/rpi/rootfs/opt/vc/userland/makefiles/cmake/toolchains/arm-linux-gnueabihf.cmake
+  XCS~$ nano /home/pi/rpi/rootfs/opt/vc/userland/makefiles/cmake/toolchains/arm-linux-gnueabihf.cmake
   ```
   - Comment out these lines:
   
@@ -794,15 +794,127 @@ Using the toolchain the userland libraries can be compiled and installed in `~/r
 1. Finally, we can install the created libraries:
 
   ```
-  make install DESTDIR=/home/pi/rpi/rootfs
+  XCS~$ make install DESTDIR=/home/pi/rpi/rootfs
   ```
 1. As `userland` is now created and installed, we should remove the build-directory before we sync with the rpi.
 
   ```
-  rm -rf /home/pi/rpi/rootfs/opt/vc/userland/build
+  XCS~$ rm -rf /home/pi/rpi/rootfs/opt/vc/userland/build
   ```
+1. For testing the userland libraries, see [Syncing, Compiling and Testing](#syncing-compiling-and-testing)
 
 ## OpenCV
+This section will cross-compile and install OpenCV, its additional modules and python bindings. 
+
+1. Download and unzip the sources.
+
+  ```
+  XCS~$ cd ~/rpi/src
+  XCS~$ wget https://github.com/opencv/opencv/archive/3.2.0.zip
+  XCS~$ unzip 3.2.0.zip 
+  XCS~$ rm 3.2.0.zip
+  XCS~$ wget https://github.com/opencv/opencv_contrib/archive/3.2.0.zip
+  XCS~$ unzip 3.2.0.zip 
+  XCS~$ rm 3.2.0.zip 
+  ```
+1. After downloading, we need to edit 'OpenCV-arm' toolchain as it does not support the Raspberry Pi Zero `armv6 hf` core properly. It presumes that a `thumb` instruction set is available which consists of 32 and 16 bits instructions, allowing it to combine instructions and hence speed up processing time. This option requires `armv7` or higher, which is not the case with the rpi.
+  
+  ```
+  XCS~$ nano /home/pi/rpi/src/opencv-3.2.0/platforms/linux/arm.toolchain.cmake
+  ```
+  - Change the '-mthumb' flags to '-marm'. The resulting file should look similarly to:
+  
+  ```
+  ...
+  if(CMAKE_SYSTEM_PROCESSOR STREQUAL arm)
+    set(CMAKE_CXX_FLAGS           "-marm ${CMAKE_CXX_FLAGS}")
+    set(CMAKE_C_FLAGS             "-marm ${CMAKE_C_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,nocopyreloc")
+  endif()
+ ...
+ ```
+1. Compilation of OpenCV uses `libc.so` and `libpthread.so` located in `/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/`. These two files are not real libraries, but link to those required. Unfortunalty, they include the absolute path from `rootfs`, which will produce compile errors as the compiler cannot find it. Hence we need to edit these.
+   - Note: A better solution might be available, as this might cause additional issues, but so far all seems to be ok. 
+ 
+   - libc.so:
+   
+     ```
+     XCS~$ nano /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libc.so
+     ```
+     - Change 
+   
+     ```
+     GROUP ( /lib/arm-linux-gnueabihf/libc.so.6 /usr/lib/arm-linux-gnueabihf/libc_nonshared.a  AS_NEEDED ( /lib/arm-linux-gnueabihf/ld-linux-armhf.so.3 ) )
+     ```
+     - to 
+  
+     ```
+     GROUP ( libc.so.6 libc_nonshared.a  AS_NEEDED ( ld-linux-armhf.so.3 ) )
+     ```
+   - libpthread.so:
+   
+     ```
+     XCS~$ nano /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libpthread.so
+     ```
+     - Change 
+   
+     ```
+     GROUP ( /lib/arm-linux-gnueabihf/libpthread.so.0 /usr/lib/arm-linux-gnueabihf/libpthread_nonshared.a )
+     ```
+     - to 
+   
+     ```
+     GROUP ( libpthread.so.0 libpthread_nonshared.a )
+     ```
+1. Several settings need to be configured to compile OpenCV and the Python bindings properly. For convenience `OpenCVMinDepVersions.cmake` is adjusted. 
+
+  ```
+  XCS~$ nano /home/pi/rpi/src/opencv-3.2.0/cmake/OpenCVMinDepVersions.cmake 
+  ```
+  - Add the following lines to the cmake file:
+  
+  ```
+  # set compiler options
+  set( CMAKE_C_COMPILER   "/usr/bin/rpizero-gcc" )
+  set( CMAKE_CXX_COMPILER "/usr/bin/rpizero-g++" )
+  # - include AR, as it is not cached by default by OpenCV
+  set( CMAKE_AR           "/usr/bin/rpizero-ar"     CACHE FILEPATH "")
+  set( CMAKE_RANLIB       "/usr/bin/rpizero-ranlib" CACHE FILEPATH "")
+
+  #Pkg-config settings
+  # - use host pkg-config
+  set( PKG_CONFIG_EXECUTABLE "/usr/bin/pkg-config" CACHE FILEPATH "")
+  # - but search target-tree
+  # - See: https://autotools.io/pkgconfig/cross-compiling.html
+  set( ENV{PKG_CONFIG_DIR}         "" CACHE FILEPATH "")
+  set( ENV{PKG_CONFIG_LIBDIR}      "${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/pkgconfig:${RPI_ROOTFS}/usr/share/pkgconfig:${RPI_ROOTFS}/opt/vc/lib/pkgconfig" CACHE FILEPATH "")
+  set( ENV{PKG_CONFIG_SYSROOT_DIR} "${RPI_ROOTFS}" CACHE FILEPATH "")
+
+  # setup rpi (target) directories for compiler
+  # - paths where headers are located
+  set( RPI_INCLUDE_DIR "-isystem ${RPI_ROOTFS}/usr/include/arm-linux-gnueabihf -isystem ${RPI_ROOTFS}/usr/include" CACHE STRING "" FORCE)
+  # - paths where libraries (.so) are located.
+  #   => PkgConfig is able to find these libs, but does not add these paths to the linker.
+  #   => It should also be noted that the paths in the .pc files are for the rpi-root, and hence cannot be used on the host.
+  set( RPI_LIBRARY_DIR "-Wl,-rpath ${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf -Wl,-rpath ${RPI_ROOTFS}/lib/arm-linux-gnueabihf" CACHE STRING "" FORCE)
+
+  # Setup C/CXX flags.
+  set( CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS} ${RPI_INCLUDE_DIR}" CACHE STRING "" FORCE)
+  set( CMAKE_C_FLAGS          "${CMAKE_CXX_FLAGS} ${RPI_INCLUDE_DIR}" CACHE STRING "" FORCE)
+  set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${RPI_LIBRARY_DIR}" CACHE STRING "" FORCE)
+
+  # install dir
+  set( CMAKE_INSTALL_PREFIX ${RPI_ROOTFS}/usr CACHE STRING "")
+
+  #Python2.7
+  set( PYTHON_EXECUTABLE          /usr/bin/python2.7 CACHE STRING "") 
+  set( PYTHON_LIBRARY_DEBUG       /usr/lib/python2.7 CACHE STRING "")
+  set( PYTHON_LIBRARY_RELEASE     /usr/lib/python2.7 CACHE STRING "")
+  set( PYTHON_LIBRARY             /usr/lib/python2.7 CACHE STRING "")
+  set( PYTHON_INCLUDE_DIR         "${RPI_ROOTFS}/usr/include/python2.7" CACHE STRING "")
+  set( PYTHON2_NUMPY_INCLUDE_DIRS "${RPI_ROOTFS}/usr/lib/python2.7/dist-packages/numpy/core/include" CACHE STRING "")
+  set( PYTHON2_PACKAGES_PATH      "${RPI_ROOTFS}/usr/local/lib/python2.7/site-packages" CACHE STRING "")
+  ```
 
 # Syncing, Compiling and Testing
 
