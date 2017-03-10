@@ -1130,7 +1130,29 @@ This will copy the binary `<binairy>` to the user-folder (`~/`) of the `pi`-user
 ## Hello Pi!
 Prerequisites: 
 - Toolchain installed
-- 
+
+1. Download the code in [hello/pi](hello/pi).
+  
+  ```
+  XCS~$ cd ~/code
+  XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth 1
+  ```
+1. Build the code 
+
+  ```
+   XCS~$ mkdir -p ~/build/hello/pi
+  XCS~$ cd ~/build/hello/pi
+  XCS~$ cmake ~/code/hello/pi
+  XCS~$ make
+  ```
+1. Sync and run.
+
+  ```
+  XCS~$ scp hello rpizero-local:~/ 
+  XCS~$ ssh rpizero-local
+  RPI~$ ./hello 
+   Hello World!
+  ```
 
 ## Hello Camera!
 Prerequisites: 
@@ -1141,13 +1163,78 @@ Prerequisites:
   ```
   XCS~$ sudo apt-get install subversion
   ```
+
+
+1. There are two options to test the camera: 1) you can download all code from the repo, or 2), you can download the code from the original repo.
+  1. Using this repo.
+    - Download the code in [hello/raspicam](hello/raspicam).
   
+  ```
+  XCS~$ cd ~/code
+  XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth 1
+  ```
   
+  1. Using the original repo.
+    
+    ```
+    XCS~$ mkdir -p ~/code/hello
+    XCS~$ cd ~/code/hello
+    XCS~$ svn export https://github.com/raspberrypi/userland.git/trunk/host_applications/linux/apps/raspicam
+    ```
+    update `CMakeLists.txt` with [hello/raspicam/CMakeLists.txt](hello/raspicam/CMakeLists.txt).
+    
+    ```
+    XCS~$ nano ~/code/hello/raspicam/CMakeLists.txt
+    ```
+  
+1. Build the code 
+
+  ```
+  XCS~$ mkdir -p ~/build/hello/raspicam
+  XCS~$ cd ~/build/hello/raspicam
+  XCS~$ cmake ~/code/hello/raspicam
+  XCS~$ make
+  ```
+1. Sync and run.
+
+  ```
+  XCS~$ scp hellocam rpizero-local:~/ 
+  XCS~$ ssh -X rpizero-local
+  RPI~$ ./hellocam -v -o testcam.jpg
+   ...
+   ...
+   ...
+  RPI~$ links2 -g testcam.jpg
+  ```
+  As a result, a window should be opened displaying the image. Depending on the size of the image, this may take a while.
+
 ## Hello OpenCV!
 Prerequisites: 
 - Toolchain installed
 - Userland installed & synced
 - OpenCV installed & synced
+- An image on the rpi. (e.g. `testcam.jpg` if [Hello-Camera](#hello-camera) is performed).
 
+1. Download the code in [hello/ocv](hello/ocv).
+  
+  ```
+  XCS~$ cd ~/code
+  XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth 1
+  ```
+1. Build the code 
 
+  ```
+  XCS~$ mkdir -p ~/build/hello/ocv
+  XCS~$ cd ~/build/hello/ocv
+  XCS~$ cmake ~/code/hello/ocv
+  XCS~$ make
+  ```
+1. Sync and run.
+
+  ```
+  XCS~$ scp hellocv rpizero-local:~/ 
+  XCS~$ ssh -X rpizero-local
+  RPI~$ ./hellocv testcam.jpg
+  ```
+  As a result, a window should be opened displaying the image. Depending on the size of the image, this may take a while.
 
