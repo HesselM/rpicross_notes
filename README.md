@@ -915,6 +915,199 @@ This section will cross-compile and install OpenCV, its additional modules and p
   set( PYTHON2_NUMPY_INCLUDE_DIRS "${RPI_ROOTFS}/usr/lib/python2.7/dist-packages/numpy/core/include" CACHE STRING "")
   set( PYTHON2_PACKAGES_PATH      "${RPI_ROOTFS}/usr/local/lib/python2.7/site-packages" CACHE STRING "")
   ```
+  - Several notes should be made on these settings.
+    - `CACHE STRING/FILEPATH "" (FORCE)` ensures that, when `cmake` reads the file, the selected values are written to the cache and available during the build process of additional targets. It was added because some runs of `cmake` produced different results as values where not properly updated.
+    - `CMAKE_C_COMPILER`, `CMAKE_CXX_COMPILER`, `CMAKE_AR`, `CMAKE_RANLIB` are set to the proper linked binaires for the crosscompiler. The values of `CMAKE_AR` and `CMAKE_RANLIB` are set additionally as they are needed to link the arm-libraries properly. When not set several linking errors will be produced.
+    - `cmake` and the `OpenCV`-cmake files use internally `pkgconfig` to find .pc files. These .pc files indicate which libaries are installed and where to find them. As the crosscompiler runs in a 64 bit x84 Ubuntu environment, it cannot use the 32bit arm `pkgconfig` of the rpi and hence uses the Ubuntu `pkgconfig` binairy. Since this binairy is configured to find .pc files on Ubuntu, it does not search `~/rpi/rootfs`. Therefore `PKG_CONFIG_DIR`, `PKG_CONFIG_LIBDIR` and `PKG_CONFIG_SYSROOT_DIR` are set to point to the proper locations. 
+    - The `include` and `library` paths of the detected .pc files are not cached properly, resulting in several errors during linking and building. Usally the linker (`ld`) searches paths specified in `ld.so.conf` in the root of the filesystem, but the rpi-linker does not do so. Therefore `RPI_INCLUDE_DIR` and `RPI_INCLUDE_LIB` are set to point to the appropiate headers and libraries. By inserting these values into the `CMAKE_CXX_FLAGS`/`CMAKE_C_FLAGS` and `CMAKE_EXE_LINKER_FLAGS`, cmake ensures that `gcc` and `ld` are still able to find the required files.
+    - Normally opencv is installed in `/usr/local`. This however gave several linking errors when compiling e.g. the test code described in [Syncing, Compiling and Testing](#syncing-compiling-and-testing). These errors are solved by installing opencv directly in the usr directory, as done by setting `CMAKE_INSTALL_PREFIX`.
+    - Since the rpi libraries are build for an arm-platform and the compiler only understands x84 binaries, `cmake` is unable to detect the proper Python parameters for python-bindings. The values specified at the bottom of the enable `cmake` to find the proper files. It should be noted that this action only works when the same Python version is installed on both the rpi and in the VM! Furthermore, the provided setup only creates Python-bindings for Python2.7. To install numpy for python3.0, the proper numpy need to be installed and probably similar settings need to be set. 
+1. The commands for building `OpenCV` then become: 
+
+  ```
+  XCS~$ mkdir -p ~/rpi/build/opencv
+  XCS~$ cd ~/rpi/build/opencv
+  XCS~$ cmake \
+    -D RPI_ROOTFS=/home/pi/rpi/rootfs \
+    -D BUILD_TESTS=NO \
+    -D BUILD_PERF_TESTS=NO \
+    -D BUILD_PYTHON_SUPPORT=ON \
+    -D OPENCV_EXTRA_MODULES_PATH=/home/pi/rpi/src/opencv_contrib-3.2.0/modules \
+    -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpi/src/opencv-3.2.0/platforms/linux/arm.toolchain.cmake \
+    /home/pi/rpi/src/opencv-3.2.0
+  ```
+  Which produces a summary looking like: 
+  (note the detection of librariess such as `gtk`, additional modules such as `freetype` and the proper settings for `Python`)
+  
+  ```
+  -- General configuration for OpenCV 3.2.0 =====================================
+--   Version control:               unknown
+-- 
+--   Extra modules:
+--     Location (extra):            /home/pi/rpi/src/opencv_contrib-3.2.0/modules
+--     Version control (extra):     unknown
+-- 
+--   Platform:
+--     Timestamp:                   2017-03-10T15:02:12Z
+--     Host:                        Linux 4.4.0-64-generic x86_64
+--     Target:                      Linux 1 arm
+--     CMake:                       3.5.1
+--     CMake generator:             Unix Makefiles
+--     CMake build tool:            /usr/bin/make
+--     Configuration:               Release
+-- 
+--   C/C++:
+--     Built as dynamic libs?:      YES
+--     C++ Compiler:                /usr/bin/rpizero-g++  (ver 4.9.3)
+--     C++ flags (Release):         -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include   -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-comment -fdiagnostics-show-option -pthread -fomit-frame-pointer -mfp16-format=ieee -ffunction-sections -fvisibility=hidden -fvisibility-inlines-hidden -O3 -DNDEBUG  -DNDEBUG
+--     C++ flags (Debug):           -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include   -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-comment -fdiagnostics-show-option -pthread -fomit-frame-pointer -mfp16-format=ieee -ffunction-sections -fvisibility=hidden -fvisibility-inlines-hidden -g  -O0 -DDEBUG -D_DEBUG
+--     C Compiler:                  /usr/bin/rpizero-gcc
+--     C flags (Release):           -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include   -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wno-narrowing -Wno-comment -fdiagnostics-show-option -pthread -fomit-frame-pointer -mfp16-format=ieee -ffunction-sections -fvisibility=hidden -O3 -DNDEBUG  -DNDEBUG
+--     C flags (Debug):             -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include   -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wno-narrowing -Wno-comment -fdiagnostics-show-option -pthread -fomit-frame-pointer -mfp16-format=ieee -ffunction-sections -fvisibility=hidden -g  -O0 -DDEBUG -D_DEBUG
+--     Linker flags (Release):
+--     Linker flags (Debug):
+--     ccache:                      NO
+--     Precompiled headers:         NO
+--     Extra dependencies:          gtk-x11-2.0 gdk-x11-2.0 pangocairo-1.0 atk-1.0 cairo gdk_pixbuf-2.0 gio-2.0 pangoft2-1.0 pango-1.0 gobject-2.0 fontconfig freetype gthread-2.0 glib-2.0 dc1394 dl m pthread rt
+--     3rdparty dependencies:       zlib libjpeg libwebp libpng libtiff libjasper IlmImf libprotobuf tegra_hal
+-- 
+--   OpenCV modules:
+--     To be built:                 core flann imgproc ml photo reg surface_matching video dnn freetype fuzzy imgcodecs shape videoio highgui objdetect plot superres xobjdetect xphoto bgsegm bioinspired dpm face features2d line_descriptor saliency text calib3d ccalib datasets rgbd stereo tracking videostab xfeatures2d ximgproc aruco optflow phase_unwrapping stitching structured_light python2
+--     Disabled:                    world contrib_world
+--     Disabled by dependency:      -
+--     Unavailable:                 cudaarithm cudabgsegm cudacodec cudafeatures2d cudafilters cudaimgproc cudalegacy cudaobjdetect cudaoptflow cudastereo cudawarping cudev java python3 ts viz cnn_3dobj cvv hdf matlab sfm
+-- 
+--   GUI: 
+--     QT:                          NO
+--     GTK+ 2.x:                    YES (ver 2.24.25)
+--     GThread :                    YES (ver 2.42.1)
+--     GtkGlExt:                    NO
+--     OpenGL support:              NO
+--     VTK support:                 NO
+-- 
+--   Media I/O: 
+--     ZLib:                        zlib (ver 1.2.8)
+--     JPEG:                        libjpeg (ver 90)
+--     WEBP:                        build (ver 0.3.1)
+--     PNG:                         build (ver 1.6.24)
+--     TIFF:                        build (ver 42 - 4.0.2)
+--     JPEG 2000:                   build (ver 1.900.1)
+--     OpenEXR:                     build (ver 1.7.1)
+--     GDAL:                        NO
+--     GDCM:                        NO
+-- 
+--   Video I/O:
+--     DC1394 1.x:                  NO
+--     DC1394 2.x:                  YES (ver 2.2.3)
+--     FFMPEG:                      NO
+--       avcodec:                   YES (ver 56.1.0)
+--       avformat:                  YES (ver 56.1.0)
+--       avutil:                    YES (ver 54.3.0)
+--       swscale:                   YES (ver 3.0.0)
+--       avresample:                YES (ver 2.1.0)
+--     GStreamer:                   NO
+--     OpenNI:                      NO
+--     OpenNI PrimeSensor Modules:  NO
+--     OpenNI2:                     NO
+--     PvAPI:                       NO
+--     GigEVisionSDK:               NO
+--     Aravis SDK:                  NO
+--     UniCap:                      NO
+--     UniCap ucil:                 NO
+--     V4L/V4L2:                    NO/YES
+--     XIMEA:                       NO
+--     Xine:                        NO
+--     gPhoto2:                     NO
+-- 
+--   Parallel framework:            pthreads
+-- 
+--   Other third-party libraries:
+--     Use IPP:                     NO
+--     Use VA:                      NO
+--     Use Intel VA-API/OpenCL:     NO
+--     Use Lapack:                  NO
+--     Use Eigen:                   NO
+--     Use Cuda:                    NO
+--     Use OpenCL:                  YES
+--     Use OpenVX:                  NO
+--     Use custom HAL:              YES (carotene (ver 0.0.1))
+-- 
+--   OpenCL:                        <Dynamic loading of OpenCL library>
+--     Include path:                /home/pi/rpi/src/opencv-3.2.0/3rdparty/include/opencl/1.2
+--     Use AMDFFT:                  NO
+--     Use AMDBLAS:                 NO
+-- 
+--   Python 2:
+--     Interpreter:                 /usr/bin/python2.7 (ver 2.7.12)
+--     Libraries:                   /usr/lib/python2.7 (ver 2.7.9)
+--     numpy:                       /home/pi/rpi/rootfs/usr/lib/python2.7/dist-packages/numpy/core/include (ver undefined - cannot be probed because of the cross-compilation)
+--     packages path:               /home/pi/rpi/rootfs/usr/local/lib/python2.7/site-packages
+-- 
+--   Python 3:
+--     Interpreter:                 NO
+-- 
+--   Python (for build):            /usr/bin/python2.7
+-- 
+--   Java:
+--     ant:                         NO
+--     JNI:                         NO
+--     Java wrappers:               NO
+--     Java tests:                  NO
+-- 
+--   Matlab:                        Matlab not found or implicitly disabled
+-- 
+--   Documentation:
+--     Doxygen:                     NO
+-- 
+--   Tests and samples:
+--     Tests:                       NO
+--     Performance tests:           NO
+--     C/C++ Examples:              NO
+-- 
+--   Install path:                  /home/pi/rpi/rootfs/usr
+-- 
+--   cvconfig.h is in:              /home/pi/rpi/build/opencv
+-- -----------------------------------------------------------------
+-- 
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/pi/rpi/build/opencv
+  ```  
+
+1. When all is fine, `OpenCV` can be build and installed.
+
+  ```
+  XCS~$ make -j 4
+  XCS~$ make install
+  ```
+1. Due to crosscompilation, the installation of `OpenCV` produces and invalid .pc file. This needs to be corrected.
+  - Move file to appropiate location
+  
+  ```
+  XCS~$ mv /home/pi/rpi/rootfs/usr/lib/pkgconfig/opencv.pc /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/pkgconfig/opencv.pc
+  ```
+  - Update prefix-path in the .pc file. It should become `prefix=/usr`
+  
+  ```
+  XCS~$ nano /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/pkgconfig/opencv.pc
+  ```
+1. To use the Python-bindings on the rpi, `PYTHONPATH` has to be set properly
+  
+  ```
+  XCS~$ ssh rpizero-local
+  RPI~$ nano ~/.bashrc
+  ```
+  
+  Add to following lines:
+  ```
+  #Ensure Python is able to find packages
+  export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH
+  ```
+  
+  Reload Bash
+  ```
+  RPI~$ source ~/.bashrc
+  ```
 
 # Syncing, Compiling and Testing
 
