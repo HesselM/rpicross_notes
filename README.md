@@ -1,6 +1,6 @@
 # Guide to Setup and Cross Compile for a Raspberry Pi
 
-This repository is a personal guide to setup a cross compilation environment to compile OpenCV and ROS programs on a Raspberry Pi. It contains details on the setup of a VirtualBox, SSH / X-server / network settings, syncing / backing up and of course how to compile and install OpenCV with Python bindings and dynamic library support (such as GTK). Experience with VirtualBox, C, Python and the terminal are assumed. Usage of external keyboards or monitors for the Raspberry Pi is not required: setup is done via card mounting or SSH. 
+This repository is a personal guide to setup a cross compilation environment to compile OpenCV and ROS programs on a Raspberry Pi. It contains details on the setup of a VirtualBox, SSH / X-server / network settings, syncing / backing up and of course how to compile and install OpenCV with Python bindings and dynamic library support (such as GTK). Experience with VirtualBox, C, Python and the terminal/nano are assumed. Usage of external keyboards or monitors for the Raspberry Pi is not required: setup is done via card mounting or SSH. 
 
 Disclaimer 1: Many, many, many StackOverflow, Github issues, form-posts and blog-pages have helped me developing these notes. Unfortunatly I haven't written down all these links and hence cannot thank or link all authors, for which my apology. Here an incomplete list of sources:
 - VirtualBox SSH: https://forums.virtualbox.org/viewtopic.php?f=8&t=55766
@@ -606,14 +606,207 @@ Source: https://thepihut.com/collections/raspberry-pi-hats/products/rtc-pizero
   ```
 
 # Crosscompilation
+At this moment you should have a raspberry pi with functioning camera, rtc and ssh-configuration. This section will explain the steps required to compile `userland` (headers to communicate with the rpi-GPU) and `OpenCV` with Python bindings and support of external libraries such as GTK+. 
 
-## Setup
+## Install required packages, backup and create rootfs
+1. First we need to install some additional packages for e.g. synchronisation and OpenCV building
+
+  ```
+  XCS~$ ssh rpizero-local
+  RPI~$ sudo apt-get install libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev python2.7 python-dev python-numpy libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev rsync
+  ```
+1. Before continuing, lets backup the SDCard
+  - Shutdown RPI
+  
+  ```
+  RPI~$ sudo shutdown now
+  ```
+  - Disconnect RPI from power and remove SDCard
+  - Connect SDCard with VM, locate in terminal and make a full copy. NOTE: this copy equals the size of the SDCard. Ensure you have enough space!
+  
+  ```
+  XCS~$ lsblk
+    NAME                        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+    sda                           8:0    0   25G  0 disk 
+    ├─sda1                        8:1    0  487M  0 part /boot
+    ├─sda2                        8:2    0    1K  0 part 
+    └─sda5                        8:5    0 24.5G  0 part 
+      ├─XCS--rpizero--vg-root   252:0    0 20.5G  0 lvm  /
+      └─XCS--rpizero--vg-swap_1 252:1    0    4G  0 lvm  [SWAP]
+    sdb                           8:16   1  7.3G  0 disk       <=== Our RPI SDCard!
+    ├─sdb1                        8:17   1   63M  0 part 
+    └─sdb2                        8:18   1  7.3G  0 part 
+    sr0                          11:0    1 55.7M  0 rom  
+    
+  XCS~$ sudo dd bs=4M if=/dev/sdb of=/home/pi/rpi/img/rpizero_clean.img
+  ```
+  - Creating the backup might take a while, so grab a coffee :)
+  - When needed, the SDCard can be reset to this backup with:
+  
+  ```
+  sudo dd bs=4M if=/home/pi/rpi/img/rpizero_clean.img of=/dev/sdb
+  ```
+1. Next, lets build the rpi filesystem used for crosscompiling. 
+  - mount the largest partition of the SDCard and copy the `usr` and `lib` directories
+  
+  ```
+  XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt 
+  XCS~$ rsync -auHWv /home/pi/rpi/mnt/lib /home/pi/rpi/rootfs/
+  XCS~$ rsync -auHWv /home/pi/rpi/mnt/usr /home/pi/rpi/rootfs/
+  XCS~$ sudo umount /home/pi/rpi/mnt 
+  ```
+
+  - Instead of using the SDCard, `rpizero_clean.img` could als be used to create a new `rootfs`
+    - List .img properties
+    
+  ```
+  XCS~$ fdisk -l /home/pi/rpi/img/rpizero_clean.img
+    Disk /home/pi/rpi/img/rpizero_clean.img: 7.3 GiB, 7861174272 bytes, 15353856 sectors
+    Units: sectors of 1 * 512 = 512 bytes
+    Sector size (logical/physical): 512 bytes / 512 bytes
+    I/O size (minimum/optimal): 512 bytes / 512 bytes
+    Disklabel type: dos
+    Disk identifier: 0xa11202a8
+
+    Device                              Boot  Start      End  Sectors  Size Id Type
+    /home/pi/rpi/img/rpizero_clean.img1        8192   137215   129024   63M  c W95 FAT32 (LBA)
+    /home/pi/rpi/img/rpizero_clean.img2      137216 15353855 15216640  7.3G 83 Linux
+  ```
+    - determine `start` of the filesystem parition, e.g: 137216
+    - determine `unit size`, e.g. 512
+    - multiply these values: 137216 * 512 = 70254592
+    - mount and copy
+    
+  ```
+  XCS~$ sudo mount -o loop,offset=70254592 /home/pi/rpi/img/rpizero_clean.img /home/pi/rpi/mnt
+  XCS~$ rsync -auHWv /home/pi/rpi/mnt/lib /home/pi/rpi/rootfs/
+  XCS~$ rsync -auHWv /home/pi/rpi/mnt/usr /home/pi/rpi/rootfs/
+  XCS~$ sudo umount /home/pi/rpi/mnt 
+  ```
+1. Finally, we need to install several packages on the VM in order to build the libraries
+
+  ```
+  XCS~$ sudo apt-get install build-essential
+  XCS~$ sudo apt-get install pkg-config cmake unzip
+  ```
+  
+## Toolchain
+In order to compile code for the rpi, a compiler is needed which can build, create and link our c-code with libraries and transform it in to arm-instructions. This is done by a toolchain. Toolchains can be created with e.g. `linearo` or `gcc` (see: http://preshing.com/20141119/how-to-build-a-gcc-cross-compiler/).  In case of the rpi, we can simplify life a bit with downloading an already available toolchain.
+
+1. Download toolchain. This wil create a folder called `tools` in `~/rpi` in the VM.
+
+  ```
+  XCS~$ cd ~/rpi
+  XCS~$ git clone https://github.com/raspberrypi/tools.git --depth 1
+  ```
+1. Create links to the proper binairies for easy use.
+
+  ```
+  XCS~$ sudo ln -s /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc /usr/bin/rpizero-gcc
+  XCS~$ sudo ln -s /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ /usr/bin/rpizero-g++
+  XCS~$ sudo ln -s /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-ar /usr/bin/rpizero-ar
+  ```
+1. Clean up unneeded branches in the tools-directory to save space.
+
+  ```
+  XCS~$ rm -rf /home/pi/rpi/tools/arm-bcm2708/arm-bcm2708*
+  ```
 
 ## Userland
+The [userland](https://github.com/raspberrypi/userland) repository of the Pi Foundation contains several libraires to communicate with the GPU and use GPU related actions such as `mmal`, `GLES` and others. 
+
+Using the toolchain the userland libraries can be compiled and installed in `~/rpi/rootfs`. While it is advisable to download and build libraries outside the targeted `rootfs` (using e.g. `~/rpi/build` and `~/rpi/src`), the build commands for userland do not install all headers. Therefore, in the next steps, userland will be build in `rootfs`. 
+
+1. Create userland (`opt/vc`) directory and download repository
+
+  ```
+  XCS~$ mkdir -p ~/rpi/rootfs/opt/vc/
+  XCS~$ cd ~/rpi/rootfs/opt/vc/
+  XCS~$ git clone https://github.com/raspberrypi/userland.git --depth 1
+  ```
+1. Edit the `userland` toolchain to invoke the proper compiler
+
+  ```
+  nano /home/pi/rpi/rootfs/opt/vc/userland/makefiles/cmake/toolchains/arm-linux-gnueabihf.cmake
+  ```
+  - Comment out these lines:
+  
+  ```
+  # set(CMAKE_C_COMPILER ..
+  # set(CMAKE_CXX_COMPILER ..
+  # set(CMAKE_ASM_COMPILER ..
+  ```
+1. Create build directory and build userland.
+  
+  ```
+  XCS~$ mkdir -p userland/build/arm-linux/release
+  XCS~$ cd userland/build/arm-linux/release
+  XCS~$ cmake \
+    -D CMAKE_C_COMPILER=/usr/bin/rpizero-gcc \
+    -D CMAKE_CXX_COMPILER=/usr/bin/rpizero-g++ \
+    -D CMAKE_ASM_COMPILER=/usr/bin/rpizero-gcc \
+    -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpi/rootfs_tst/opt/vc/userland/makefiles/cmake/toolchains/arm-linux-gnueabihf.cmake \
+    -D CMAKE_BUILD_TYPE=Release \
+    /home/pi/rpi/rootfs_tst/opt/vc/userland/
+  ```
+  - This should produce an output which looks like:
+  
+  ```
+  -- The C compiler identification is GNU 4.9.3
+  -- The CXX compiler identification is GNU 4.9.3
+  -- Check for working C compiler: /usr/bin/rpizero-gcc
+  -- Check for working C compiler: /usr/bin/rpizero-gcc -- works
+  -- Detecting C compiler ABI info
+  -- Detecting C compiler ABI info - done
+  -- Detecting C compile features
+  -- Detecting C compile features - done
+  -- Check for working CXX compiler: /usr/bin/rpizero-g++
+  -- Check for working CXX compiler: /usr/bin/rpizero-g++ -- works
+  -- Detecting CXX compiler ABI info
+  -- Detecting CXX compiler ABI info - done
+  -- Detecting CXX compile features
+  -- Detecting CXX compile features - done
+  -- Looking for execinfo.h
+  -- Looking for execinfo.h - found
+  -- The ASM compiler identification is GNU
+  -- Found assembler: /usr/bin/rpizero-gcc
+  -- Found PkgConfig: /usr/bin/pkg-config (found version "0.29.1") 
+  -- Configuring done
+  -- Generating done
+  -- Build files have been written to: /home/pi/rpi/rootfs/opt/vc/userland/build/arm-linux/release
+  ```
+1. Next, `make` userland.
+
+  ```
+  XCS~$ make -j 4
+  ```
+  - Note1: This will produce a lot of messages, but should finish with something similar:
+  
+  ```
+  ...
+  [100%] Linking C shared library ../../../../lib/libopenmaxil.so
+  [100%] Linking C executable ../../../../../../bin/raspistill
+  [100%] Built target openmaxil
+  [100%] Built target raspistill
+  ```
+  - Note2: the option `-j 4` tells make to use 4 threads, which speeds up the process. 
+  
+1. Finally, we can install the created libraries:
+
+  ```
+  make install DESTDIR=/home/pi/rpi/rootfs
+  ```
+1. As `userland` is now created and installed, we should remove the build-directory before we sync with the rpi.
+
+  ```
+  rm -rf /home/pi/rpi/rootfs/opt/vc/userland/build
+  ```
 
 ## OpenCV
 
-# Testing
+# Syncing, Compiling and Testing
+
+## S
 ## Hello Pi!
 ## Hello Camera!
 ## Hello OpenCV!
