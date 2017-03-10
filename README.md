@@ -1110,11 +1110,44 @@ This section will cross-compile and install OpenCV, its additional modules and p
   ```
 
 # Syncing, Compiling and Testing
+After building and compiling source code, the binairies need to be transferred to the rpi. The next sections describe how to sync and how to test the setup
 
-## S
+## Syncing and Transferring
+Transferring files from `~/rpi/rootfs` to the rpi is made easy with `rsync`. Additionally `rsync` can be set to ensure that only new files are updated and that the copied files will have the correct properties. Since `~/rpi/rootfs` contains the `bin` folder (and therefore also `sudo`), setting the proper rights is important for a stable system. When user rights are not properly set, `sudo`-error on the rpi can occur.
+
+Syncing `~/rpi/rootfs` towards the rpi can be done using:
+```
+XCS~$ sudo rsync -auHWv --no-perms --no-owner --no-group /home/pi/rpi/rootfs/ rpizero-local-root:/
+```
+As we are syncing to the root of the rpi, `rpizero-local-root` is invoked instead of `rpizero-local`.
+
+Next to syncing freshly compiled user-binaries should also be send to the rpi. Generally we do not care that much about the user settings, hence `scp` can be used:
+```
+XCS~$ scp <binairy> rpizero-local:~/ 
+```
+This will copy the binary `<binairy>` to the user-folder (`~/`) of the `pi`-user.
+
 ## Hello Pi!
+Prerequisites: 
+- Toolchain installed
+- 
+
 ## Hello Camera!
+Prerequisites: 
+- Toolchain installed
+- Userland installed & synced
+- Subversion:
+
+  ```
+  XCS~$ sudo apt-get install subversion
+  ```
+  
+  
 ## Hello OpenCV!
+Prerequisites: 
+- Toolchain installed
+- Userland installed & synced
+- OpenCV installed & synced
 
 
 
