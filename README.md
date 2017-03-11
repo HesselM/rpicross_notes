@@ -922,6 +922,29 @@ This section will cross-compile and install OpenCV, its additional modules and p
     - The `include` and `library` paths of the detected .pc files are not cached properly, resulting in several errors during linking and building. Usally the linker (`ld`) searches paths specified in `ld.so.conf` in the root of the filesystem, but the rpi-linker does not do so. Therefore `RPI_INCLUDE_DIR` and `RPI_INCLUDE_LIB` are set to point to the appropiate headers and libraries. By inserting these values into the `CMAKE_CXX_FLAGS`/`CMAKE_C_FLAGS` and `CMAKE_EXE_LINKER_FLAGS`, cmake ensures that `gcc` and `ld` are still able to find the required files.
     - Normally opencv is installed in `/usr/local`. This however gave several linking errors when compiling e.g. the test code described in [Syncing, Compiling and Testing](#syncing-compiling-and-testing). These errors are solved by installing opencv directly in the usr directory, as done by setting `CMAKE_INSTALL_PREFIX`.
     - Since the rpi libraries are build for an arm-platform and the compiler only understands x84 binaries, `cmake` is unable to detect the proper Python parameters for python-bindings. The values specified at the bottom of the enable `cmake` to find the proper files. It should be noted that this action only works when the same Python version is installed on both the rpi and in the VM! Furthermore, the provided setup only creates Python-bindings for Python2.7. To install numpy for python3.0, the proper numpy need to be installed and probably similar settings need to be set. 
+    - Ideally, the `CMAKE_SYSROOT` command should be used to set to rootfs for a crosscompilation target. However, I did not succeed at setting the parameter properly and therefor use the `sysroot` located at:
+
+      ```
+      /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/arm-linux-gnueabihf/sysroot
+      ```
+      The encountered error message was:
+    
+      ```
+      /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/../lib/gcc/arm-linux-gnueabihf/4.9.3/../../../../arm-linux-gnueabihf/bin/ld:
+    cannot find crt1.o: No such file or directory
+      ```
+  
+      While using these additional settings:
+    
+      ```
+      set( CMAKE_SYSROOT     "${RPI_ROOTFS}" CACHE FILEPATH "")
+      set( CMAKE_FIND_ROOT_PATH "${RPI_ROOTFS}" CACHE FILEPATH "")
+      set( CMAKE_LIBRARY_ARCHITECTURE "arm-linux-gnueabihf" CACHE STRING "")
+      set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+      #set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+      #set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+      #set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+      ```
 1. The commands for building `OpenCV` then become: 
 
   ```
