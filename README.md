@@ -671,13 +671,29 @@ At this moment you should have a raspberry pi with functioning camera, rtc and s
     
   XCS~$ sudo dd bs=4M if=/dev/sdb of=/home/pi/rpi/img/rpizero_clean.img
   ```
-  >This copy equals the size of the SDCard. Ensure you have enough space!
+  > This copy equals the size of the SDCard. Ensure you have enough space!
   - Creating the backup might take a while, so grab a coffee :)
   - When needed, the SDCard can be reset, without the need to reinstalling all previously set settings:
-  
+    
   ```
   sudo dd bs=4M if=/home/pi/rpi/img/rpizero_clean.img of=/dev/sdb
   ```
+  > Optionally, the .img can be compressed using gzip:
+  
+  ```
+  XCS~$ gzip /home/pi/rpi/img/rpizero_clean.img
+  ```
+  > This replaces `rpizero_clean.img` with `rpizero_clean.img.gz`. To deflate use:
+  
+  ```
+  XCS~$ gzip -d /home/pi/rpi/img/rpizero_clean.img.gz
+  ```
+  > Creating a compressed backup/restore can also done directly using `gzip` and `dd`:
+  
+  ```
+  XCS~$ gzip -dc /home/pi/rpi/img/rpizero_clean.img.gz | sudo dd bs=4M of=/dev/sdb
+  XCS~$ sudo dd bs=4M if=/dev/sdb | gzip > /home/pi/rpi/img/rpizero_clean.img.gz
+  ```  
 1. Next, lets build the rpi filesystem used for crosscompiling. 
   - Mount the largest partition of the SDCard and copy the `usr` and `lib` directories
   
