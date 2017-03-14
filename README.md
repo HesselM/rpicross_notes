@@ -980,9 +980,8 @@ This section will cross-compile and install OpenCV, its additional modules and p
     
       ```
       /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/../lib/gcc/arm-linux-gnueabihf/4.9.3/../../../../arm-linux-gnueabihf/bin/ld:
-    cannot find crt1.o: No such file or directory
+      cannot find crt1.o: No such file or directory
       ```
-  
       While using these additional settings:
     
       ```
