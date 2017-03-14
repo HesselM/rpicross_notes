@@ -703,7 +703,7 @@ At this moment you should have a raspberry pi with functioning camera, rtc and s
       Device                              Boot  Start      End  Sectors  Size Id Type
       /home/pi/rpi/img/rpizero_clean.img1        8192   137215   129024   63M  c W95 FAT32 (LBA)
       /home/pi/rpi/img/rpizero_clean.img2      137216 15353855 15216640  7.3G 83 Linux
-  ```
+    ```
   > - determine `start` of the filesystem parition, e.g: 137216
   > - determine `unit size`, e.g. 512
   > - multiply these values: 137216 * 512 = 70254592
