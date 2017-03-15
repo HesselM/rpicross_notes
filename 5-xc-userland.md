@@ -1,24 +1,27 @@
 # Userland
 
-The [userland](https://github.com/raspberrypi/userland) repository of the Pi Foundation contains several libraires to communicate with the GPU and use GPU related actions such as `mmal`, `GLES` and others. 
+The [userland](https://github.com/raspberrypi/userland) repository of the Pi Foundation contains several libraires to communicate with the GPU and use GPU related actions such as `mmal`, `GLES` and others.
 
 Installing the userland libraries does not install all headers. Therefore the source will be downloaded into `rootfs`.
 
 ## Compilation
 
-1. Download userland
+- Download userland
+  
   ```
   XCS~$ mkdir -p ~/rpi/rootfs/usr/src/
   XCS~$ cd ~/rpi/rootfs/usr/src/
   XCS~$ git clone https://github.com/raspberrypi/userland.git --depth 1
   ```
-1. Download our generic toolchain 
+- Download our generic toolchain 
+
   ```
   XCS~$ mkdir -p ~/rpi/build
   XCS~$ cd ~/rpi/build
   XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
   ```
-1. Create build location for `userland` & build
+- Create build location for `userland` & build
+
   ```
   XCS~$ mkdir -p ~/rpi/build/userland
   XCS~$ cd ~/rpi/build/userland
@@ -56,14 +59,14 @@ Installing the userland libraries does not install all headers. Therefore the so
   -- Generating done
   -- Build files have been written to: /home/pi/rpi/build/userland
   ```
-1. Next, `make` userland.
+- Next, `make` userland.
 
   ```
   XCS~$ make -j 4
   ```
   > `-j 4` tells make to use 4 threads, which speeds up the process. 
   
-1. Finally, we can install the created libraries:
+- Finally, we can install the created libraries:
 
   ```
   XCS~$ make install DESTDIR=/home/pi/rpi/rootfs
@@ -78,11 +81,13 @@ XCS~$ sudo rsync -auHWv --no-perms --no-owner --no-group /home/pi/rpi/rootfs/ rp
 
 ## Testing
 Testing the compiled `userland`-libraries
+
 Prerequisites: 
 - Toolchain installed
 - Userland installed & synced
 
-1. There are two options to test the camera: i) you can download all code from the repo, or ii), you can download the code from the original repo.
+Steps:
+- There are two options to test the camera: i) you can download all code from the repo, or ii), you can download the code from the original repo.
   1. Using this repo.
   
     Download the code in [hello/raspicam](hello/raspicam).
@@ -107,7 +112,7 @@ Prerequisites:
     XCS~$ nano ~/code/hello/raspicam/CMakeLists.txt
     ```
 
-1. Build the code 
+- Build the code 
 
   ```
   XCS~$ mkdir -p ~/rpi/build/hello/raspicam
@@ -116,7 +121,7 @@ Prerequisites:
   XCS~$ make
   ```
   
-1. Sync and run.
+- Sync and run.
 
   ```
   XCS~$ scp hellocam rpizero-local:~/ 
