@@ -181,12 +181,12 @@ It should be noted that this command also updates the 'corrected' symbolic links
     
 1. Allow script to be executed (if not yet done)
     ```
-    XCS~$ chmod +x ~/rpi/build/rpicross_notes/sync-rpi-vm.sh
+    XCS~$ chmod +x ~/rpi/build/rpicross_notes/sync-vm-rpi.sh
     ```
 
 1. Sync VM-`rootfs` with RPi`
     ```
-    XCS~$ ./rpicross_notes/sync-rpi-vm.sh
+    XCS~$ ./rpicross_notes/sync-vm-rpi.sh
     ```
  
 
