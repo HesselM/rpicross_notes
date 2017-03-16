@@ -66,7 +66,7 @@ The crosscompiler requires access to (`/usr` and `/lib`) RPi-binairies and libra
     ```
     
     
- 1. OPTIONAL (requires [SDCard backup/reset](SDCard-backup-reset)): create `rootfs` from backup
+ 1. OPTIONAL (requires [SDCard backup/reset](#sdcard-backupreset)): create `rootfs` from backup
     ```
     XCS~$ gzip -dc /home/pi/rpi/img/rpi_backup.img.gz > /home/pi/rpi/img/rpi_backup.img
     XCS~$ fdisk -l /home/pi/rpi/img/rpi_backup.img
@@ -217,3 +217,10 @@ Steps:
     RPI~$ ./hello 
       Hello World!
     ```
+
+# Next
+Having a functional crosscompilation several steps can be taken next:
+- Crosscompile & install [Userland libraries](5-xc-userland.md) (for communication with the RPi GPU)
+- Crosscompile & install [OpenCV 3.2 with Python Bindings](6-xc-opencv.md) (for computer vision)
+- Crosscompile & install [ROS](7-xc-ros.md) (to run the RPi as Node in a ROS-network)
+- Develop your own code.. 
