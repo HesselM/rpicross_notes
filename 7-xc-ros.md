@@ -102,13 +102,11 @@ As mentioned before, the usage of `rsync` results in broken symlinks. Hence we n
     
 1. Build and install `ROS`
     ```
-    XCS~$ mkdir -p build
-    XCS~$ cd build
     XCS~$ ./src/catkin/bin/catkin_make_isolated \
         --install \
         --install-space /home/pi/rpi/opt/ros/kinetic \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake \
+        -DCMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake
     ```
  
 ## Synchronisation
