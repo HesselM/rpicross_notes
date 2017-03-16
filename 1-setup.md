@@ -145,6 +145,6 @@ Source: https://www.raspberrypi.org/documentation/installation/installing-images
     ```
     XCS~$ sudo rm *.img
     ```
+# Next
 
 Having installed the basic components, lets [setup the network/ssh!](2-network.md)
-  
