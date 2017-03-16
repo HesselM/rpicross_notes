@@ -34,6 +34,8 @@ Before the required steps are explained, some disclaimers:
   - OpenCV/AR: http://answers.opencv.org/question/90298/static-lib-cross-compile-zlib-error/
   - OpenCV/Python: http://thebbbdiary.blogspot.nl/2015_01_01_archive.html
   - Shared Libraries: http://redmine.webtoolkit.eu/projects/wt/wiki/Cross_compile_Wt_on_Raspberry_Pi/
+  - ROS: http://answers.ros.org/question/191070/compile-roscore-for-arm-board/
+  - ROS: http://wiki.ros.org/kinetic/Installation/Source
 1. There is no guarantee that the steps described in these notes are the best available. As I'm not an expert, better solutions might be out there. The provided steps however resulted in a working/workable setup for me.
 1. If you happen to know a better (and working) solution, have a question, suggestion or if you spot a mistake: feel free to post an issue!
 
