@@ -265,3 +265,9 @@ For synchronisation of the RPi-rootfs in our crosscompile environment and the ro
     ```
     XCS~$ cat ~/.ssh/rpizero_rsa.pub | ssh root@rpizw.local "mkdir -p ~/.ssh && cat >>  ~/.ssh/authorized_keys"
     ```
+    
+# Next
+
+Next step: [activating/installing peripherals](3-peripherals.md) such as i2c, a Real Time Clock or the Camera. 
+
+Or, if you do not need those: [setup the crosscompilation environment](4-xc-setup.md).
