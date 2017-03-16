@@ -111,7 +111,30 @@ As mentioned before, the usage of `rsync` results in broken symlinks. Hence we n
  
 ## Synchronisation
 
-Todo..
+Update `rootfs` on the rpi:
+
+1. Use a direct call:
+    ```
+    XCS~$ sudo rsync -auHWv --no-perms --no-owner --no-group /home/pi/rpi/rootfs/ rpizero-local-root:/
+    ```
+    
+1. Or use the link-correcting script:
+    1. Clone repository (if not yet done)
+        ```
+        XCS~$ mkdir -p ~/rpi/build
+        XCS~$ cd ~/rpi/build
+        XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
+        ```
+    
+    1. Allow script to be executed (if not yet done)
+        ```
+        XCS~$ chmod +x ~/rpi/build/rpicross_notes/sync-vm-rpi.sh
+        ```
+
+    1. Sync VM-`rootfs` with RPi`
+        ```
+        XCS~$ /home/pi/rpi/build/rpicross_notes/sync-vm-rpi.sh
+        ```
 
 ## Testing
 
