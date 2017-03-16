@@ -1,8 +1,12 @@
 # Crosscompiling : Userland
 
-The [userland](https://github.com/raspberrypi/userland) repository of the Pi Foundation contains several libraires to communicate with the GPU and use GPU related actions such as `mmal`, `GLES` and others.
+Before continuing, please make sure you followed the steps in:
+- [Setup](1-setup.md)
+- [Network/SSH](2-network.md)
+- [crosscompile environment](4-xc-setup.md)
+- Optional (only for testing): [Peripherals](3-peripherals.md)
 
-Before you can proceed with the following steps, make sure you setup the [crosscompile environment](4-xc-setup.md) properly.
+The [userland](https://github.com/raspberrypi/userland) repository of the Pi Foundation contains several libraires to communicate with the GPU and use GPU related actions such as `mmal`, `GLES` and others.
 
 ## Required Packages
 
