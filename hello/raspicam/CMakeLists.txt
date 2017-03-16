@@ -7,7 +7,7 @@ project(hellocam)
 
 #rpi-dirs
 set(RPI_ROOTFS /home/pi/rpi/rootfs)
-set(USERLAND /opt/vc/userland)
+set(USERLAND /usr/src/userland)
 
 #compiler
 set(CMAKE_C_COMPILER rpizero-gcc)
