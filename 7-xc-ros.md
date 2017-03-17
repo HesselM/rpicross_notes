@@ -16,7 +16,7 @@ As ROS has its own package-management system and eco system, multiple dependenci
     XCS~$ sudo apt-get install python-rosdep python-rosinstall-generator python-wstool python-rosinstall python-empy
     XCS~$ ssh rpizero-local
     RPI~$ sudo apt-get install pkg-config python2.7 python-dev python-pip sbcl libboost1.55 libtinyxml-dev libgtest-dev liblz4-dev libbz2-dev libyaml-dev
-    RPI~$ sudo pip install -U rospkg catkin_pkg nose empy
+    RPI~$ sudo pip install -U rospkg catkin_pkg nose empy netifaces
     ```
     
 1. Sync packages/headers from RPi to the VM-`rootfs`
