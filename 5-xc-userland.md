@@ -3,7 +3,7 @@
 Before continuing, please make sure you followed the steps in:
 - [Setup](1-setup.md)
 - [Network/SSH](2-network.md)
-- [crosscompile environment](4-xc-setup.md)
+- [Crosscompile environment](4-xc-setup.md)
 - Optional (only for testing): [Peripherals](3-peripherals.md)
 
 The [userland](https://github.com/raspberrypi/userland) repository of the Pi Foundation contains several libraires to communicate with the GPU and use GPU related actions such as `mmal`, `GLES` and others.
@@ -20,7 +20,8 @@ No additional packages should be required for the RPi or the VM.
     XCS~$ cd ~/rpi/rootfs/usr/src/
     XCS~$ git clone https://github.com/raspberrypi/userland.git --depth 1
     ```
-  
+    > The `userland` repository is downloaded in `rootfs` because the `make install` does not copy the headers of the libraries. 
+    
 1. Clone repository (if not yet done)
     ```
     XCS~$ mkdir -p ~/rpi/build
@@ -80,6 +81,7 @@ No additional packages should be required for the RPi or the VM.
   
 1. Remove build files from the src.
     ```
+    XCS~$ cd ~/
     XCS~$ rm -rf /home/pi/rpi/rootfs/usr/src/userland/build
     ```
  
@@ -138,9 +140,37 @@ Steps:
     XCS~$ scp hellocam rpizero-local:~/ 
     XCS~$ ssh -X rpizero-local
     RPI~$ ./hellocam -v -o testcam.jpg
-     ...
-     ...
-     ...
+    
+        hellocam Camera App v1.3.11
+
+        Width 3280, Height 2464, quality 85, filename testcam.jpg
+        Time delay 5000, Raw no
+        Thumbnail enabled Yes, width 64, height 48, quality 35
+        Link to latest frame enabled  no
+        Full resolution preview No
+        Capture method : Single capture
+
+        Preview Yes, Full screen Yes
+        Preview window 0,0,1024,768
+        Opacity 255
+        Sharpness 0, Contrast 0, Brightness 50
+        Saturation 0, ISO 0, Video Stabilisation No, Exposure compensation 0
+        Exposure Mode 'auto', AWB Mode 'auto', Image Effect 'none'
+        Metering Mode 'average', Colour Effect Enabled No with U = 128, V = 128
+        Rotation 0, hflip No, vflip No
+        ROI x 0.000000, y 0.000000, w 1.000000 h 1.000000
+        Camera component done
+        Encoder component done
+        Starting component connection stage
+        Connecting camera preview port to video render.
+        Connecting camera stills port to encoder input port
+        Opening output file testcam.jpg
+        Enabling encoder output port
+        Starting capture -1
+        Finished capture -1
+        Closing down
+        Close down completed, all components disconnected, disabled and destroyed
+
     RPI~$ links2 -g testcam.jpg
     ```
     
