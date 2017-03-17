@@ -14,8 +14,9 @@ As ROS has its own package-management system and eco system, multiple dependenci
 1. Install packages
     ```
     XCS~$ sudo apt-get install python-rosdep python-rosinstall-generator python-wstool python-rosinstall python-empy
-  XCS~$ ssh rpizero-local
-  RPI~$ sudo apt-get install pkg-config python2.7 python-dev sbcl libboost1.55 python-empy python-nose libtinyxml-dev libgtest-dev liblz4-dev libbz2-dev
+    XCS~$ ssh rpizero-local
+    RPI~$ sudo apt-get install pkg-config python2.7 python-dev python-pip sbcl libboost1.55 libtinyxml-dev libgtest-dev liblz4-dev libbz2-dev libyaml-dev
+    RPI~$ sudo pip install -U rospkg catkin_pkg nose empy
     ```
     
 1. Sync packages/headers from RPi to the VM-`rootfs`
@@ -104,7 +105,7 @@ As mentioned before, the usage of `rsync` results in broken symlinks. Hence we n
     ```
     XCS~$ ./src/catkin/bin/catkin_make_isolated \
         --install \
-        --install-space /home/pi/rpi/opt/ros/kinetic \
+        --install-space /home/pi/rpi/rootfs/opt/ros/kinetic \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake
     ```
@@ -137,5 +138,15 @@ Update `rootfs` on the rpi:
         ```
 
 ## Testing
+
+
+```
+XCS~$ ssh rpizero-local
+# fix prefix..
+RPI~$ sudo find /opt/ros/kinetic -type f -exec sed -i 's/\/home\/pi\/rpi\/rootfs\//\//g' {} +
+RPI~$ sudo find /opt/ros/kinetic -type f -exec sed -i 's/\/home\/pi\/rpi\/ros_catkin_ws\//\/home\/pi\//g' {} +
+RPI~$ source devel_isolated/setup.bash 
+RPI~$ roscore
+```
 
 Todo..
