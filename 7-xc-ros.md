@@ -15,8 +15,8 @@ As ROS has its own package-management system and eco system, multiple dependenci
     ```
     XCS~$ sudo apt-get install python-rosdep python-rosinstall-generator python-wstool python-rosinstall python-empy
     XCS~$ ssh rpizero-local
-    RPI~$ sudo apt-get install pkg-config python2.7 python-dev python-pip sbcl libboost1.55 libtinyxml-dev libgtest-dev liblz4-dev libbz2-dev libyaml-dev
-    RPI~$ sudo pip install -U rospkg catkin_pkg nose empy netifaces
+    RPI~$ sudo apt-get install pkg-config python2.7 python-dev python-pip sbcl libboost-all-dev libtinyxml-dev libgtest-dev liblz4-dev libbz2-dev libyaml-dev python-nose python-empy python-netifaces python-defusedxml
+    RPI~$ sudo pip install -U rospkg catkin_pkg
     ```
     
 1. Sync packages/headers from RPi to the VM-`rootfs`
@@ -89,10 +89,12 @@ As mentioned before, the usage of `rsync` results in broken symlinks. Hence we n
     XCS~$ rosdep update
     ```
 
-1. Create `catkin` workspace for the RPi-builds
+1. Create `catkin` workspace for the RPi-builds.
+    > Note that this workspace is not located in the `~/rpi` or `~/rpi/rootfs` directories. Because ROS comes with its own environment management system, a seperate directory is created which is synced with the RPi in similar ways as `rootfs`. Most important is that the path of the workspace in the VM equals the path to which the workspace is synchronised on the RPi.
+    
     ```
-    XCS~$ mkdir -p ~/rpi/ros_catkin_ws
-    XCS~$ cd ~/rpi/ros_catkin_ws
+    XCS~$ mkdir -p ~/ros_catkin_ws_cross
+    XCS~$ cd ~/ros_catkin_ws_cross
     ```
 
 1. Download `ROS` core packages and init workspace
@@ -101,18 +103,19 @@ As mentioned before, the usage of `rsync` results in broken symlinks. Hence we n
     XCS~$ wstool init -j8 src kinetic-ros_comm-wet.rosinstall
     ```
     
-1. Build and install `ROS`
+1. Build `ROS`
     ```
     XCS~$ ./src/catkin/bin/catkin_make_isolated \
-        --install \
-        --install-space /home/pi/rpi/rootfs/opt/ros/kinetic \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake
     ```
- 
+    > This creates two folders: `devel_isolated` and `build_isolated` of which the latter can be ignored.
+
 ## Synchronisation
 
-Update `rootfs` on the rpi:
+In addition to updates of `rootfs` we also need to synchronise `ros_catkin_ws_cross`.
+
+Starting with `rootfs`:
 
 1. Use a direct call:
     ```
@@ -136,6 +139,16 @@ Update `rootfs` on the rpi:
         ```
         XCS~$ /home/pi/rpi/build/rpicross_notes/sync-vm-rpi.sh
         ```
+And for `ros_catkin_ws_cross`:
+
+1. Use a direct call:
+    ```
+    XCS~$ rsync -auHWv --no-perms --no-owner --no-group /home/pi/ros_catkin_ws_cross/devel_isolated rpizero-local:/home/pi/ros_catkin_ws_cross/
+    XCS~$ rsync -auHWv --no-perms --no-owner --no-group /home/pi/ros_catkin_ws_cross/src rpizero-local:/home/pi/ros_catkin_ws_cross/
+    ```
+    > Which copies both `devel_isolated` and `src` from `/home/pi/ros_catkin_ws_cross/*` (VM) to `/home/pi/ros_catkin_ws_cross/*` (RPi)
+
+
 
 ## Testing
 
