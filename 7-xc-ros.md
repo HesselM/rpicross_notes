@@ -1,3 +1,5 @@
+NOTE: THIS PAGE IS STILL UNDER CONSTRUCTION AS I DID NOT MANAGE YET TO CROSSCOMPILE ROS
+
 # Crosscompiling : ROS
 
 Before continuing, please make sure you followed the steps in:
@@ -42,14 +44,15 @@ As ROS has its own package-management system and eco system, multiple dependenci
 As mentioned before, the usage of `rsync` results in broken symlinks. Hence we need to restore the ones required for `ROS`:
 
 1. Restore symlinks after syncing
+
+    > When using the `sync`-scripts (provided in this repo) are used, this step can be omitted.
+
     ```
     XCS~$ ln -sf /home/pi/rpi/rootfs/lib/arm-linux-gnueabihf/librt.so.1 /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/librt.so
     XCS~$ ln -sf /home/pi/rpi/rootfs/lib/arm-linux-gnueabihf/libbz2.so.1.0 /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libbz2.so
     XCS~$ ln -sf /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libpython2.7.so.1.0 /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libpython2.7.so
     ```
-    
-    > When using the `sync`-scripts (provided in this repo) are used, this step can be omitted.
-    
+      
 1. Download (if not yet done) our generic toolchain for compiling ROS. 
     ```
     XCS~$ mkdir -p ~/rpi/build
@@ -78,7 +81,7 @@ As mentioned before, the usage of `rsync` results in broken symlinks. Hence we n
     XCS~$ cd ~/rpi/build/console_bridge
     XCS~$ cmake \
         -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake \
-    /home/pi/rpi/src/console_bridge
+        /home/pi/rpi/src/console_bridge
     XCS~$ make
     XCS~$ make install DESTDIR=/home/pi/rpi/rootfs
     ```
@@ -90,7 +93,7 @@ As mentioned before, the usage of `rsync` results in broken symlinks. Hence we n
     ```
 
 1. Create `catkin` workspace for the RPi-builds.
-    > Note that this workspace is not located in the `~/rpi` or `~/rpi/rootfs` directories. Because ROS comes with its own environment management system, a seperate directory is created which is synced with the RPi in similar ways as `rootfs`. Most important is that the path of the workspace in the VM equals the path to which the workspace is synchronised on the RPi.
+    > Note that this workspace is not located in the `~/rpi` or `~/rpi/rootfs` directories. Because ROS comes with its own environment management system, a seperate directory is created which is synced with the RPi in a similar way as `rootfs`. Most important is that the path of the workspace in the VM equals (`/home/pi/ros_catkin_ws_cross`) the path to which the workspace is synchronised on the RPi (which will be `/home/pi/ros_catkin_ws_cross`).
     
     ```
     XCS~$ mkdir -p ~/ros_catkin_ws_cross
@@ -152,6 +155,7 @@ And for `ros_catkin_ws_cross`:
 
 ## Testing
 
+Source: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber(c%2B%2B)
 
 ```
 XCS~$ ssh rpizero-local
@@ -162,4 +166,19 @@ RPI~$ source devel_isolated/setup.bash
 RPI~$ roscore
 ```
 
-Todo..
+        
+1. > The building process of `ROS` is includeing several times the full path of headers and libraries. As these are located at a different location on the RPi and VM, a correction is needed:
+    ```
+    XCS~$ ssh rpizero-local
+    RPI~$ sudo find /opt/ros/kinetic -type f -exec sed -i 's/\/home\/pi\/rpi\/rootfs\//\//g' {} +
+    RPI~$ sudo find /opt/ros/kinetic -type f -exec sed -i 's/\/home\/pi\/rpi\/ros_catkin_ws\//\/home\/pi\//g' {} +
+    ```
+    > NOTE/TODO: not all paths are corrected, several links to `/home/pi/rpi/tool` still exist. 
+    > NOTE/TODO: investigate effect on syncing rpi-vm
+
+
+```
+XCS~$ ssh rpizero-local
+RPI~$ source /opt/ros/kinetic/setup.bash
+RPI~$ roscore
+```
