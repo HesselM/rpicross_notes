@@ -1,5 +1,3 @@
-NOTE: THIS PAGE IS STILL UNDER CONSTRUCTION AS I DID NOT MANAGE YET TO CROSSCOMPILE ROS
-
 # Crosscompiling : ROS
 
 Before continuing, please make sure you followed the steps in:
@@ -21,6 +19,9 @@ As ROS has its own package-management system and eco system, multiple dependenci
     RPI~$ sudo pip install -U rospkg catkin_pkg
     ```
     
+    > The call to `sudo apt-get install` on the RPi might take a while as approximately 250Mb extracted and installed.
+    > Installing `rospkg` and `catkin_pkg` may produce several errors when building `yaml` support while finishing gracefully. My guess is that all might be fine, but perhaps some future tests might show some issues. 
+    
 1. Sync packages/headers from RPi to the VM-`rootfs`
     1. Clone repository (if not yet done)
         ```
@@ -41,7 +42,7 @@ As ROS has its own package-management system and eco system, multiple dependenci
 
 ## Compilation
 
-As mentioned before, the usage of `rsync` results in broken symlinks. Hence we need to restore the ones required for `ROS`:
+As mentioned before, the use of `rsync` results in broken symlinks. Hence we need to restore the ones required for `ROS`:
 
 1. Restore symlinks after syncing
 
@@ -60,7 +61,7 @@ As mentioned before, the usage of `rsync` results in broken symlinks. Hence we n
     XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
     ```
 
-1. `ROS` uses `gtest` for several tests. The downloaded packages `libgtest-dev` only installs the source for `gtest`, therefore we need to compile it for ourselfs to generate the libraries. 
+1. `ROS` uses `gtest` for several tests. The `apt-get` call for `libgtest-dev` only installs the source for `gtest`, therefore we need to compile it for ourselfs to generate the libraries. 
     ```
     XCS~$ mkdir -p ~/rpi/build/gtest
     XCS~$ cd ~/rpi/build/gtest
@@ -73,7 +74,7 @@ As mentioned before, the usage of `rsync` results in broken symlinks. Hence we n
     > SOURCE: https://www.eriksmistad.no/getting-started-with-google-test-on-ubuntu/
     > There is not `make install` so the generated libraries need to be copied manually to the appropriate folder.
     
-1. We also need an utility called `console_bridge`, which is also compiled and installed from source.
+1. We also need an utility called `console_bridge`, which we compile and install from source too.
     ```
     XCS~$ cd ~/rpi/src
     XCS~$ git clone https://github.com/ros/console_bridge
@@ -151,34 +152,32 @@ And for `ros_catkin_ws_cross`:
     ```
     > Which copies both `devel_isolated` and `src` from `/home/pi/ros_catkin_ws_cross/*` (VM) to `/home/pi/ros_catkin_ws_cross/*` (RPi)
 
+1. Unfortunatly ROS includes the path to `rootfs` and subsequent libraries in its binairies. To enable ROS on the RPi to find the proper libraries, a symbolic link is created, simulating the path to `rootfs`
 
+    ```
+    XCS~$ ssh rpizero-local
+    RPI~$ mkdir -p /home/pi/rpi
+    RPI~$ ln -s / /home/pi/rpi/rootfs
+    ```
+1. TODO: create script for synchronisation
 
 ## Testing
 
 Source: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber(c%2B%2B)
 
-```
-XCS~$ ssh rpizero-local
-# fix prefix..
-RPI~$ sudo find /opt/ros/kinetic -type f -exec sed -i 's/\/home\/pi\/rpi\/rootfs\//\//g' {} +
-RPI~$ sudo find /opt/ros/kinetic -type f -exec sed -i 's/\/home\/pi\/rpi\/ros_catkin_ws\//\/home\/pi\//g' {} +
-RPI~$ source devel_isolated/setup.bash 
-RPI~$ roscore
-```
-
-        
-1. > The building process of `ROS` is includeing several times the full path of headers and libraries. As these are located at a different location on the RPi and VM, a correction is needed:
+1. Start `roscore`
     ```
     XCS~$ ssh rpizero-local
-    RPI~$ sudo find /opt/ros/kinetic -type f -exec sed -i 's/\/home\/pi\/rpi\/rootfs\//\//g' {} +
-    RPI~$ sudo find /opt/ros/kinetic -type f -exec sed -i 's/\/home\/pi\/rpi\/ros_catkin_ws\//\/home\/pi\//g' {} +
+    RPI~$ source ~/ros_catkin_ws_cross/devel_isolated/setup.bash 
+    RPI~$ roscore
     ```
-    > NOTE/TODO: not all paths are corrected, several links to `/home/pi/rpi/tool` still exist. 
-    > NOTE/TODO: investigate effect on syncing rpi-vm
+    
+1. Open a new terminal en connect to VM. 
+1. Download `helloros` from this repository
+    > TODO
+1. Compile with toolchain (?)
+    > TODO
+1. Copy to rpi and run.
+    > TODO
+    > If `helloworld` and a time are displayed, ROS and the crosscompile environment are properly configured.
 
-
-```
-XCS~$ ssh rpizero-local
-RPI~$ source /opt/ros/kinetic/setup.bash
-RPI~$ roscore
-```
