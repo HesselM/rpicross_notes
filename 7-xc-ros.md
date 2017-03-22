@@ -197,7 +197,7 @@ Steps:
     XCS~$ scp devel/lib/helloros/helloros rpizero-local:~/
     ```
     
-1. Connext two terminals with the RPi
+1. Connect two terminals with the RPi
    1. Launch `roscore` in the first
        ```
        XCS~$ ssh rpizero-local
