@@ -64,8 +64,7 @@ The crosscompiler requires access to (`/usr` and `/lib`) RPi-binairies and libra
     XCS~$ rsync -auHWv /home/pi/rpi/mnt/lib /home/pi/rpi/rootfs/
     XCS~$ rsync -auHWv /home/pi/rpi/mnt/usr /home/pi/rpi/rootfs/
     ```
-    
-    
+        
  1. OPTIONAL (requires [SDCard backup/reset](#sdcard-backupreset)): create `rootfs` from backup
     ```
     XCS~$ gzip -dc /home/pi/rpi/img/rpi_backup.img.gz > /home/pi/rpi/img/rpi_backup.img
@@ -202,13 +201,17 @@ Steps:
     XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
     ```
     
-1. Build the code 
+1. Build the code with the [rpi-generic-toolchain](rpi-generic-toolchain.cmake) toolchain
     ```
     XCS~$ mkdir -p ~/rpi/build/hello/pi
     XCS~$ cd ~/rpi/build/hello/pi
-    XCS~$ cmake ~/rpi/build/rpicross_notes/hello/pi
+    XCS~$ cmake \
+        -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake \
+        ~/rpi/build/rpicross_notes/hello/pi
     XCS~$ make
     ```
+   
+    > When omitting the `-D CMAKE_TOOLCHAIN_FILE` option, cmake wil build the `hellopi` with the default compiler, allowing the execution of the binairy in the VM.
     
 1. Sync and run.
     ```
