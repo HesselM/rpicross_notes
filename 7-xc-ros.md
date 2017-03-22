@@ -159,25 +159,88 @@ And for `ros_catkin_ws_cross`:
     RPI~$ mkdir -p /home/pi/rpi
     RPI~$ ln -s / /home/pi/rpi/rootfs
     ```
-1. TODO: create script for synchronisation
-
 ## Testing
 
-Source: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber(c%2B%2B)
+Testing the compiled `ROS`-libraries and `catkin` workspace
 
-1. Start `roscore`
+Prerequisites: 
+- Toolchain installed
+- ROS installed & synced
+
+Steps:
+1. Download the code in [hello/ros](hello/ros)
     ```
-    XCS~$ ssh rpizero-local
-    RPI~$ source ~/ros_catkin_ws_cross/devel_isolated/setup.bash 
-    RPI~$ roscore
+    XCS~$ mkdir -p ~/rpi/build
+    XCS~$ cd ~/rpi/build
+    XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
+    ```
+1. Source `setup.bash` in the VM.
+    ```
+    XCS~$ source ~/ros_catkin_ws_cross/devel_isolated/setup.bash 
     ```
     
-1. Open a new terminal en connect to VM. 
-1. Download `helloros` from this repository
-    > TODO
-1. Compile with toolchain (?)
-    > TODO
-1. Copy to rpi and run.
-    > TODO
-    > If `helloworld` and a time are displayed, ROS and the crosscompile environment are properly configured.
+    > ROS biniaries such as `catkin_make` are actually python scripts. Therefore we can use several libraires/scripts from the crosscompiled workspace on both the RPi and VM.
+
+1. Crosscompile the `helloros` code with the toolchain in this repositiory. 
+    ```
+    XCS~$ mkdir -p ~/rpi/build/hello/ros
+    XCS~$ cd ~/rpi/build/hello/ros
+    XCS~$ cmake \
+        -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake \
+        /home/pi/rpi/build/rpicross_notes/hello/ros/
+    XCS~$ make
+    ```
+    > Note that the toolchain invokes `XXXConfig.cmake` of the `catkin` in which ROS is build (`/home/pi/ros_catkin_ws_cross`). 
+    
+1. Transfer `helloros` to the RPi (located in `devel/lib/helloros`)
+    ```
+    XCS~$ scp devel/lib/helloros/helloros rpizero-local:~/
+    ```
+    
+1. Connext two terminals with the RPi
+   1. Launch `roscore` in the first
+       ```
+       XCS~$ ssh rpizero-local
+       RPI~$ source ~/ros_catkin_ws_cross/devel_isolated/setup.bash 
+       RPI~$ roscore
+         ... logging to /home/pi/.ros/log/9d57fc26-0efa-11e7-97cb-b827eb418803/roslaunch-rpizw-hessel.local-893.log
+         Checking log directory for disk usage. This may take awhile.
+         Press Ctrl-C to interrupt
+         Done checking log file disk usage. Usage is <1GB.
+
+         started roslaunch server http://rpizw-hessel.local:42774/
+         ros_comm version 1.12.7
+
+
+         SUMMARY
+         ========
+
+         PARAMETERS
+          * /rosdistro: kinetic
+          * /rosversion: 1.12.7
+
+         NODES
+
+         auto-starting new master
+         process[master]: started with pid [911]
+         ROS_MASTER_URI=http://rpizw-hessel.local:11311/
+
+         setting /run_id to 9d57fc26-0efa-11e7-97cb-b827eb418803
+         process[rosout-1]: started with pid [924]
+         started core service [/rosout]
+       ```
+       
+   1. Launch `helloros` in the second
+       ```
+       XCS~$ ssh rpizero-local
+       RPI~$ source ~/ros_catkin_ws_cross/devel_isolated/setup.bash 
+       RPI~$ ./helloros 
+         [ INFO] [1490185604.127013218]: hello world 0
+         [ INFO] [1490185604.226970277]: hello world 1
+         [ INFO] [1490185604.326862336]: hello world 2
+         [ INFO] [1490185604.426858394]: hello world 3
+         ...
+       ```
+       
+> Code for this test is partially taken from http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber(c%2B%2B)
 
