@@ -21,23 +21,15 @@ No additional packages should be required for the RPi or the VM.
     XCS~$ git clone https://github.com/raspberrypi/userland.git --depth 1
     ```
     > The `userland` repository is downloaded in `rootfs` because the `make install` does not copy the headers of the libraries. 
-    
-1. Clone repository (if not yet done)
-    ```
-    XCS~$ mkdir -p ~/rpi/build
-    XCS~$ cd ~/rpi/build
-    XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
-    ```
-    > The repository contains a [generic toolchain](rpi-generic-toolchain.cmake) which will be used to compile the userland libraries. See [toolchain:info](rpi-generic-toolchai.md) for more information.
-    
-1. Create build location for `userland` & build
-
+        
+1. Create build location for `userland` and build with [rpi-generic-toolchain](rpi-generic-toolchain.cmake)
+ 
     ```
     XCS~$ mkdir -p ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
     XCS~$ cd ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
     XCS~$ cmake \
       -D CMAKE_ASM_COMPILER=/usr/bin/rpizero-gcc \
-      -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake \
+      -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
       -D CMAKE_BUILD_TYPE=Release \
       /home/pi/rpi/rootfs/usr/src/userland/
     ```
@@ -93,45 +85,29 @@ Update `rootfs` on the rpi:
     XCS~$ sudo rsync -auHWv --no-perms --no-owner --no-group /home/pi/rpi/rootfs/ rpizero-local-root:/
     ```
     
-1. Or use the link-correcting script:
-    1. Clone repository (if not yet done)
-        ```
-        XCS~$ mkdir -p ~/rpi/build
-        XCS~$ cd ~/rpi/build
-        XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
-        ```
-    
-    1. Allow script to be executed (if not yet done)
-        ```
-        XCS~$ chmod +x ~/rpi/build/rpicross_notes/sync-vm-rpi.sh
-        ```
-
-    1. Sync VM-`rootfs` with RPi`
-        ```
-        XCS~$ /home/pi/rpi/build/rpicross_notes/sync-vm-rpi.sh
-        ```
+1. Or use the [link-correcting script](4-xc-setup.md#init-repository):
+    ```
+    XCS~$ /home/pi/rpicross_notes/sync-vm-rpi.sh
+    ```
 
 ## Testing
 Testing the compiled `userland`-libraries
 
 Prerequisites: 
-- Toolchain installed
-- Userland installed & synced
-- RPi Camera connected and activated
+- Toolchain [installed](4-xc-setup.md#required-packages)
+- Repository [initialised](4-xc-setup.md#init-repository)
+- Userland [installed](#compilation) & [synced](#synchronisation)
+- RPi Camera [connected and activated](3-peripherals.md#camera)
 
 Steps:
-1. Clone repository (if not yet done)
-    ```
-    XCS~$ mkdir -p ~/rpi/build
-    XCS~$ cd ~/rpi/build
-    XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
-    ```
-    
-1. Build the code 
+
+1. Build the code with the [rpi-generic-toolchain](rpi-generic-toolchain.cmake)
     ```
     XCS~$ mkdir -p ~/rpi/build/hello/raspicam
     XCS~$ cd ~/rpi/build/hello/raspicam
-    XCS~$ cmake ~/rpi/build/rpicross_notes/hello/raspicam
+    XCS~$ cmake \
+        -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
+        ~/rpicross_notes/hello/raspicam
     XCS~$ make
     ```
   
