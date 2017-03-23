@@ -143,7 +143,7 @@ Steps:
 
 1. Set bash to use the crosscompile-ros settings
     ```
-    XCS~$ ~/rpi/build/rpicross_notes/scripts/ros_cross.sh 
+    XCS~$ ~/rpicross_notes/scripts/ros_cross.sh 
     ```
     
     > ROS biniaries such as `catkin_make` are actually python scripts. Therefore we can use several libraires/scripts from the crosscompiled workspace on both the RPi and VM.
