@@ -94,11 +94,11 @@ As mentioned before, the use of `rsync` results in broken symlinks. Hence we nee
     ```
 
 1. Create `catkin` workspace for the RPi-builds.
-    > Note that this workspace is not located in the `~/rpi` or `~/rpi/rootfs` directories. Because ROS comes with its own environment management system, a seperate directory is created which is synced with the RPi in a similar way as `rootfs`. Most important is that the path of the workspace in the VM equals (`/home/pi/ros_catkin_ws_cross`) the path to which the workspace is synchronised on the RPi (which will be `/home/pi/ros_catkin_ws_cross`).
+    > Note that this workspace is not located in the `~/rpi` or `~/rpi/rootfs` directories. Because ROS comes with its own environment management system, a seperate directory is created which is synced with the RPi in a similar way as `rootfs`. Most important is that the path of the workspace in the VM equals (`/home/pi/ros/rpi_cross`) the path to which the workspace is synchronised on the RPi (which will be `/home/pi/ros/rpi_cross`).
     
     ```
-    XCS~$ mkdir -p ~/ros_catkin_ws_cross
-    XCS~$ cd ~/ros_catkin_ws_cross
+    XCS~$ mkdir -p ~/ros/rpi_cross
+    XCS~$ cd ~/ros/rpi_cross
     ```
 
 1. Download `ROS` core packages and init workspace
@@ -117,7 +117,7 @@ As mentioned before, the use of `rsync` results in broken symlinks. Hence we nee
 
 ## Synchronisation
 
-In addition to updates of `rootfs` we also need to synchronise `ros_catkin_ws_cross`.
+In addition to updates of `rootfs` we also need to synchronise `rpi_cross`.
 
 Starting with `rootfs`:
 
@@ -143,14 +143,14 @@ Starting with `rootfs`:
         ```
         XCS~$ /home/pi/rpi/build/rpicross_notes/sync-vm-rpi.sh
         ```
-And for `ros_catkin_ws_cross`:
+And for `~/ros/rpi_cross`:
 
 1. Use a direct call:
     ```
-    XCS~$ rsync -auHWv --no-perms --no-owner --no-group /home/pi/ros_catkin_ws_cross/devel_isolated rpizero-local:/home/pi/ros_catkin_ws_cross/
-    XCS~$ rsync -auHWv --no-perms --no-owner --no-group /home/pi/ros_catkin_ws_cross/src rpizero-local:/home/pi/ros_catkin_ws_cross/
+    XCS~$ rsync -auHWv --no-perms --no-owner --no-group /home/pi/ros/rpi_cross/devel_isolated rpizero-local:/home/pi/ros/rpi_cross/
+    XCS~$ rsync -auHWv --no-perms --no-owner --no-group /home/pi/ros/rpi_cross/src rpizero-local:/home/pi/ros/rpi_cross/
     ```
-    > Which copies both `devel_isolated` and `src` from `/home/pi/ros_catkin_ws_cross/*` (VM) to `/home/pi/ros_catkin_ws_cross/*` (RPi)
+    > Which copies both `devel_isolated` and `src` from `/home/pi/ros/rpi_cross/*` (VM) to `/home/pi/ros/rpi_cross/*` (RPi)
 
 1. Unfortunatly ROS includes the path to `rootfs` and subsequent libraries in its binairies. To enable ROS on the RPi to find the proper libraries, a symbolic link is created, simulating the path to `rootfs`
 
@@ -174,9 +174,9 @@ Steps:
     XCS~$ cd ~/rpi/build
     XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
     ```
-1. Source `setup.bash` in the VM.
+1. Set bash to use the crosscompile-ros settings
     ```
-    XCS~$ source ~/ros_catkin_ws_cross/devel_isolated/setup.bash 
+    XCS~$ ~/rpi/build/rpicross_notes/scripts/ros_cross.sh 
     ```
     
     > ROS biniaries such as `catkin_make` are actually python scripts. Therefore we can use several libraires/scripts from the crosscompiled workspace on both the RPi and VM.
@@ -190,7 +190,7 @@ Steps:
         /home/pi/rpi/build/rpicross_notes/hello/ros/
     XCS~$ make
     ```
-    > Note that the toolchain invokes `XXXConfig.cmake` of the `catkin` in which ROS is build (`/home/pi/ros_catkin_ws_cross`). 
+    > Note that the toolchain invokes `XXXConfig.cmake` of the `catkin` in which ROS is build (`/home/pi/ros/rpi_cross`). 
     
 1. Transfer `helloros` to the RPi (located in `devel/lib/helloros`)
     ```
@@ -201,7 +201,7 @@ Steps:
    1. Launch `roscore` in the first
        ```
        XCS~$ ssh rpizero-local
-       RPI~$ source ~/ros_catkin_ws_cross/devel_isolated/setup.bash 
+       RPI~$ source ~/ros/rpi_cross/devel_isolated/setup.bash 
        RPI~$ roscore
          ... logging to /home/pi/.ros/log/9d57fc26-0efa-11e7-97cb-b827eb418803/roslaunch-rpizw-hessel.local-893.log
          Checking log directory for disk usage. This may take awhile.
@@ -233,7 +233,7 @@ Steps:
    1. Launch `helloros` in the second
        ```
        XCS~$ ssh rpizero-local
-       RPI~$ source ~/ros_catkin_ws_cross/devel_isolated/setup.bash 
+       RPI~$ source ~/ros/rpi_cross/devel_isolated/setup.bash 
        RPI~$ ./helloros 
          [ INFO] [1490185604.127013218]: hello world 0
          [ INFO] [1490185604.226970277]: hello world 1
