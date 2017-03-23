@@ -51,3 +51,7 @@ set( PYTHON2_PACKAGES_PATH      "${RPI_ROOTFS}/usr/local/lib/python2.7/site-pack
 
 # Boost
 set( BOOST_LIBRARYDIR "${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/" CACHE STRING "")
+
+#OpenCV
+set( OpenCV_DIR       "${RPI_ROOTFS}/usr/share/OpenCV/" CACHE STRING "")
+

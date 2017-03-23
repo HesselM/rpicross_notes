@@ -425,11 +425,13 @@ Steps:
     XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
     ```
     
-1. Build the code 
+1. Build the code with the [rpi-generic-toolchain](rpi-generic-toolchain.cmake) toolchain
     ```
     XCS~$ mkdir -p ~/rpi/build/hello/ocv
     XCS~$ cd ~/rpi/build/hello/ocv
-    XCS~$ cmake ~/rpi/build/rpicross_notes/hello/ocv
+    XCS~$ cmake \
+        cmake -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake \
+        ~/rpi/build/rpicross_notes/hello/ocv
     XCS~$ make
     ```
     
