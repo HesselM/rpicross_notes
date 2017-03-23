@@ -131,7 +131,7 @@ Several crosscompile steps are simplified by the usage of scripts in this reposi
     XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
     ```
     
-1. Allow scripts to be executed (if not yet done)
+1. Allow scripts to be executed
     ```
     XCS~$ chmod +x ~/rpicross_notes/scripts/*
     ```
@@ -157,7 +157,7 @@ XCS~$:  ln -sf /home/pi/rpi/rootfs/lib/arm-linux-gnueabihf/librt.so.1 /home/pi/r
 
 > IMPORTANT: each time `rsync` is used for retrieving libraries from the RPi, the symlinks are updated to the broken links, hence they should be fixed again. It might be usefull to create a simple shell script to fix this such as [`sync-rpi-vm.sh`](scripts/sync-rpi-vm.sh):
 
-1. Sync RPi with VM-`rootfs` (from: [Init Repository](#init-repository))
+1. Sync RPi with VM-`rootfs` (from: [init repository](#init-repository))
     ```
     XCS~$ ~/rpicross_notes/scripts/sync-rpi-vm.sh
     ```
@@ -173,7 +173,7 @@ XCS~$ sudo rsync -auHWv --no-perms --no-owner --no-group /home/pi/rpi/rootfs/ rp
 
 It should be noted that this command also updates the 'corrected' symbolic links. Therefore we need to fix these on the RPi. Using [`sync-vm-rpi.sh`](sync-vm-rpi.sh), this correction is done for us. 
     
-1. Sync VM-`rootfs` with RPi` (from: [Init Repository](#init-repository))
+1. Sync VM-`rootfs` with RPi` (from: [init repository](#init-repository))
     ```
     XCS~$ ~/rpicross_notes/scripts/sync-vm-rpi.sh
     ```
@@ -185,7 +185,7 @@ Prerequisites:
 
 Steps:
 
-1. Build the code with the [rpi-generic-toolchain](rpi-generic-toolchain.cmake) toolchain
+1. Build the code with the [rpi-generic-toolchain](rpi-generic-toolchain.cmake)
     ```
     XCS~$ mkdir -p ~/rpi/build/hello/pi
     XCS~$ cd ~/rpi/build/hello/pi
