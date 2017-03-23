@@ -22,51 +22,31 @@ As ROS has its own package-management system and eco system, multiple dependenci
     > The call to `sudo apt-get install` on the RPi might take a while as approximately 250Mb extracted and installed.
     > Installing `rospkg` and `catkin_pkg` may produce several errors when building `yaml` support while finishing gracefully. My guess is that all might be fine, but perhaps some future tests might show some issues. 
     
-1. Sync packages/headers from RPi to the VM-`rootfs`
-    1. Clone repository (if not yet done)
-        ```
-        XCS~$ mkdir -p ~/rpi/build
-        XCS~$ cd ~/rpi/build
-        XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
-        ```
+1. Sync [RPi libs to VM](4-xc-setup.md#from-rpi-to-vm)
+    ```
+    XCS~$ ~/rpicross_notes/scripts/sync-rpi-vm.sh
+    ```
     
-    1. Allow script to be executed (if not yet done)
-        ```
-        XCS~$ chmod +x ~/rpi/build/rpicross_notes/sync-rpi-vm.sh
-        ```
-
-    1. Sync RPi with VM-`rootfs`
-        ```
-        XCS~$ /home/pi/rpi/build/rpicross_notes/sync-rpi-vm.sh
-        ```
-
 ## Compilation
 
 As mentioned before, the use of `rsync` results in broken symlinks. Hence we need to restore the ones required for `ROS`:
 
 1. Restore symlinks after syncing
 
-    > When using the `sync`-scripts (provided in this repo) are used, this step can be omitted.
+    > When using the [`sync`-scripts](scripts), this step can be omitted.
 
     ```
     XCS~$ ln -sf /home/pi/rpi/rootfs/lib/arm-linux-gnueabihf/librt.so.1 /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/librt.so
     XCS~$ ln -sf /home/pi/rpi/rootfs/lib/arm-linux-gnueabihf/libbz2.so.1.0 /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libbz2.so
     XCS~$ ln -sf /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libpython2.7.so.1.0 /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libpython2.7.so
     ```
-      
-1. Download (if not yet done) our generic toolchain for compiling ROS. 
-    ```
-    XCS~$ mkdir -p ~/rpi/build
-    XCS~$ cd ~/rpi/build
-    XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
-    ```
-
-1. `ROS` uses `gtest` for several tests. The `apt-get` call for `libgtest-dev` only installs the source for `gtest`, therefore we need to compile it for ourselfs to generate the libraries. 
+    
+1. `ROS` uses `gtest` for several tests. The `apt-get` call for `libgtest-dev` only installs the source for `gtest`, therefore we need to crosscompile it for ourselfs to generate the libraries, using [rpi-generic-toolchain](rpi-generic-toolchain.cmake).
     ```
     XCS~$ mkdir -p ~/rpi/build/gtest
     XCS~$ cd ~/rpi/build/gtest
     XCS~$ cmake \
-       -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake \
+       -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
        /home/pi/rpi/rootfs/usr/src/gtest
     XCS~$ make
     XCS~$ mv *.a /home/pi/rpi/rootfs/usr/lib
@@ -74,14 +54,14 @@ As mentioned before, the use of `rsync` results in broken symlinks. Hence we nee
     > SOURCE: https://www.eriksmistad.no/getting-started-with-google-test-on-ubuntu/
     > There is not `make install` so the generated libraries need to be copied manually to the appropriate folder.
     
-1. We also need an utility called `console_bridge`, which we compile and install from source too.
+1. We also need an utility called `console_bridge`, which we compile and install from source too. Again we use [rpi-generic-toolchain](rpi-generic-toolchain.cmake).
     ```
     XCS~$ cd ~/rpi/src
     XCS~$ git clone https://github.com/ros/console_bridge
     XCS~$ mkdir -p ~/rpi/build/console_bridge
     XCS~$ cd ~/rpi/build/console_bridge
     XCS~$ cmake \
-        -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake \
+        -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
         /home/pi/rpi/src/console_bridge
     XCS~$ make
     XCS~$ make install DESTDIR=/home/pi/rpi/rootfs
@@ -111,7 +91,7 @@ As mentioned before, the use of `rsync` results in broken symlinks. Hence we nee
     ```
     XCS~$ ./src/catkin/bin/catkin_make_isolated \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake
+        -DCMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake
     ```
     > This creates two folders: `devel_isolated` and `build_isolated` of which the latter can be ignored.
 
@@ -125,24 +105,11 @@ Starting with `rootfs`:
     ```
     XCS~$ sudo rsync -auHWv --no-perms --no-owner --no-group /home/pi/rpi/rootfs/ rpizero-local-root:/
     ```
-    
-1. Or use the link-correcting script:
-    1. Clone repository (if not yet done)
-        ```
-        XCS~$ mkdir -p ~/rpi/build
-        XCS~$ cd ~/rpi/build
-        XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
-        ```
-    
-    1. Allow script to be executed (if not yet done)
-        ```
-        XCS~$ chmod +x ~/rpi/build/rpicross_notes/sync-vm-rpi.sh
-        ```
+1. Or use the [link-correcting script](4-xc-setup.md#init-repository):
+    ```
+    XCS~$ /home/pi/rpicross_notes/scripts/sync-vm-rpi.sh
+    ```
 
-    1. Sync VM-`rootfs` with RPi`
-        ```
-        XCS~$ /home/pi/rpi/build/rpicross_notes/sync-vm-rpi.sh
-        ```
 And for `~/ros/rpi_cross`:
 
 1. Use a direct call:
@@ -152,28 +119,28 @@ And for `~/ros/rpi_cross`:
     ```
     > Which copies both `devel_isolated` and `src` from `/home/pi/ros/rpi_cross/*` (VM) to `/home/pi/ros/rpi_cross/*` (RPi)
 
-1. Unfortunatly ROS includes the path to `rootfs` and subsequent libraries in its binairies. To enable ROS on the RPi to find the proper libraries, a symbolic link is created, simulating the path to `rootfs`
+1. Or use this script:
+    ```
+    XCS~$ /home/pi/rpicross_notes/scripts/sync-ros.sh
+    ```
 
+1. Unfortunatly ROS includes the path to `rootfs` and subsequent libraries in its binairies. To enable ROS on the RPi to find the proper libraries, a symbolic link is created, simulating the path to `rootfs`
     ```
     XCS~$ ssh rpizero-local
     RPI~$ mkdir -p /home/pi/rpi
     RPI~$ ln -s / /home/pi/rpi/rootfs
     ```
+    
 ## Testing
 
 Testing the compiled `ROS`-libraries and `catkin` workspace
 
 Prerequisites: 
-- Toolchain installed
-- ROS installed & synced
+- Toolchain [installed](4-xc-setup.md#required-packages)
+- ROS [compiled](#compilation) & [synced](#synchronisation)
 
 Steps:
-1. Download the code in [hello/ros](hello/ros)
-    ```
-    XCS~$ mkdir -p ~/rpi/build
-    XCS~$ cd ~/rpi/build
-    XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
-    ```
+
 1. Set bash to use the crosscompile-ros settings
     ```
     XCS~$ ~/rpi/build/rpicross_notes/scripts/ros_cross.sh 
@@ -186,8 +153,8 @@ Steps:
     XCS~$ mkdir -p ~/rpi/build/hello/ros
     XCS~$ cd ~/rpi/build/hello/ros
     XCS~$ cmake \
-        -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake \
-        /home/pi/rpi/build/rpicross_notes/hello/ros/
+        -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
+        ~/rpicross_notes/hello/ros/
     XCS~$ make
     ```
     > Note that the toolchain invokes `XXXConfig.cmake` of the `catkin` in which ROS is build (`/home/pi/ros/rpi_cross`). 
