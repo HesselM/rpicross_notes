@@ -29,7 +29,7 @@ No additional packages should be required for the RPi or the VM.
     XCS~$ cd ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
     XCS~$ cmake \
       -D CMAKE_ASM_COMPILER=/usr/bin/rpizero-gcc \
-      -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake \
+      -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
       -D CMAKE_BUILD_TYPE=Release \
       /home/pi/rpi/rootfs/usr/src/userland/
     ```
@@ -87,7 +87,7 @@ Update `rootfs` on the rpi:
     
 1. Or use the [link-correcting script](4-xc-setup.md#init-repository):
     ```
-    XCS~$ /home/pi/rpi/build/rpicross_notes/sync-vm-rpi.sh
+    XCS~$ /home/pi/rpicross_notes/sync-vm-rpi.sh
     ```
 
 ## Testing
