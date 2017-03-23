@@ -26,8 +26,7 @@ set( RPI_LIBRARY_DIR "${RPI_LIBRARY_DIR} -Wl,-rpath ${RPI_ROOTFS}/lib/arm-linux-
 set( RPI_PKGCONFIG_LIBDIR "${RPI_PKGCONFIG_LIBDIR}:${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/pkgconfig" )
 set( RPI_PKGCONFIG_LIBDIR "${RPI_PKGCONFIG_LIBDIR}:${RPI_ROOTFS}/usr/share/pkgconfig" )
 set( RPI_PKGCONFIG_LIBDIR "${RPI_PKGCONFIG_LIBDIR}:${RPI_ROOTFS}/opt/vc/lib/pkgconfig" )
-set( RPI_PKGCONFIG_LIBDIR "${RPI_PKGCONFIG_LIBDIR}:/home/pi/ros_catkin_ws_cross/devel_isolated" )
-
+set( RPI_PKGCONFIG_LIBDIR "${RPI_PKGCONFIG_LIBDIR}:/home/pi/ros/rpi_cross/devel_isolated" )
 
 # C/CXX flags
 set( CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS} ${RPI_INCLUDE_DIR}" CACHE STRING "" FORCE)
