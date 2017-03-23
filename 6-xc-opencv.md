@@ -21,24 +21,6 @@ To crosscompile `OpenCV`, only packages on the RPi need te be installed.
     > Python and numpy need to be installed so `OpenCV` can create the Pythonbindings.
     > Other libraries are used to process images, generate GUI's (via X-server) and other imaging processes.
     
-1. Sync packages/headers from RPi to the VM-`rootfs`
-    1. Clone repository (if not yet done)
-        ```
-        XCS~$ mkdir -p ~/rpi/build
-        XCS~$ cd ~/rpi/build
-        XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
-        ```
-    
-    1. Allow script to be executed (if not yet done)
-        ```
-        XCS~$ chmod +x ~/rpi/build/rpicross_notes/sync-rpi-vm.sh
-        ```
-
-    1. Sync RPi with VM-`rootfs`
-        ```
-        XCS~$ /home/pi/rpi/build/rpicross_notes/sync-rpi-vm.sh
-        ```
-
 ## Compilation
 1. Download and unzip the `OpenCV` sources.
     ```
@@ -360,23 +342,10 @@ Update `rootfs` on the rpi:
     XCS~$ sudo rsync -auHWv --no-perms --no-owner --no-group /home/pi/rpi/rootfs/ rpizero-local-root:/
     ```
     
-1. Or use the link-correcting script:
-    1. Clone repository (if not yet done)
-        ```
-        XCS~$ mkdir -p ~/rpi/build
-        XCS~$ cd ~/rpi/build
-        XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
-        ```
-    
-    1. Allow script to be executed (if not yet done)
-        ```
-        XCS~$ chmod +x ~/rpi/build/rpicross_notes/sync-vm-rpi.sh
-        ```
-
-    1. Sync VM-`rootfs` with RPi`
-        ```
-        XCS~$ /home/pi/rpi/build/rpicross_notes/sync-vm-rpi.sh
-        ```
+1. Or use the [link-correcting script](4-xc-setup.md#init-repository):
+    ```
+    XCS~$ /home/pi/rpicross_notes/sync-vm-rpi.sh
+    ```
 
 ## Python Bindings
 
@@ -412,26 +381,23 @@ Update `rootfs` on the rpi:
 Testing the compiled `OpenCV`-libraries
 
 Prerequisites: 
-- Toolchain installed
-- Userland installed & synced
-- OpenCV installed & synced
+Prerequisites: 
+- Toolchain [installed](4-xc-setup.md#required-packages)
+- Repository [initialised](4-xc-setup.md#init-repository)
+- Userland [installed](5-xc-userland.md#compilation) & [synced](5-xc-userland.md#synchronisation)
+- OpenCV [installed](#compilation) & [synced](#synchronisation)
+- RPi Camera [connected and activated](3-peripherals.md#camera)
 - An image on the rpi. (e.g. `testcam.jpg`).
 
 Steps:
-1. Download the code in [hello/ocv](hello/ocv).
-    ```
-    XCS~$ mkdir -p ~/rpi/build
-    XCS~$ cd ~/rpi/build
-    XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
-    ```
-    
+
 1. Build the code with the [rpi-generic-toolchain](rpi-generic-toolchain.cmake) toolchain
     ```
     XCS~$ mkdir -p ~/rpi/build/hello/ocv
     XCS~$ cd ~/rpi/build/hello/ocv
     XCS~$ cmake \
-        cmake -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpi/build/rpicross_notes/rpi-generic-toolchain.cmake \
-        ~/rpi/build/rpicross_notes/hello/ocv
+        cmake -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
+        ~/rpicross_notes/hello/ocv
     XCS~$ make
     ```
     
