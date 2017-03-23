@@ -386,7 +386,6 @@ Prerequisites:
 - Repository [initialised](4-xc-setup.md#init-repository)
 - Userland [installed](5-xc-userland.md#compilation) & [synced](5-xc-userland.md#synchronisation)
 - OpenCV [installed](#compilation) & [synced](#synchronisation)
-- RPi Camera [connected and activated](3-peripherals.md#camera)
 - An image on the rpi. (e.g. `testcam.jpg`).
 
 Steps:
