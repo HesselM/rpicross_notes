@@ -36,6 +36,7 @@ XCS~$ sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-de
     ```
 
 1. Compile
+    ```
     XCS~$ cmake \
         -D BUILD_TESTS=NO \
         -D BUILD_PERF_TESTS=NO \
@@ -215,5 +216,6 @@ Steps:
     
     As a result, a window should be opened displaying the image. 
     > Depending on the size of the image, this may take a while.
+    > Make sure you are connected to the VM with X-server (`ssh -X`) enabled.
 
 > Code for this test is taken from http://docs.opencv.org/3.2.0/db/deb/tutorial_display_image.html
