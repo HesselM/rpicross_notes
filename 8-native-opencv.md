@@ -6,7 +6,7 @@ The described steps are similair to [6-xc-opencv.md](6-xc-opencv.md) and are tak
 
 ## Required Packages
 
-Some packages might already be installed, but in general these additional packages are needed:
+Some packages might already be installed, but in general these are needed:
 
 ```
 XCS~$ sudo apt-get install build-essential
@@ -191,21 +191,14 @@ XCS~$ sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-de
 Testing the compiled `OpenCV`-libraries
 
 Prerequisites: 
-- OpenCV installed in VM
+- OpenCV [installed in VM](#compilation)
 
 Steps:
-1. Download the code in [hello/ocv](hello/ocv).
+1. Build the code *without* the [rpi-generic-toolchain](rpi-generic-toolchain.cmake) toolchain
     ```
-    XCS~$ mkdir -p ~/rpi/build
-    XCS~$ cd ~/rpi/build
-    XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
-    ```
-    
-1. Build the code 
-    ```
-    XCS~$ mkdir -p ~/build/hello/ocv
-    XCS~$ cd ~/build/hello/ocv
-    XCS~$ cmake ~/rpi/build/rpicross_notes/hello/ocv
+    XCS~$ mkdir -p ~/rpi/build/hello/ocv
+    XCS~$ cd ~/rpi/build/hello/ocv
+    XCS~$ cmake rpicross_notes/hello/ocv
     XCS~$ make
     ```
     
