@@ -20,7 +20,12 @@ To crosscompile `OpenCV`, only packages on the RPi need te be installed.
     
     > Python and numpy need to be installed so `OpenCV` can create the Pythonbindings.
     > Other libraries are used to process images, generate GUI's (via X-server) and other imaging processes.
-    
+
+1. Sync [RPi libs to VM](4-xc-setup.md#from-rpi-to-vm)
+    ```
+    XCS~$ ~/rpicross_notes/scripts/sync-rpi-vm.sh
+    ```
+
 ## Compilation
 1. Download and unzip the `OpenCV` sources.
     ```
