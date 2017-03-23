@@ -386,7 +386,6 @@ Update `rootfs` on the rpi:
 Testing the compiled `OpenCV`-libraries
 
 Prerequisites: 
-Prerequisites: 
 - Toolchain [installed](4-xc-setup.md#required-packages)
 - Repository [initialised](4-xc-setup.md#init-repository)
 - Userland [installed](5-xc-userland.md#compilation) & [synced](5-xc-userland.md#synchronisation)
