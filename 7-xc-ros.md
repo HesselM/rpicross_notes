@@ -114,8 +114,8 @@ And for `~/ros/rpi_cross`:
 
 1. Use a direct call:
     ```
-    XCS~$ rsync -auHWv --no-perms --no-owner --no-group /home/pi/ros/rpi_cross/devel_isolated rpizero-local:/home/pi/ros/rpi_cross/
-    XCS~$ rsync -auHWv --no-perms --no-owner --no-group /home/pi/ros/rpi_cross/src rpizero-local:/home/pi/ros/rpi_cross/
+    XCS~$ rsync -auHWv --no-perms --no-owner --no-group /home/pi/ros/rpi_cross/devel_isolated rpizero-local:/
+    XCS~$ rsync -auHWv --no-perms --no-owner --no-group /home/pi/ros/rpi_cross/src rpizero-local:/
     ```
     > Which copies both `devel_isolated` and `src` from `/home/pi/ros/rpi_cross/*` (VM) to `/home/pi/ros/rpi_cross/*` (RPi)
 
@@ -143,7 +143,7 @@ Steps:
 
 1. Set bash to use the crosscompile-ros settings
     ```
-    XCS~$ ~/rpi/build/rpicross_notes/scripts/ros_cross.sh 
+    XCS~$ source ~/rpicross_notes/scripts/ros_cross
     ```
     
     > ROS biniaries such as `catkin_make` are actually python scripts. Therefore we can use several libraires/scripts from the crosscompiled workspace on both the RPi and VM.
@@ -157,7 +157,7 @@ Steps:
         ~/rpicross_notes/hello/ros/
     XCS~$ make
     ```
-    > Note that the toolchain invokes `XXXConfig.cmake` of the `catkin` in which ROS is build (`/home/pi/ros/rpi_cross`). 
+    > Note that the toolchain sets the proper path for pkg-config (`/home/pi/ros/rpi_cross/devel_isolated`) to find `XXXConfig.cmake` files for ROS. 
     
 1. Transfer `helloros` to the RPi (located in `devel/lib/helloros`)
     ```
