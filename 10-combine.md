@@ -75,8 +75,8 @@ ROS nodes connect to a master (`roscore`) via a tcp-connection. This allows a RO
         ```
         XCS~$ ssh rpizero-local
         RPI~$ export ROS_MASTER_URI=http://<HOSTIP>:11311
-        XCS~$ source ~/source ros/src_cross/devel_isolated/setup.bash
-        XCS~$ ./publisher
+        RPI~$ source ~/source ros/src_cross/devel_isolated/setup.bash
+        RPI~$ ./publisher
         ```
 1. When succesfull, you should see:
     1. Publisher (RPi):
