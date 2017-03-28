@@ -35,8 +35,14 @@ ROS nodes connect to a master (`roscore`) via a tcp-connection. This allows a RO
     - Guest IP: (leave empty)
     - Guest Port: 11311
     
-### Remote `ROS_MASTER_URI` : Test
+### Remote `ROS_MASTER_URI` : Test 1
 
+1. First we need to determine the IP of the 'HOST~$' on which the VM is active. On unix systems we simply can use:
+    ```
+    HOST~$ hostname
+      Hessels-MacBook-Pro.local
+    ```
+    
 1. Compile for VM
     ```
     XCS~$ source ~/rpicross_notes/scripts/ros-native
@@ -49,39 +55,40 @@ ROS nodes connect to a master (`roscore`) via a tcp-connection. This allows a RO
 1. Compile for RPi
     ```
     XCS~$ source ~/rpicross_notes/scripts/ros-cross
-    XCS~$ mkdir -p ~/rpi/build/ros/pub_local
-    XCS~$ cd ~/rpi/build/ros/pub_local
+    XCS~$ mkdir -p ~/ros/chatter_cross
+    XCS~$ cd ~/ros/chatter_cross
     XCS~$ cmake \
         -DCMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
         ~/rpicross_notes/ros/pub_local
     XCS~$ make
-    XCS~$ scp devel/lib/local_chatter/publisher rpizero-local:~/
+    XCS~$ scp /home/pi/ros/chatter_cross/devel rpizero-local:/
     ```
 
 1. Open three terminals in the VM:
     1. Compile test code & start ros
         ```
-        XCS~$ source ~/rpicross_notes/scripts/ros-native
-        XCS~$ source ~/build/ros/pub_local/devel/setup.bash
+        XCS~$ source ~/rpicross_notes/scripts/ros-native <hostname> <rpiname>
         XCS~$ roscore
         ```
+        > The values `<hostname>` and `<rpiname>` need to be set in order for the RPi to connect properly to the VM via the HOST. Using `<hostname>`, replaces the value of `ROS_MASTER_URI` locally with the IP of the `HOST~$`. The value `<rpiname>` is used to transfer and environment-loader (in `~/ros/rossetup-rpi`) to the RPi, to set the proper `ROS_MASTER_URI` IP. 
+        
     1. After starting ros, start subscriber
         ```
-        XCS~$ source ~/rpicross_notes/scripts/ros-native
-        XCS~$ source ~/build/ros/pub_local/devel/setup.bash
+        XCS~$ source ~/rpicross_notes/scripts/ros-native <hostname>
         XCS~$ rosrun local_chatter subscriber
         ```
+        > Note that we do not need to update the RPi.
+        
     1.  Start publisher on rpi       
         ```
         XCS~$ ssh rpizero-local
-        RPI~$ export ROS_MASTER_URI=http://<HOSTIP>:11311
-        RPI~$ source ~/source ros/src_cross/devel_isolated/setup.bash
-        RPI~$ ./publisher
+        RPI~$ source ~/ros/rossetup-rpi
+        RPI~$ rosrun local_chatter publisher
         ```
 1. When succesfull, you should see:
     1. Publisher (RPi):
         ```
-        RPI~$ ./publisher 
+        RPI~$ rosrun local_chatter publisher 
           [ INFO] [1490361500.794854734]: hello world 0
           [ INFO] [1490361500.894476970]: hello world 1
           [ INFO] [1490361500.994248202]: hello world 2
