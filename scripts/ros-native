@@ -1,30 +1,39 @@
 #!/bin/bash
 
 #setup master
-host=$1
-if [ -z "$host" ]; then
-  host="localhost"
-fi
 
-MASTER_HOST=$(gethostip -d "$host")
-MASTER_PORT="11311"
+if [ -z "$1" ]; then
+  echo "Not updating ROS_MASTER_URI";
+else
+
+  #Update Master
+  MASTER_HOST=$(gethostip -d "$host")
+  MASTER_PORT="11311"
+  export ROS_MASTER_URI="http://$MASTER_HOST:$MASTER_PORT"
+  echo "Setting ROS_MASTER_URI:$ROS_MASTER_URI ($1)"
+
+  #update RPi
+  # Do we have a setupfile?
+  if [ ! -f ~/ros/rossetup-rpi ]; then
+      cp ~/rpicross_notes/scripts/rossetup-rpi ~/ros/rossetup-rpi
+  fi
+
+  # Set ROS_MASTER_URI
+  sed -i "s|.*ROS_MASTER_URI.*|export\ ROS_MASTER_URI=$ROS_MASTER_URI|g" ~/ros/rossetup-rpi
+
+  # Update on rpi
+  if [ -z "$2" ]; then
+    echo "Note Updating RPi"
+  else
+    echo "Updating RPi ($2)"
+    scp -o StrictHostKeyChecking=no ~/ros/rossetup-rpi $2:~/ros/
+  fi
+fi
 
 #source ROS-settings
-export ROS_MASTER_URI="http://$MASTER_HOST:$MASTER_PORT"
+echo "Sourcing ROS-files.."
 source /opt/ros/kinetic/setup.bash
-
-#update RPi
-
-# Do we have a setupfile?
-if [ ! -f ~/ros/rossetup-rpi ]; then
-    cp ~/rpicross_notes/scripts/rossetup-rpi ~/ros/rossetup-rpi
-fi
-
-# Set ROS_MASTER_URI
-sed -i "s|.*ROS_MASTER_URI.*|export\ ROS_MASTER_URI=$ROS_MASTER_URI|g" ~/ros/rossetup-rpi
-
-# Update on rpi
-scp -o StrictHostKeyChecking=no ~/ros/rossetup-rpi rpizero-local:~/ros/
+source $(find ~/build/ros -name "devel*" -type d -exec echo {}/setup.bash \; 2>/dev/null) 2>/dev/null
 
 #get rpi-hostname from ssh-config
 #RPI_ADDR=$(ssh -v $RPI_SSH -o BatchMode=yes -o ConnectionAttempts=1 -o StrictHostKeyChecking=no true ' ' 2>&1 | grep 'Authenticated to' | cut -d' ' -f3)
