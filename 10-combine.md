@@ -37,7 +37,7 @@ ROS nodes connect to a master (`roscore`) via a tcp-connection. This allows a RO
     
 ### Remote `ROS_MASTER_URI` : Test 1
 
-1. First we need to determine the IP of the 'HOST~$' on which the VM is active. On unix systems we simply can use:
+1. First we need to determine the IP of the `HOST~$` on which the VM is active. On unix systems we simply can use:
     ```
     HOST~$ hostname
       Hessels-MacBook-Pro.local
@@ -70,7 +70,10 @@ ROS nodes connect to a master (`roscore`) via a tcp-connection. This allows a RO
         XCS~$ source ~/rpicross_notes/scripts/ros-native <hostname> <rpiname>
         XCS~$ roscore
         ```
-        > The values `<hostname>` and `<rpiname>` need to be set in order for the RPi to connect properly to the VM via the HOST. Using `<hostname>`, replaces the value of `ROS_MASTER_URI` locally with the IP of the `HOST~$`. The value `<rpiname>` is used to transfer and environment-loader (in `~/ros/rossetup-rpi`) to the RPi, to set the proper `ROS_MASTER_URI` IP. 
+        > The values `<hostname>` and `<rpiname>` need to be set in order for the RPi to connect properly to the VM via the HOST. Using `<hostname>`, replaces the value of `ROS_MASTER_URI` locally with the IP of the `HOST~$`. The value `<rpiname>` is used to transfer and environment-loader (in `~/ros/rossetup-rpi`) to the RPi, to set the proper `ROS_MASTER_URI` IP. In my test-setup the full `source`-command becomes:
+        ```
+        XCS~$ source ~/rpicross_notes/scripts/ros-native Hessels-MacBook-Pro.local rpizero-local
+        ```
         
     1. After starting ros, start subscriber
         ```
