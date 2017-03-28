@@ -3,11 +3,11 @@
 #setup master
 
 if [ -z "$1" ]; then
-  echo "Not updating ROS_MASTER_URI";
+  echo "!! - Not updating ROS_MASTER_URI";
 else
 
   #Update Master
-  MASTER_HOST=$(gethostip -d "$host")
+  MASTER_HOST=$(gethostip -d "$1")
   MASTER_PORT="11311"
   export ROS_MASTER_URI="http://$MASTER_HOST:$MASTER_PORT"
   echo "Setting ROS_MASTER_URI:$ROS_MASTER_URI ($1)"
@@ -23,7 +23,7 @@ else
 
   # Update on rpi
   if [ -z "$2" ]; then
-    echo "Note Updating RPi"
+    echo "!! - Not Updating RPi"
   else
     echo "Updating RPi ($2)"
     scp -o StrictHostKeyChecking=no ~/ros/rossetup-rpi $2:~/ros/
