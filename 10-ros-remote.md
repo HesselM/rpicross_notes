@@ -52,9 +52,9 @@ In a similar manner as the SSH-setting (see [Installation](01-setup.md#installat
 1. Compile for VM
     ```
     XCS~$ source ~/rpicross_notes/scripts/ros-native
-    XCS~$ mkdir -p ~/build/ros/pub_local
-    XCS~$ cd ~/build/ros/pub_local
-    XCS~$ cmake ~/rpicross_notes/ros/pub_local
+    XCS~$ mkdir -p ~/build/ros/chatter
+    XCS~$ cd ~/build/ros/chatter
+    XCS~$ cmake ~/rpicross_notes/ros/chatter
     XCS~$ make
     ```
 
@@ -65,9 +65,9 @@ In a similar manner as the SSH-setting (see [Installation](01-setup.md#installat
     XCS~$ cd ~/ros/chatter_cross
     XCS~$ cmake \
         -DCMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
-        ~/rpicross_notes/ros/pub_local
+        ~/rpicross_notes/ros/chatter
     XCS~$ make
-    XCS~$ scp /home/pi/ros/chatter_cross/devel rpizero-local:/
+    XCS~$ ~/rpicross_notes/scripts/sync-ros.sh
     ```
     
 # Testing
@@ -85,15 +85,16 @@ In a similar manner as the SSH-setting (see [Installation](01-setup.md#installat
         XCS~$ source ~/rpicross_notes/scripts/ros-native <hostname> <rpiname>
         XCS~$ roscore
         ```
-        > The values `<hostname>` and `<rpiname>` need to be set in order for the RPi to connect properly to the VM via the HOST. This scripts fetches the IP of `<hostname>`, updates `ROS_MASTER_URI` locally, sends the update via `~/ros/rossetup-rpi` to `<rpiname>` using scp and finally sources ROS files on the VM. For my setup the full command is:
+        > The values `<hostname>` and `<rpiname>` need to be set in order for the RPi to connect properly to the VM via the HOST. This scripts fetches the IP of `<hostname>`, updates `ROS_MASTER_URI` locally, sends the update via `~/ros/rossetup-rpi` to `<rpiname>` and finally sources ROS files on the VM. For my setup the full command is:
         ```
         XCS~$ source ~/rpicross_notes/scripts/ros-native Hessels-MacBook-Pro.local rpizero-local
         ```
         > Note that `roscore` complains about the IP of `ROS_MASTER_URI` as it differs from the IP of the VM. More about this in issue #7 .
+
     1. After starting ROS, start the subscriber-node
         ```
         XCS~$ source ~/rpicross_notes/scripts/ros-native <hostname>
-        XCS~$ rosrun local_chatter subscriber
+        XCS~$ rosrun chatter subscriber
         ```
         > Note that we do not need to update the RPi anymore. 
         
@@ -101,14 +102,14 @@ In a similar manner as the SSH-setting (see [Installation](01-setup.md#installat
         ```
         XCS~$ ssh rpizero-local
         RPI~$ source ~/ros/rossetup-rpi
-        RPI~$ rosrun local_chatter publisher
+        RPI~$ rosrun chatter publisher
         ```
-        > The contents of `~/ros/rossetup-rpi` are created by copying and adapting `~/rpicross_notes/scripts/rossetup-rpi` in the VM.
+        > The contents of `~/ros/rossetup-rpi` are created by copying and adapting `~/rpicross_notes/ros/rossetup-rpi` in the VM.
         
 1. When succesfull, you should see:
     1. Publisher (RPi):
         ```
-        RPI~$ rosrun local_chatter publisher 
+        RPI~$ rosrun chatter publisher 
           [ INFO] [1490361500.794854734]: hello world 0
           [ INFO] [1490361500.894476970]: hello world 1
           [ INFO] [1490361500.994248202]: hello world 2
@@ -122,7 +123,7 @@ In a similar manner as the SSH-setting (see [Installation](01-setup.md#installat
         ```
     1. Subscriber (VM):
         ```
-        XCS~$ rosrun local_chatter subscriber
+        XCS~$ rosrun chatter subscriber
           [ INFO] [1490361501.387607575]: I heard: [hello world 5]
           [ INFO] [1490361501.486619994]: I heard: [hello world 6]
           [ INFO] [1490361501.588621491]: I heard: [hello world 7]
@@ -172,12 +173,11 @@ So, the steps to execute the example become:
         
     1. Start subscriber in the second terminal
         ```
-        XCS~$ rosrun local_chatter subscriber
+        XCS~$ rosrun chatter subscriber
         ```
         
     1.  Start publisher on RPi       
         ```
         XCS~$ ssh rpizero-local
-        RPI~$ rosrun local_chatter publisher
+        RPI~$ rosrun chatter publisher
         ```
-
