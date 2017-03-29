@@ -3,20 +3,23 @@
 This repository is a personal guide to setup a cross compilation environment to compile OpenCV and ROS programs for a Raspberry Pi. It contains details on how to setup a VirtualBox, configure SSH / X-server / network settings, how to sync syncing / back up files to the Raspberry Pi and of course how to compile and install OpenCV and ROS. Experience with VirtualBox, C, Python and the terminal/nano are assumed. Usage of external keyboards or monitors for the Raspberry Pi is not required: setup is done via card mounting or SSH. 
 
 At the end of this list you should have:
-- A Virtualbox running Ubuntu Server 16.04 LTS, with:
+- A Virtualbox (VM) running Ubuntu Server 16.04 LTS, with:
   - SSH connectivity from HOST to GUEST and from GUEST to the Raspberry Pi
   - Crosscompilation environment including:
-    - Toolchain /  compilers to compile for the Raspberry Pi
+    - Toolchain /  compilers to compile for the Raspberry Pi (zero)
     - Userland libraries (GPU support for the Raspberry Pi)
-    - OpenCV with additional modules and library support such as GTK+
-    - Synchronisation tools to update the Raspberry Pi with our compiled libraries.
-  - ROS Master environment [TODO]
-- A Raspberry Pi running Jessie Lite, including
-  - X-Server
+    - OpenCV 3.2 with additional modules, library support such as GTK+ and Python bindings
+    - ROS-comm with Python bindings
+    - Synchronisation tools to update the Raspberry Pi with the (cross) compiled libraries.
+  - Native environment supporting:
+    - ROS with Python bindings
+    - OpenCV 3.2 with Python bindings
+- A Raspberry Pi (zero) (RPi) running Jessie Lite, including
   - OpenCV with Python Bindings
+  - ROS-comm with Python Bindings
   - Running PiCamera
   - i2c and a Real Time Clock (RTC)
-  - ROS and autoset sccript to connect with an external ROS-Master. [TODO]
+- A VM able to run `roscore` to which the Raspberry Pi (RPi) can connect as a node. 
 
 Before the required steps are explained, some disclaimers:
 
@@ -51,23 +54,34 @@ The notes are more or less in chronological order, hence start from top the bott
 # Index
 
 Information:
-- [Setup VM and RPi](1-setup.md)
-- [Setup Network/SSH](2-network.md)
-- [Setup RPi Peripherals](3-xc-peripherals.md)
-- [Setup Crosscompile environment](4-xc-setup.md)
-- [Compile Userland](5-xc-userland.md)
-- [Compile OpenCV](6-xc-opencv.md)
-- [Compile ROS](7-xc-ros.md)
+1. [Setup VM and RPi](01-setup.md)
+1. [Setup Network/SSH](02-network.md)
+1. [Setup RPi Peripherals](03-xc-peripherals.md)
+1. [Setup Crosscompile environment](04-xc-setup.md)
+1. [Crosscompile and Install Userland](05-xc-userland.md)
+1. [Crosscompile and Install OpenCV](06-xc-opencv.md)
+1. [Crosscompile and Install ROS](07-xc-ros.md)
+1. [Compile and Install OpenCV](08-native-opencv.md)
+1. [Compile and Install ROS](09-native-ros.md)
+1. [Remote ROS (RPi node and VM master)](10-ros-remote.md)
 
 Test-code:
 - Setup: [hello/pi](hello/pi)
 - Userland: [hello/raspicam](hello/raspicam)
 - OpenCV: [hello/ocv](hello/ocv)
+- ROS: [hello/ros](hello/ros)
+
+ROS publish-subscriber (for remote operation)
+- [chatter](ros/chatter)
 
 Tools:
 - Generic Toolchain: [rpi-generic-toolchain.cmake](rpi-generic-toolchain.cmake)
-- Sync RPi to VM: [sync-rpi-vm.sh](sync-rpi-vm.sh) (see: [setup](4-xc-setup.md))
-- Sync VM to RPi: [sync-vm-rpi.sh](sync-vm-rpi.sh) (see: [setup](4-xc-setup.md))
+- Sync RPi to VM: [sync-rpi-vm.sh](scripts/sync-rpi-vm.sh) (see: [setup](04-xc-setup.md))
+- Sync VM to RPi: [sync-vm-rpi.sh](scripts/sync-vm-rpi.sh) (see: [setup](04-xc-setup.md))
+- Sync ROS to RPi: [sync-ros.sh](scripts/sync-ros.sh) (see: [xc-ros](07-xc-ros.md#synchronisation) and [ros remote](10-ros-remote))
 
+ROS (compile) environment setters:
+- Compile for RPi: [ros-cross](scripts/ros-cross) (see: [xc-ros](07-xc-ros.md) and [ros remote](10-ros-remote))
+- Compile for VM: [ros-native](scripts/ros-native) (see: [ros](08-native-ros.md) and [ros remote](10-ros-remote))
 
 Enjoy!
