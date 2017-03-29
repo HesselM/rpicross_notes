@@ -113,3 +113,54 @@ ROS nodes connect to a master (`roscore`) via a tcp-connection. This allows a RO
           ...
         ```
      > Note that some packages are lost?
+
+### Simplify life
+
+It can become quite tedious to constantly `source` the ros-files. Luckily we can do this by adding the `source` command to `~/.bashrc`. Upon a ssh-call, `~/.bashrc` is loaded by the unix OS, hence the ROS binairies will be sourced automatically.
+
+1. Add source-command to `~/.bashrc` in the VM
+    ```
+    XCS~$ nano ~/.bashrc
+    ```
+    
+    Add the following to the bottom of the file
+    ```
+    # Load ROS biniaries and setup ROS_MASTER_URI
+    source ~/rpicross_notes/scripts/ros-native Hessels-MacBook-Pro.local
+    ```
+1. Add source-command to `~/.bashrc` on the RPi
+    ```
+    XCS~$ ssh rpizero-local
+    RPI~$ nano ~/.bashrc
+    ```
+    
+    Add the following to the bottom of the file
+    ```
+    # Load ROS biniaries
+    source source ~/ros/rossetup-rpi
+    ```
+    
+So, the steps to execute the example become:
+
+1. Open three terminals in the VM:
+    1. Start ros    
+        ```
+        XCS~$ roscore
+        ```
+        > If `ROS_MASTER_URI` has changed, or the RPi has not yet been configured, an initial call before `roscore` is required:
+        ```
+        XCS~$ source ~/rpicross_notes/scripts/ros-native Hessels-MacBook-Pro.local rpizero-local
+        XCS~$ roscore
+        ```
+        
+    1. Start subscriber in the second terminal
+        ```
+        XCS~$ rosrun local_chatter subscriber
+        ```
+        
+    1.  Start publisher on RPi       
+        ```
+        XCS~$ ssh rpizero-local
+        RPI~$ rosrun local_chatter publisher
+        ```
+
