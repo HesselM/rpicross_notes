@@ -1,7 +1,13 @@
 #!/bin/sh
 
-# sync 
-rsync -auHWv rpizero-local-root:{/usr,/lib} ~/rpi/rootfs
+# Default ssh-host?
+host="$1"
+if [ -z "$1" ]; then
+  host="rpizero-local-root"
+fi
+
+# sync
+rsync -auHWv $host:{/usr,/lib} ~/rpi/rootfs
 
 # fix links
 TARGET_ROOT="/home/pi/rpi/rootfs"
