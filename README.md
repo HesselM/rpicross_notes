@@ -64,6 +64,7 @@ Information:
 1. [Compile and Install OpenCV](08-native-opencv.md)
 1. [Compile and Install ROS](09-native-ros.md)
 1. [Remote ROS (RPi node and VM master)](10-ros-remote.md)
+1. [ROS package development (RPi/VM)](11-ros-dev.md)
 
 Test-code:
 - Setup: [hello/pi](hello/pi)
