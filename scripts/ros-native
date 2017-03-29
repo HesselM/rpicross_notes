@@ -16,7 +16,7 @@ else
   #update RPi
   # Do we have a setupfile?
   if [ ! -f ~/ros/rossetup-rpi ]; then
-      cp ~/rpicross_notes/scripts/rossetup-rpi ~/ros/rossetup-rpi
+      cp ~/rpicross_notes/ros/rossetup-rpi ~/ros/rossetup-rpi
   fi
 
   # Set ROS_MASTER_URI
