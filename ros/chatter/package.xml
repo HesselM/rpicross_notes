@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>local_chatter</name>
+  <name>chatter</name>
   <version>0.0.1</version>
-  <description>The local_chatter package</description>
+  <description>The chatter package</description>
   <maintainer email="hmolen.science@gmail.com">HesselM</maintainer>
   <license>TODO</license>
   <url type="website">https://github.com/HesselM/rpicross_notes</url>
