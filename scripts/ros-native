@@ -2,15 +2,16 @@
 
 #setup master
 
+echo "===ROS-SETUP==="
 if [ -z "$1" ]; then
-  echo "!! - Not updating ROS_MASTER_URI";
+  echo "- Not updating ROS_MASTER_URI";
 else
 
   #Update Master
   MASTER_HOST=$(gethostip -d "$1")
   MASTER_PORT="11311"
   export ROS_MASTER_URI="http://$MASTER_HOST:$MASTER_PORT"
-  echo "Setting ROS_MASTER_URI:$ROS_MASTER_URI ($1)"
+  echo "- ROS_MASTER_URI: $ROS_MASTER_URI ($1)"
 
   #update RPi
   # Do we have a setupfile?
@@ -19,21 +20,30 @@ else
   fi
 
   # Set ROS_MASTER_URI
-  sed -i "s|.*ROS_MASTER_URI.*|export\ ROS_MASTER_URI=$ROS_MASTER_URI|g" ~/ros/rossetup-rpi
+  sed -i "s|.*ROS_MASTER_URI=.*|export\ ROS_MASTER_URI=$ROS_MASTER_URI|g" ~/ros/rossetup-rpi
 
   # Update on rpi
   if [ -z "$2" ]; then
-    echo "!! - Not Updating RPi"
+    echo "- Not updating RPi"
   else
-    echo "Updating RPi ($2)"
+    echo "- Updating RPi ($2)"
     scp -o StrictHostKeyChecking=no ~/ros/rossetup-rpi $2:~/ros/
   fi
 fi
 
 #source ROS-settings
-echo "Sourcing ROS-files.."
+echo "- Searching ROS setup.bash"
+files=$(find ~/build/ros -name "devel*" -type d -exec echo {}/setup.bash \; 2>/dev/null)
+
+echo "- Found:"
+n=$'\n'
+echo "/opt/ros/kinetic/setup.bash$n$files"
+
+echo "- Sourcing.."
 source /opt/ros/kinetic/setup.bash
-source $(find ~/build/ros -name "devel*" -type d -exec echo {}/setup.bash \; 2>/dev/null) 2>/dev/null
+source $files 2>/dev/null
+
+echo "================"
 
 #get rpi-hostname from ssh-config
 #RPI_ADDR=$(ssh -v $RPI_SSH -o BatchMode=yes -o ConnectionAttempts=1 -o StrictHostKeyChecking=no true ' ' 2>&1 | grep 'Authenticated to' | cut -d' ' -f3)
