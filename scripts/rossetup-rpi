@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo "===ROS-SETUP==="
+echo "- Searching ROS setup.bash"
+files=$(find ~/ros -name "devel*" -type d -exec echo {}/setup.bash \;)
+echo "- Found: "
+echo "$files"
+echo "- Sourcing.."
+source $files
+export ROS_MASTER_URI=http://172.20.10.2:11311
+echo "- ROS_MASTER_URI: $ROS_MASTER_URI"
+echo "==============="
