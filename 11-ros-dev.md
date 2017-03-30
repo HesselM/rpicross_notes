@@ -20,6 +20,19 @@ XCS~$ ~/rpicross_notes/scripts/sync-ros.sh
 
 The source of a package can be located everywhere.
 
+# Prerequisites:
+
+- VM and RPi Configured: [setup](01-setup.md) and [network](02-network.md)
+- [Toolchain](04-xc-setup.md) installed 
+- [Repository](04-xc-setup.md#init-repository) downloaded
+- ROS (cross)compiled: [cross](07-xc-ros.md) and [native](09-native-ros.md)
+
+Optional:
+- Userland (for gpu-support)
+- OpenCV (cross)compiled: [cross](06-xc-opencv.md) and [native](08-native-opencv.md) (for vision-support)
+- [Perhiperals](03-peripherals.md) (for camera/i2c)
+- [ROS-port forwarding](10-ros-remote.md#host-vm-port-forwarding) (for mixed support)
+
 # Native-compilation
 
 1. Set correct paths for native compilation
