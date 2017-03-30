@@ -7,6 +7,7 @@ echo "- Found: "
 echo "$files"
 echo "- Sourcing.."
 source $files
+# Note: this url will be replaced automaticly by 'scripts/ros-native'.
 export ROS_MASTER_URI=http://172.20.10.2:11311
 echo "- ROS_MASTER_URI: $ROS_MASTER_URI"
 echo "==============="
