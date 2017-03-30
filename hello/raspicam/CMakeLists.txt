@@ -2,47 +2,31 @@ cmake_minimum_required (VERSION 2.8.11)
 
 project(hellocam)
 
-################
-# RPI SETTINGS
-
-#rpi-dirs
-set(RPI_ROOTFS /home/pi/rpi/rootfs)
-set(USERLAND /usr/src/userland)
-
-#compiler
-set(CMAKE_C_COMPILER rpizero-gcc)
-set(CMAKE_CXX_COMPILER rpizero-g++)
-set(ARM_LINUX_SYSROOT ${RPI_ROOTFS})
-
-################
-# COMPILER SETTINGS
-
 SET(COMPILE_DEFINITIONS -Werror)
 
-################
-# LOCATIONS / 
-
-#include threads
+#include required packages
 find_package( Threads REQUIRED )
+find_package( PkgConfig REQUIRED )
 
-#include userland
-include_directories(${RPI_ROOTFS}${USERLAND})
-include_directories(${RPI_ROOTFS}${USERLAND}/host_applications/linux/libs/bcm_host/include)
-include_directories(${RPI_ROOTFS}${USERLAND}/host_applications/linux/libs/sm)
+# MMAL
+pkg_search_module(MMAL REQUIRED mmal)
+include_directories(${MMAL_INCLUDE_DIRS})
+link_directories(${MMAL_LIBRARY_DIRS} )
 
-#include opt/vc
-include_directories(${RPI_ROOTFS}/opt/vc/include)
+# EGL
+pkg_search_module(EGL REQUIRED egl)
+include_directories(${EGL_INCLUDE_DIRS})
+link_directories(${EGL_LIBRARY_DIRS} )
 
-#include projectdirs
+# Userland
+include_directories(${USERLAND_DIR})
+include_directories(${USERLAND_DIR}/host_applications/linux/libs/sm)
+
+# Projectdirs
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/gl_scenes)
 
-#location of rpi-libraries
-link_directories(${RPI_ROOTFS}/opt/vc/lib )
-
-################
-# SOURCES
-
+# Sources
 set (GL_SCENE_SOURCES
     gl_scenes/models.c
     gl_scenes/mirror.c
@@ -60,28 +44,17 @@ set (COMMON_SOURCES
 )
 
 set (HELLOCAM_SOURCES
-    RaspiStill.c  
-    RaspiTex.c 
-    RaspiTexUtil.c 
+    RaspiStill.c
+    RaspiTex.c
+    RaspiTexUtil.c
     tga.c
 )
 
 add_executable(hellocam ${HELLOCAM_SOURCES} ${COMMON_SOURCES} ${GL_SCENE_SOURCES})
 
-################
-# LIBS
 
-#libraries..
+# Libraries
 target_link_libraries(hellocam ${CMAKE_THREAD_LIBS_INIT})
-
-target_link_libraries(hellocam mmal_core)
-target_link_libraries(hellocam mmal_util)
-target_link_libraries(hellocam mmal_vc_client)
-
-target_link_libraries(hellocam vcos)
-target_link_libraries(hellocam vcsm)
-target_link_libraries(hellocam bcm_host)
-target_link_libraries(hellocam brcmGLESv2)
-target_link_libraries(hellocam brcmEGL)
-
+target_link_libraries(hellocam ${MMAL_LIBRARIES})
+target_link_libraries(hellocam ${EGL_LIBRARIES})
 target_link_libraries(hellocam m)
