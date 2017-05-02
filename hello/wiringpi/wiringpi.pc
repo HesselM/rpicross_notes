@@ -1,0 +1,11 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: WiringPi
+Description: GPIO and PWM control for RPi
+Version: 2.44
+Libs: -L${libdir} -lwiringPi -lwiringPiDev
+Cflags: -I${includedir}
+
