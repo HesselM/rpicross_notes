@@ -1,6 +1,6 @@
 # Guide to Setup and Cross Compile for a Raspberry Pi
 
-This repository is a personal guide to setup a cross compilation environment to compile OpenCV and ROS programs for a Raspberry Pi. It contains details on how to setup a VirtualBox, configure SSH / X-server / network settings, how to sync syncing / back up files to the Raspberry Pi and of course how to compile and install OpenCV and ROS. Experience with VirtualBox, C, Python and the terminal/nano are assumed. Usage of external keyboards or monitors for the Raspberry Pi is not required: setup is done via card mounting or SSH. 
+This repository is a personal guide to setup a cross compilation environment to compile [OpenCV](http://opencv.org/), [ROS](http://www.ros.org/) and [WiringPi](http://wiringpi.com) programs for a Raspberry Pi. It contains details on how to setup a VirtualBox, configure SSH / X-server / network settings, how to sync syncing / back up files to the Raspberry Pi and of course how to compile and install OpenCV, ROS and WiringPi. Experience with VirtualBox, C, Python and the terminal/nano are assumed. Usage of external keyboards or monitors for the Raspberry Pi is not required: setup is done via card mounting or SSH. 
 
 At the end of this list you should have:
 - A Virtualbox (VM) running Ubuntu Server 16.04 LTS, with:
@@ -11,12 +11,14 @@ At the end of this list you should have:
     - OpenCV 3.2 with additional modules, library support such as GTK+ and Python bindings
     - ROS-comm with Python bindings
     - Synchronisation tools to update the Raspberry Pi with the (cross) compiled libraries.
+    - WiringPi support
   - Native environment supporting:
     - ROS with Python bindings
     - OpenCV 3.2 with Python bindings
 - A Raspberry Pi (zero) (RPi) running Jessie Lite, including
   - OpenCV with Python Bindings
   - ROS-comm with Python Bindings
+  - WiringPi support
   - Running PiCamera
   - i2c and a Real Time Clock (RTC)
 - A VM able to run `roscore` to which the Raspberry Pi (RPi) can connect as a node. 
@@ -65,12 +67,14 @@ Information:
 1. [Compile and Install ROS](09-native-ros.md)
 1. [Remote ROS (RPi node and VM master)](10-ros-remote.md)
 1. [ROS package development (RPi/VM)](11-ros-dev.md)
+1. [Compile and Install WiringPi](12-wiringpi.md)
 
 Test-code:
 - Setup: [hello/pi](hello/pi)
 - Userland: [hello/raspicam](hello/raspicam)
 - OpenCV: [hello/ocv](hello/ocv)
 - ROS: [hello/ros](hello/ros)
+- WiringPi: [hello/wiringpi](hello/wiringpi)
 
 ROS publish-subscriber (for remote operation)
 - [chatter](ros/chatter)
