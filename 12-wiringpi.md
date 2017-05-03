@@ -71,3 +71,38 @@ Steps:
      Iteration:  5/ 5 - Brightness:    0/1024
      Done
    ```
+   
+## Note application utilising X server.
+
+When an application uses both WiringPi and Xserverrunning the application with `sudo` might result in the error:
+```
+...
+    X11 connection rejected because of wrong authentication.
+...
+```
+Meaning that the created connection to Xserver does not allow `root` to setup a window. Presumably, the original connection to the RPi is created by executing:
+```
+XCS~$ ssh -X pi@rpizero-local`
+```
+
+This option can be used by setting the `XAUTHORITY` of `root` to the one of the `pi`-user.
+
+1. The RPi is created by executing:
+    ```
+    RPi~$ su - root
+    RPi~root$ nano ~/.bashrc
+    ```
+1. Add the following line to the file:
+    ```
+    export XAUTHORITY=/home/user/.Xauthority
+    ```
+1. logout
+    ```
+    RPi~root$ exit
+    ```
+1. Run flashcam properly
+    ```
+    RPi~$ su
+    RPi~root$ ./flashcam
+    RPi~root$ exit
+    ```
