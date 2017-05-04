@@ -1,5 +1,5 @@
 # Wiring Pi
-Library to control GPIO / PWM on the Raspberry Pi. Original website: http://wiringpi.com/
+Library to control GPIO / PWM on the Raspberry Pi using [wiringPi](http://wiringpi.com/)
 
 Steps on this page are derived from http://wiringpi.com/download-and-install/
 
@@ -40,7 +40,7 @@ Note: As compilation-process of the library polls several hardware features, the
     ```
 
 ## Testing
-Testing the compiled and installed `wiringPi` libraries with a PWM signal.
+Testing the compiled and installed wiringPi libraries with a PWM signal.
 
 Prerequisites: 
 - Toolchain [installed](4-xc-setup.md#required-packages)
@@ -74,21 +74,26 @@ Steps:
    
 ## Note application utilising X server.
 
-When an application uses both WiringPi and Xserverrunning the application with `sudo` might result in the error:
+When an application uses both `wiringPi` and requires Xserver to run the application, errors might be encountered when using `sudo`:
 ```
 ...
     X11 connection rejected because of wrong authentication.
 ...
 ```
-Meaning that the created connection to Xserver does not allow `root` to setup a window. Presumably, the original connection to the RPi is created by executing:
+This error means that the created connection to Xserver does not allow `root` to setup a window. Presumably, the original connection to the RPi was created by the user `pi`:
 ```
-XCS~$ ssh -X pi@rpizero-local`
+XCS~$ ssh -X pi@rpizero-local
+```
+When connecting via SSH as `root` does not pose a (security) problem, this might solve the problem:
+```
+XCS~$ ssh -X root@rpizero-local
 ```
 
-This option can be used by setting the `XAUTHORITY` of `root` to the one of the `pi`-user.
+A more secure way is to allow `root` to use the same `XAUTHORITY` settings as the `pi`-user:
 
-1. The RPi is created by executing:
+1. Setup SSH connection and start editing `bashrc` of `root` :
     ```
+    XCS~$ ssh -X pi@rpizero-local
     RPi~$ su - root
     RPi~root$ nano ~/.bashrc
     ```
@@ -96,11 +101,11 @@ This option can be used by setting the `XAUTHORITY` of `root` to the one of the 
     ```
     export XAUTHORITY=/home/user/.Xauthority
     ```
-1. logout
+1. Logout
     ```
     RPi~root$ exit
     ```
-1. Run flashcam properly
+1. Run application 
     ```
     RPi~$ su
     RPi~root$ ./flashcam
