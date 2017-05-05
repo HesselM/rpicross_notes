@@ -89,23 +89,33 @@ When connecting via SSH as `root` does not pose a (security) problem, this might
 XCS~$ ssh -X root@rpizero-local
 ```
 
-A more secure way is to allow `root` to use the same `XAUTHORITY` settings as the `pi`-user:
+### Proper solution
 
-1. Setup SSH connection and start editing `bashrc` of `root` :
+Luckily, a simple and more secure solution exists:
+```
+XCS~$ ssh -X pi@rpizero-local
+RPi~$ su -pc ./flashcam
+```
+This will execute the application with root-privileges, while maintaining the current environment variables (and hence the `XAUTHORITY` settings of the `pi` user).
+
+### Deprecated solution..
+~~A more secure way is to allow `root` to use the same `XAUTHORITY` settings as the `pi`-user:~~
+
+1. ~~Setup SSH connection and start editing `bashrc` of `root` :~~
     ```
     XCS~$ ssh -X pi@rpizero-local
     RPi~$ su - root
     RPi~root$ nano ~/.bashrc
     ```
-1. Add the following line to the file:
+1. ~~Add the following line to the file:~~
     ```
     export XAUTHORITY=/home/user/.Xauthority
     ```
-1. Logout
+1. ~~Logout~~
     ```
     RPi~root$ exit
     ```
-1. Run application 
+1. ~~Run application~~
     ```
     RPi~$ su
     RPi~root$ ./flashcam
