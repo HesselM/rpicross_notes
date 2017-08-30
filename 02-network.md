@@ -271,3 +271,59 @@ For synchronisation of the RPi-rootfs in our crosscompile environment and the ro
 Next step: [activating/installing peripherals](3-peripherals.md) such as i2c, a Real Time Clock or the Camera. 
 
 Or, if you do not need those: [setup the crosscompilation environment](4-xc-setup.md).
+
+
+# EXTRA: SSH over USB
+
+When the RPi is used in an environment without network connectivity, enabling SSH over USB might be a solution. 
+
+1. Detect SDCard & mount SMALLEST partition (the boot partition)
+    ```
+    XCS~$ lsblk
+      NAME                        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+      sda                           8:0    0   25G  0 disk 
+      ├─sda1                        8:1    0  487M  0 part /boot
+      ├─sda2                        8:2    0    1K  0 part 
+      └─sda5                        8:5    0 24.5G  0 part 
+        ├─XCS--rpizero--vg-root   252:0    0 20.5G  0 lvm  /
+        └─XCS--rpizero--vg-swap_1 252:1    0    4G  0 lvm  [SWAP]
+      sdb                           8:16   1  7.3G  0 disk 
+      ├─sdb1                        8:17   1   63M  0 part       <=== Smallest partition
+      └─sdb2                        8:18   1  7.3G  0 part
+      sr0                          11:0    1 55.7M  0 rom   
+
+    XCS~$ sudo mount /dev/sdb1 /home/pi/rpi/mnt 
+    ```
+    
+1. Update the configuration file
+    ```
+    XCS~$ sudo nano /home/pi/rpi/mnt/config.txt 
+    ```
+    
+    Add the following at the bottom of the file:
+    ```
+    #allow ssh over usb
+    dtoverlay=dwc2
+    ```
+    
+1. Update `cmdline.txt`
+    ```
+    XCS~$ sudo nano /home/pi/rpi/mnt/cmdline.txt
+    ```
+    
+    Add `modules-load=dwc2,g_ether` right after `rootwait`. Because this file is very sensitive to enter, space or tabs, make sure you do not add additional characters to it. After editing the final file might look like:
+    ```
+    dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait modules-load=dwc2,g_ether
+    ```
+
+1. Unmount SDCard
+    ```
+    XCS~$ sudo umount /home/pi/rpi/mnt
+    ```
+    
+1. Bootup the RPI with the USB cable connected to your local machine and to the USB port of the device. Make sure that in case of the Raspberry Pi Zero you do not connect the USB cable with with the PWR port as this port does not support the USB protocol.
+
+1. After booting, connect to the raspberry pi via the set hostname, eg.
+    ```
+    XCS~$ ssh pi@rpizw.local
+    ```
