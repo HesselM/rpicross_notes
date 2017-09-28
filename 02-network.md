@@ -277,6 +277,7 @@ Or, if you do not need those: [setup the crosscompilation environment](4-xc-setu
 
 When the RPi is used in an environment without network connectivity, enabling SSH over USB might be a solution. 
 
+## setup
 1. Detect SDCard & mount SMALLEST partition (the boot partition)
     ```
     XCS~$ lsblk
@@ -327,3 +328,33 @@ When the RPi is used in an environment without network connectivity, enabling SS
     ```
     XCS~$ ssh pi@rpizw.local
     ```
+
+## Static IP
+
+At this point you should be to boot the RPi and connect via SSH over the USB. As the ipaddress of the RPi is propobly assigned by a DHCP service running on your computer, it will have a dynamic address. Follow these steps to make it static:
+
+1. Boot the RPi and login.
+1. Update the configuration file
+    ```
+    RPi~$ sudo nano /etc/network/interfaces
+    ```
+    
+    Add the following at the bottom of the file:
+    ```
+    allow-hotplug usb0
+    iface usb0 inet static
+            address 192.168.10.2
+            netmask 255.255.255.0
+            network 192.168.10.0
+            broadcast 192.168.10.255
+            gateway 192.168.10.1
+    ```
+1. Setup connection details on the HOST~$ (OSX):
+    - System Preference > Network > RNDIS/Ethernet Gadget
+    - Configure IPv4: Manually
+        - IP Address: 192.168.10.1
+        - Subnet Mask: 255.255.255.0
+        - Router: 192.168.10.1
+1. Save changes and reboot the RPi. You should now be able to connect via the set ipaddress
+
+
