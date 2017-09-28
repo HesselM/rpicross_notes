@@ -356,5 +356,5 @@ At this point you should be to boot the RPi and connect via SSH over the USB. As
         - Subnet Mask: 255.255.255.0
         - Router: 192.168.10.1
 1. Save changes and reboot the RPi. You should now be able to connect via the set ipaddress
-
+1. More info: https://learn.adafruit.com/turning-your-raspberry-pi-zero-into-a-usb-gadget/ethernet-gadget
 
