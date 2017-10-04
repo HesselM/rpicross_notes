@@ -95,6 +95,32 @@ As mentioned before, the use of `rsync` results in broken symlinks. Hence we nee
     ```
     > This creates two folders: `devel_isolated` and `build_isolated` of which the latter can be ignored.
 
+## Adding packages after building ROS
+When additional ros-packages are needed, but ROS is already build, the following steps can be taken:
+
+1. Goto the crosscompilation `catkin`-workspace:
+    ```
+    XCS~$ cd ~/ros/src_cross
+    ```
+    
+1. Use `rosinstall_generator` to create an additional `.rosinstall`, including the specified package(s). E.g `sensor_msgs`:
+    ```
+    XCS~$ rosinstall_generator sensor_msgs --rosdistro kinetic --deps --wet-only --tar > sensor_msgs.rosinstall 
+    ```
+
+1. Merge the file with the existing `.rosinstall` and update ROS it's source tree
+    ```
+    XCS~$ wstool merge -t src sensor_msgs.rosinstall 
+    XCS~$ wstool update -t src
+    ```
+    
+1. Finally, rebuild `ROS`
+    ```
+    XCS~$ ./src/catkin/bin/catkin_make_isolated \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake
+    ```
+
 ## Synchronisation
 
 In addition to updates of `rootfs` we also need to synchronise `src_cross`.
