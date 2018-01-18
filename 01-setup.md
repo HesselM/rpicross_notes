@@ -78,7 +78,7 @@ As I prefer the development enviroment of my HOST-system, developed code will be
 ### Shared Folder
 1. Select/start `XCS-rpizero` in VirtualBox
 1. Insert Guest additions: Devices > Insert Guest Additions CD image...
-1. Install the necessary packages
+1. When using a Linux-based system: install necessary package
 
     ```
     XCS~$ sudo apt-get install make gcc linux-headers-$(uname -r)
