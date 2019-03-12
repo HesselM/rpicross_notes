@@ -152,4 +152,4 @@ Source: https://www.raspberrypi.org/documentation/installation/installing-images
     ```
 # Next
 
-Having installed the basic components, lets [setup the network/ssh!](2-network.md)
+Having installed the basic components, lets [setup the network/ssh!](02-network.md)
