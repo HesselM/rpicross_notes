@@ -270,7 +270,7 @@ For synchronisation of the RPi-rootfs in our crosscompile environment and the ro
 
 Next step: [activating/installing peripherals](3-peripherals.md) such as i2c, a Real Time Clock or the Camera. 
 
-Or, if you do not need those: [setup the crosscompilation environment](4-xc-setup.md).
+Or, if you do not need those: [setup the crosscompilation environment](04-xc-setup.md).
 
 
 # EXTRA: SSH over USB
