@@ -1,9 +1,9 @@
 # Crosscompiling : Setup
 
 Before continuing, please make sure you followed the steps in:
-- [Setup](1-setup.md)
-- [Network/SSH](2-network.md)
-- Optional: [Peripherals](3-peripherals.md)
+- [Setup](01-setup.md)
+- [Network/SSH](02-network.md)
+- Optional: [Peripherals](03-peripherals.md)
 
 Most of the commands I use in this and the upcoming guides make use of absolute paths. Therefore, take extra care if you use a different environment/VM or different install paths.   
 
@@ -232,7 +232,7 @@ in the "rpi-generic-toolchain.cmake" file.
 
 # Next
 Having a functional crosscompilation several steps can be taken next:
-- Crosscompile & install [Userland libraries](5-xc-userland.md) (for communication with the RPi GPU)
-- Crosscompile & install [OpenCV 3.2 with Python Bindings](6-xc-opencv.md) (for computer vision)
-- Crosscompile & install [ROS](7-xc-ros.md) (to run the RPi as Node in a ROS-network)
+- Crosscompile & install [Userland libraries](05-xc-userland.md) (for communication with the RPi GPU)
+- Crosscompile & install [OpenCV 3.2 with Python Bindings](06-xc-opencv.md) (for computer vision)
+- Crosscompile & install [ROS](07-xc-ros.md) (to run the RPi as Node in a ROS-network)
 - Develop your own code.. 

@@ -43,8 +43,8 @@ Note: As compilation-process of the library polls several hardware features, the
 Testing the compiled and installed wiringPi libraries with a PWM signal.
 
 Prerequisites: 
-- Toolchain [installed](4-xc-setup.md#required-packages)
-- Repository [initialised](4-xc-setup.md#init-repository)
+- Toolchain [installed](04-xc-setup.md#required-packages)
+- Repository [initialised](04-xc-setup.md#init-repository)
 - WiringPi [installed and synchronised](#compilation--synchronisation)
 - wiringpi.pc [installed](#compilation--synchronisation)
 

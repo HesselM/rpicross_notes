@@ -1,9 +1,9 @@
 # Crosscompiling : ROS
 
 Before continuing, please make sure you followed the steps in:
-- [Setup](1-setup.md)
-- [Network/SSH](2-network.md)
-- [crosscompile environment](4-xc-setup.md)
+- [Setup](01-setup.md)
+- [Network/SSH](02-network.md)
+- [crosscompile environment](04-xc-setup.md)
 
 In this document the steps for crosscompiling ROS are described.
 
@@ -162,7 +162,7 @@ And for `~/ros/src_cross`:
 Testing the compiled `ROS`-libraries and `catkin` workspace
 
 Prerequisites: 
-- Toolchain [installed](4-xc-setup.md#required-packages)
+- Toolchain [installed](04-xc-setup.md#required-packages)
 - ROS [compiled](#compilation) & [synced](#synchronisation)
 
 Steps:
