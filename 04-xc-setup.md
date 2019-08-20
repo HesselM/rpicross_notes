@@ -209,6 +209,27 @@ Steps:
       Hello World!
     ```
 
+# Test Setup : Trouble shooting
+
+```
+Change Dir: /home/pi/rpi/build/hello/pi/CMakeFiles/CMakeTmp
+
+Run Build Command:"/home/pi/rpi/rootfs/usr/bin/make" "cmTC_cbaa5/fast"
+/home/pi/rpi/rootfs/usr/bin/make: 1: /home/pi/rpi/rootfs/usr/bin/make: Syntax error: word unexpected (expecting ")"
+```
+If you encounter such an error, the toolchain invokes the rpi based arm-`make` executable instead of the system-`make` executable. As your computer does not know how to read the arm-based executable, it throws an error. If this happend, you might be able to fix it as noted by [Skammi](https://github.com/HesselM/rpicross_notes/issues/14) :
+
+> I Got in the same issue as some other people that the running the command:
+cmake -D CMAKE_TOOLCHAIN_FILE=~/rpicross_notes/rpi-generic-toolchain.cmake ~/rpicross_notes/hello/pi
+would evoke the RPI make program. I think that is due to the statements:
+set( RPI_ROOTFS /home/pi/rpi/rootfs )
+set( CMAKE_FIND_ROOT_PATH ${RPI_ROOTFS} )
+in the "rpi-generic-toolchain.cmake" file. I solved this by adding:
+set( CMAKE_MAKE_PROGRAM "/usr/bin/make" CACHE FILEPATH "")
+in the "rpi-generic-toolchain.cmake" file.
+
+
+
 # Next
 Having a functional crosscompilation several steps can be taken next:
 - Crosscompile & install [Userland libraries](5-xc-userland.md) (for communication with the RPi GPU)
