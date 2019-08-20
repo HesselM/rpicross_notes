@@ -41,7 +41,11 @@ For compilation a compiler is needed which can build, create and link our c-code
     ```
     XCS~$ rm -rf /home/pi/rpi/tools/arm-bcm2708/arm-bcm2708*
     ```
-    
+   
+## Note on base-directory
+
+This guide assumes `/home/pi/` to be the `~/` home dir. If you have a different directory, make sure you update the `/home/pi` to the proper path. Note that setting it to `~/` will not work.
+
 ## Setting up `rootfs`
 
 The crosscompiler requires access to (`/usr` and `/lib`) RPi-binairies and libraries to link properly. Therefore we need to create a local copy of the RPi-filesystem in the VM: `rootfs`. 
