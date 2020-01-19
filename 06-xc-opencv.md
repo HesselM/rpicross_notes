@@ -1,10 +1,10 @@
 # Crosscompiling : OpenCV
 
 Before continuing, please make sure you followed the steps in:
-- [Setup](1-setup.md)
-- [Network/SSH](2-network.md)
-- [Crosscompile environment](4-xc-setup.md)
-- [Userland](5-xc-userland.md)
+- [Setup](01-setup.md)
+- [Network/SSH](02-network.md)
+- [Crosscompile environment](04-xc-setup.md)
+- [Userland](05-xc-userland.md)
 
 This section will cross-compile and install OpenCV, its additional modules and python bindings. 
 
@@ -21,7 +21,7 @@ To crosscompile `OpenCV`, only packages on the RPi need te be installed.
     > Python and numpy need to be installed so `OpenCV` can create the Pythonbindings.
     > Other libraries are used to process images, generate GUI's (via X-server) and other imaging processes.
 
-1. Sync [RPi libs to VM](4-xc-setup.md#from-rpi-to-vm)
+1. Sync [RPi libs to VM](04-xc-setup.md#from-rpi-to-vm)
     ```
     XCS~$ ~/rpicross_notes/scripts/sync-rpi-vm.sh
     ```
@@ -386,9 +386,9 @@ Update `rootfs` on the rpi:
 Testing the compiled `OpenCV`-libraries
 
 Prerequisites: 
-- Toolchain [installed](4-xc-setup.md#required-packages)
-- Repository [initialised](4-xc-setup.md#init-repository)
-- Userland [installed](5-xc-userland.md#compilation) & [synced](5-xc-userland.md#synchronisation)
+- Toolchain [installed](04-xc-setup.md#required-packages)
+- Repository [initialised](04-xc-setup.md#init-repository)
+- Userland [installed](05-xc-userland.md#compilation) & [synced]0(5-xc-userland.md#synchronisation)
 - OpenCV [installed](#compilation) & [synced](#synchronisation)
 - An image on the rpi. (e.g. `testcam.jpg`).
 

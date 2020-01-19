@@ -160,4 +160,4 @@ Source: https://thepihut.com/collections/raspberry-pi-hats/products/rtc-pizero
 
 # Next
 
-Having installed the peripherals, it is time to [setup the crosscompilation environment](4-xc-setup.md).
+Having installed the peripherals, it is time to [setup the crosscompilation environment](04-xc-setup.md).

@@ -29,7 +29,7 @@ No synchronisation is required.
 
 Prerequisites: 
  - ROS [compiled](#compilation)
- - Repository [initialised](4-xc-setup.md#init-repository)
+ - Repository [initialised](04-xc-setup.md#init-repository)
 
 Steps:
 

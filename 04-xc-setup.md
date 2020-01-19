@@ -1,9 +1,9 @@
 # Crosscompiling : Setup
 
 Before continuing, please make sure you followed the steps in:
-- [Setup](1-setup.md)
-- [Network/SSH](2-network.md)
-- Optional: [Peripherals](3-peripherals.md)
+- [Setup](01-setup.md)
+- [Network/SSH](02-network.md)
+- Optional: [Peripherals](03-peripherals.md)
 
 Most of the commands I use in this and the upcoming guides make use of absolute paths. Therefore, take extra care if you use a different environment/VM or different install paths.   
 
@@ -41,7 +41,11 @@ For compilation a compiler is needed which can build, create and link our c-code
     ```
     XCS~$ rm -rf /home/pi/rpi/tools/arm-bcm2708/arm-bcm2708*
     ```
-    
+   
+## Note on base-directory
+
+This guide assumes `/home/pi/` to be the `~/` home dir. If you have a different directory, make sure you update the `/home/pi` to the proper path. Note that setting it to `~/` will not work.
+
 ## Setting up `rootfs`
 
 The crosscompiler requires access to (`/usr` and `/lib`) RPi-binairies and libraries to link properly. Therefore we need to create a local copy of the RPi-filesystem in the VM: `rootfs`. 
@@ -205,9 +209,30 @@ Steps:
       Hello World!
     ```
 
+# Test Setup : Trouble shooting
+
+```
+Change Dir: /home/pi/rpi/build/hello/pi/CMakeFiles/CMakeTmp
+
+Run Build Command:"/home/pi/rpi/rootfs/usr/bin/make" "cmTC_cbaa5/fast"
+/home/pi/rpi/rootfs/usr/bin/make: 1: /home/pi/rpi/rootfs/usr/bin/make: Syntax error: word unexpected (expecting ")"
+```
+If you encounter such an error, the toolchain invokes the rpi based arm-`make` executable instead of the system-`make` executable. As your computer does not know how to read the arm-based executable, it throws an error. If this happend, you might be able to fix it as noted by [Skammi](https://github.com/HesselM/rpicross_notes/issues/14) :
+
+> I Got in the same issue as some other people that the running the command:
+cmake -D CMAKE_TOOLCHAIN_FILE=~/rpicross_notes/rpi-generic-toolchain.cmake ~/rpicross_notes/hello/pi
+would evoke the RPI make program. I think that is due to the statements:
+set( RPI_ROOTFS /home/pi/rpi/rootfs )
+set( CMAKE_FIND_ROOT_PATH ${RPI_ROOTFS} )
+in the "rpi-generic-toolchain.cmake" file. I solved this by adding:
+set( CMAKE_MAKE_PROGRAM "/usr/bin/make" CACHE FILEPATH "")
+in the "rpi-generic-toolchain.cmake" file.
+
+
+
 # Next
 Having a functional crosscompilation several steps can be taken next:
-- Crosscompile & install [Userland libraries](5-xc-userland.md) (for communication with the RPi GPU)
-- Crosscompile & install [OpenCV 3.2 with Python Bindings](6-xc-opencv.md) (for computer vision)
-- Crosscompile & install [ROS](7-xc-ros.md) (to run the RPi as Node in a ROS-network)
+- Crosscompile & install [Userland libraries](05-xc-userland.md) (for communication with the RPi GPU)
+- Crosscompile & install [OpenCV 3.2 with Python Bindings](06-xc-opencv.md) (for computer vision)
+- Crosscompile & install [ROS](07-xc-ros.md) (to run the RPi as Node in a ROS-network)
 - Develop your own code.. 

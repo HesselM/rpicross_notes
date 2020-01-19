@@ -1,10 +1,10 @@
 # Crosscompiling : Userland
 
 Before continuing, please make sure you followed the steps in:
-- [Setup](1-setup.md)
-- [Network/SSH](2-network.md)
-- [Crosscompile environment](4-xc-setup.md)
-- Optional (only for testing): [Peripherals](3-peripherals.md)
+- [Setup](01-setup.md)
+- [Network/SSH](02-network.md)
+- [Crosscompile environment](04-xc-setup.md)
+- Optional (only for testing): [Peripherals](03-peripherals.md)
 
 The [userland](https://github.com/raspberrypi/userland) repository of the Pi Foundation contains several libraires to communicate with the GPU and use GPU related actions such as `mmal`, `GLES` and others.
 
@@ -85,7 +85,7 @@ Update `rootfs` on the rpi:
     XCS~$ sudo rsync -auHWv --no-perms --no-owner --no-group /home/pi/rpi/rootfs/ rpizero-local-root:/
     ```
     
-1. Or use the [link-correcting script](4-xc-setup.md#init-repository):
+1. Or use the [link-correcting script](04-xc-setup.md#init-repository):
     ```
     XCS~$ /home/pi/rpicross_notes/sync-vm-rpi.sh
     ```
@@ -94,10 +94,10 @@ Update `rootfs` on the rpi:
 Testing the compiled `userland`-libraries
 
 Prerequisites: 
-- Toolchain [installed](4-xc-setup.md#required-packages)
-- Repository [initialised](4-xc-setup.md#init-repository)
+- Toolchain [installed](04-xc-setup.md#required-packages)
+- Repository [initialised](04-xc-setup.md#init-repository)
 - Userland [installed](#compilation) & [synced](#synchronisation)
-- RPi Camera [connected and activated](3-peripherals.md#camera)
+- RPi Camera [connected and activated](03-peripherals.md#camera)
 
 Steps:
 

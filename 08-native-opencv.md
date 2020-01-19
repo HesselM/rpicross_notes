@@ -2,7 +2,7 @@
 
 In addition to installing `OpenCV` on the RPi, we might need it too in the VM for some projects. 
 This guide describes the steps for compiling and installing `OpenCV` in the VM.
-The described steps are similair to [6-xc-opencv.md](6-xc-opencv.md) and are take from the official [install page](http://docs.opencv.org/2.4/doc/tutorials/introduction/linux_install/linux_install.html).
+The described steps are similair to [06-xc-opencv.md](06-xc-opencv.md) and are take from the official [install page](http://docs.opencv.org/2.4/doc/tutorials/introduction/linux_install/linux_install.html).
 
 ## Required Packages
 
@@ -27,7 +27,7 @@ XCS~$ sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-de
     XCS~$ rm 3.2.0.zip
     ```
 
-    > When using the downloads from [6-xc-opencv.md](6-xc-opencv.md), make sure you revert `OpenCVMinDepVersions.cmake` into its original state.
+    > When using the downloads from [06-xc-opencv.md](06-xc-opencv.md), make sure you revert `OpenCVMinDepVersions.cmake` into its original state.
 
 1. Create build-directory
     ```
