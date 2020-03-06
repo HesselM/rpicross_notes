@@ -10,7 +10,7 @@ As I prefer the development enviroment of my HOST-system, developed code will be
 
 ### Installation
 1. Download VirtualBox
-1. Download Ubuntu 16.04 Server LTS [https://www.ubuntu.com/download/server]
+1. Download Ubuntu 18.04 (or 16.04) Server LTS [https://www.ubuntu.com/download/server]
 1. Create new VirtualBox Image:
     - Name: XCS-rpizero
     - Type: Linux
@@ -45,18 +45,22 @@ As I prefer the development enviroment of my HOST-system, developed code will be
     - Hostname: XCS-server
     - User: pi
     - Password: raspberry
-1. After installation, update VM
+    > You can pretty much leave all options to the default setting. 
+
+1. After installation, update VM (if omitted during installation)
 
     ```
     XCS~$ sudo apt-get update
     XCS~$ sudo apt-get dist-upgrade
     ```
-1. Install SSH-server (if omitted during Ubuntu installation)
+1. Install SSH-server (if omitted during installation)
 
     ```
     XCS~$ sudo apt-get install openssh-server
     ```
 1. After reboot of the VM, you should be able to connect to the VM via port 2222:
+
+    > Connecting a local shell via SSH eases copy-paste operations from/to the VM!
 
     ```
     HOST~$ ssh -p 2222 pi@localhost
@@ -69,12 +73,104 @@ As I prefer the development enviroment of my HOST-system, developed code will be
     ```
   
     > For use of X-server ensure that `X11Forwarding yes` in `/etc/ssh/sshd_config` in the VM and `ForwardX11 yes` in `~/.ssh/config` on the Host. When changed, restart ssh: `sudo service ssh restart`.
-1. To allow the VM to resolve (local) DNS-addresses: set it use the host DNS server.
+     
+### SSH keys
+
+Currently, you need to type your password each time you connect with the VM from the Host via SSH. With the use of ssh-keys, we can automate this process.
+
+1. Generate ssh-keys on the Host (assuming linux or OSX). 
+
+    ```
+    HOST~$ cd ~/.ssh
+    HOST~$ ssh-keygen -t rsa
+      Generating public/private rsa key pair.
+      Enter file in which to save the key (/home/XXX/.ssh/id_rsa): xcs_server_rsa
+      Enter passphrase (empty for no passphrase): <empty>
+      Enter same passphrase again: <empty>
+      Your identification has been saved in xcs_server_rsa.
+      Your public key has been saved in xcs_server_rsa.pub.
+      ...
+    ```
+    > Optionally you can choose a different rsa-name (required if you are planning to use multiple keys for different systems) and set a passphrase (increasing security). In my setup I left the passphrase empty (just hitting enter). 
+
+1. Set correct permisions of the key-set
+
+    ```
+    XCS~$ chmod 700 xcs_server_rsa xcs_server_rsa.pub
+    ```
+   
+1. Send a copy of the public key to the RPi so it can verify the connection  
+    ```
+    cat ~/.ssh/xcs_server_rsa.pub | ssh -p 2222 pi@localhost "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+    ```
+
+1. Configure ssh connection in `ssh_config`
+
+    ```
+    HOST~$ sudo nano ~/.ssh/config
+    ```
+  
+    Add the following lines:
+    ```
+    # connect via hostname
+    Host xcs-server
+      HostName localhost
+      IdentityFile ~/.ssh/xcs_server_rsa
+      User pi
+      Port 2222
+    ```
+
+1. Test connection:
+    ```
+    HOST~$ ssh xcs-server
+    ```
+    
+    You should now be logged in onto the VM via SSH, without entering your password. Type `exit` to terminate connection.
+  
+### VM booting from shell
+
+1. Now we have SSH-access to the VM, booting and powering down from the Host-shell would allow us to skip all (mouse)handling of Virtual Box (and the activation of extra windows). To do so, add the following alias to your `.bashrc`:
+
+    ```
+    HOST~: sudo nano ~/.bashrc
+    ```
+
+    ```
+    # VM-Management
+    alias xcs-server-start='VBoxManage startvm XCS-server --type headless'
+    alias xcs-server-stop='VBoxManage controlvm XCS-server poweroff'
+    ```
+
+1. As `.bashrc` is only activated by opening a new shell, we need to do a reload:
+
+    ```
+    HOST~: source ~/.bashrc
+    ```
+    
+1. You can now start the VM with `xcs-server-start`:
+ 
+    ```
+    HOST~: xcs-server-start
+    Waiting for VM "XCS-server" to power on...
+    VM "XCS-server" has been successfully started.
+    ```
+    
+1. And stop with `xcs-server-stop`:
+
+    ```
+    HOST~: xcs-server-stop
+    0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
+    ```
+
+### DNS resolving
+  
+1. To allow the VM to resolve (local) DNS-addresses: set it use the host DNS server. 
+    > VM should be turned off before you can execute this command succesfully.
 
     ```
     HOST~$ VBoxManage modifyvm "XCS-rpizero" --natdnshostresolver1 on
-    ```
-    
+    ```  
+
 ### Shared Folder
 1. Select/start `XCS-rpizero` in VirtualBox
 1. Insert Guest additions: Devices > Insert Guest Additions CD image...
@@ -86,6 +182,7 @@ As I prefer the development enviroment of my HOST-system, developed code will be
 1. Install the additions in the VM
 
     ```
+    XCS~$ sudo mkdir -P /media/cdrom
     XCS~$ sudo mount /dev/cdrom /media/cdrom
     XCS~$ sudo /media/cdrom/VBoxLinuxAdditions.run
     XCS~$ sudo adduser pi vboxsf
@@ -110,16 +207,18 @@ As I prefer the development enviroment of my HOST-system, developed code will be
 ## Raspberry Pi
 Source: https://www.raspberrypi.org/documentation/installation/installing-images/linux.md
 
-1. Download and Unzip: Raspbian Jessie Lite (~292Mb)
+1. Download and Unzip latest Raspbian Lite
 
     ```
+    XCS~S mkdir -p ~/rpi/img
     XCS~$ cd ~/rpi/img
     XCS~$ wget https://downloads.raspberrypi.org/raspbian_lite_latest
     XCS~$ unzip raspbian_lite_latest
     ```
     > This download is the Lite version of raspbian and hence does not include a GUI or commonly used application. If a GUI is required, you can add it later via `apt-get` or download a different raspbian version.
 1. Connect SDCard to the VM.
-1. Detect SDCard & install img
+    > For this you need to open Virtual Box (in case you are connected to a headless system via SSH). 
+1. Detect SDCard
 
     ```
     XCS~$ lsblk
@@ -134,17 +233,28 @@ Source: https://www.raspberrypi.org/documentation/installation/installing-images
       ├─sdb1                        8:17   1   63M  0 part 
       └─sdb2                        8:18   1  7.3G  0 part 
       sr0                          11:0    1 55.7M  0 rom  
-    
-    XCS~$ sudo dd bs=4M if=/home/pi/rpi/img/2017-03-02-raspbian-jessie-lite.img of=/dev/sdb
     ```
+    
+1. Install Raspbian (this might take a while..)
+     
+    ```
+    XCS~$ sudo dd bs=4M if=/home/pi/rpi/img/2020-02-13-raspbian-buster-lite.img of=/dev/sdb
+    
+    [sudo] password for pi: 
+    441+0 records in
+    441+0 records out
+    1849688064 bytes (1.8 GB, 1.7 GiB) copied, 71.1205 s, 26.0 MB/s
+    ```
+    
 1. Validate that the image is properly copied
 
     ```
     XCS~$ sudo dd bs=4M if=/dev/sdb of=from-sd-card.img
-    XCS~$ sudo truncate --reference 2017-03-02-raspbian-jessie-lite.img  from-sd-card.img
-    XCS~$ sudo diff -s from-sd-card.img 2017-03-02-raspbian-jessie-lite.img 
-    XCS~$ sync
+    XCS~$ sudo truncate --reference 2020-02-13-raspbian-buster-lite.img from-sd-card.img 
+    XCS~$ sudo diff -s from-sd-card.img 2020-02-13-raspbian-buster-lite.img 
+    Files from-sd-card.img and 2020-02-13-raspbian-buster-lite.img are identical
     ```
+    
 1. Remove images, we do not need these anymore
 
     ```
