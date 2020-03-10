@@ -96,7 +96,7 @@ Currently, you need to type your password each time you connect with the VM from
 1. Set correct permisions of the key-set
 
     ```
-    XCS~$ chmod 700 xcs_server_rsa xcs_server_rsa.pub
+    HOST~$ chmod 700 xcs_server_rsa xcs_server_rsa.pub
     ```
    
 1. Send a copy of the public key to the RPi so it can verify the connection  
