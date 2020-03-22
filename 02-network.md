@@ -23,6 +23,7 @@ As we have a functioning VM and as we have installed Raspbian on the SDCard, let
     
 1. Mount SDCard
     ```
+    XCS~$ mkdir -p /home/pi/rpi/mnt
     XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt 
     ```
     
@@ -140,7 +141,7 @@ Hooray! We can now finally boot the RPi. But before we can continue our quest to
     
 1. Expand filesystem to use full size of SDCard & reboot
     ```
-    RPI~$ sudo sudo raspi-config --expand-rootfs
+    RPI~$ sudo raspi-config --expand-rootfs
     RPI~$ sudo reboot now
     ```
   
@@ -157,7 +158,7 @@ Currently, you need to type your password each time you connect with the RPi. Wi
 
 1. Generate ssh-keys in the VM. 
     ```
-    XCS~$ cd~/.ssh
+    XCS~$ cd ~/.ssh
     XCS~$ ssh-keygen -t rsa
       Generating public/private rsa key pair.
       Enter file in which to save the key (/home/pi/.ssh/id_rsa): rpizero_rsa
