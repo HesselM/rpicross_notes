@@ -3,8 +3,8 @@
 This repository is a personal guide to setup a cross compilation environment to compile [OpenCV](http://opencv.org/), [ROS](http://www.ros.org/) and [WiringPi](http://wiringpi.com) programs for a Raspberry Pi. It contains details on how to setup a VirtualBox, configure SSH / X-server / network settings, how to sync / back up files to and from the Raspberry Pi and of course how to compile and install OpenCV, ROS and WiringPi. Experience with VirtualBox, C, Python and the terminal/nano are assumed. Usage of external keyboards or monitors for the Raspberry Pi is not required: setup is done via card mounting or SSH. 
 
 At the end of manual list you should have:
-- A Virtualbox (VM) running Ubuntu Server 18.04 LTS, with:
-  - SSH connectivity from HOST to GUEST and from GUEST to the Raspberry Pi
+- A Virtualbox (VM) running Ubuntu Server 18.04 LTS (or 16.04), with:
+  - SSH and DNS connectivity from HOST to GUEST and from GUEST to the Raspberry Pi
   - Crosscompilation environment including:
     - Toolchain /  compilers to compile for the Raspberry Pi (zero)
     - Userland libraries (GPU support for the Raspberry Pi)
