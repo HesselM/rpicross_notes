@@ -1,9 +1,9 @@
 # Guide to Setup and Cross Compile for a Raspberry Pi
 
-This repository is a personal guide to setup a cross compilation environment to compile [OpenCV](http://opencv.org/), [ROS](http://www.ros.org/) and [WiringPi](http://wiringpi.com) programs for a Raspberry Pi. It contains details on how to setup a VirtualBox, configure SSH / X-server / network settings, how to sync syncing / back up files to the Raspberry Pi and of course how to compile and install OpenCV, ROS and WiringPi. Experience with VirtualBox, C, Python and the terminal/nano are assumed. Usage of external keyboards or monitors for the Raspberry Pi is not required: setup is done via card mounting or SSH. 
+This repository is a personal guide to setup a cross compilation environment to compile [OpenCV](http://opencv.org/), [ROS](http://www.ros.org/) and [WiringPi](http://wiringpi.com) programs for a Raspberry Pi. It contains details on how to setup a VirtualBox, configure SSH / X-server / network settings, how to sync / back up files to and from the Raspberry Pi and of course how to compile and install OpenCV, ROS and WiringPi. Experience with VirtualBox, C, Python and the terminal/nano are assumed. Usage of external keyboards or monitors for the Raspberry Pi is not required: setup is done via card mounting or SSH. 
 
-At the end of this list you should have:
-- A Virtualbox (VM) running Ubuntu Server 16.04 LTS, with:
+At the end of manual list you should have:
+- A Virtualbox (VM) running Ubuntu Server 18.04 LTS, with:
   - SSH connectivity from HOST to GUEST and from GUEST to the Raspberry Pi
   - Crosscompilation environment including:
     - Toolchain /  compilers to compile for the Raspberry Pi (zero)
@@ -15,18 +15,22 @@ At the end of this list you should have:
   - Native environment supporting:
     - ROS with Python bindings
     - OpenCV 3.2 with Python bindings
-- A Raspberry Pi (zero) (RPi) running Jessie Lite, including
+- A Raspberry Pi (zero) (RPi) running Buster Lite, including
   - OpenCV with Python Bindings
   - ROS-comm with Python Bindings
   - WiringPi support
   - Running PiCamera
-  - i2c and a Real Time Clock (RTC)
+  - i2c, including:
+    - Real Time Clock (RTC)
+    - IO Expander
 - A VM able to run `roscore` to which the Raspberry Pi (RPi) can connect as a node. 
 
 Before the required steps are explained, some disclaimers:
 
 1. Many, many, many StackOverflow questions, Github issues, form-posts and blog-pages have helped me developing these notes. Unfortunatly I haven't written down all these links and hence cannot thank or link all authors, for which my apology. Here is an incomplete list of used sources:
   - VirtualBox SSH: https://forums.virtualbox.org/viewtopic.php?f=8&t=55766
+  - DNS: https://askubuntu.com/questions/1040304/dns-issues-with-virtualbox-vm-and-ubuntu-18-04
+  - DNS: https://superuser.com/questions/641933/how-to-get-virtualbox-vms-to-use-hosts-dns
   - SSH X-server: http://unix.stackexchange.com/questions/12755/how-to-forward-x-over-ssh-from-ubuntu-machine
   - RPI: https://www.raspberrypi.org/documentation/installation/installing-images/linux.md
   - RPI RTC: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c
