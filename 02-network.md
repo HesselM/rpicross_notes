@@ -61,26 +61,31 @@ As we have a functioning VM and as we have installed Raspbian on the SDCard, let
       ssid="<network2>"
       psk="<password_of_network2>"
     }
-   ```
-  
+    ```
+
+1. Finish setup by unmounting the mounted partition
+    ```
+    XCS~$ sudo umount /home/pi/rpi/mnt
+    ```
+    
 ## RPi Hostname
 
 By default, the hostname of a RPi is `raspberrypi`, hence the RPi can be accessed via the dns `raspberrypi.local`. As multiple RPi's might be active in the environment, connection issues may occur. The following steps show how to change the hostname properly.
 
-1. Mount largest partion of the SDCard in the VM.
+1. Mount largest partion of the SDCard in the VM. (if not yet mounted)
     ```
     XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt 
     ```
     
 1. Edit `hostname`
     ```
-    XCS~$ nano /home/pi/rpi/mnt/etc/hostname
+    XCS~$ sudo nano /home/pi/rpi/mnt/etc/hostname
     ```
     
 1. Change `raspberrypi` in e.g. `rpizw`
 1. Edit `hosts`
     ```
-    XCS~$ nano /home/pi/rpi/mnt/etc/hosts
+    XCS~$ sudo nano /home/pi/rpi/mnt/etc/hosts
     ```
     
 1. Change `127.0.0.1 raspberrypi` in e.g. `127.0.0.1 rpizw`. 
@@ -90,7 +95,8 @@ By default, the hostname of a RPi is `raspberrypi`, hence the RPi can be accesse
     ```
     XCS~$ sudo umount /home/pi/rpi/mnt
     ```
-  
+ 
+ 
 ## SSH Setup
 
 ### RPi: Enable SSH 
@@ -172,7 +178,7 @@ Currently, you need to type your password each time you connect with the RPi. Wi
   
 1. Send a copy of the public key to the RPi so it can verify the connection  
     ```
-    cat ~/.ssh/rpizero_rsa.pub | ssh pi@rpizw.local "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+    XCS~$ cat ~/.ssh/rpizero_rsa.pub | ssh pi@rpizw.local "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
     ```
   
 1. Configure ssh connection in `ssh_config`
@@ -184,7 +190,7 @@ Currently, you need to type your password each time you connect with the RPi. Wi
     ```
     #connect via static ip
     Host rpizero
-      HostName 172.16.60.200
+      HostName 192.168.1.100
       IdentityFile ~/.ssh/rpizero_rsa
       User pi
       Port 22
@@ -201,6 +207,7 @@ Currently, you need to type your password each time you connect with the RPi. Wi
     ```
     XCS~$ ssh-agent bash
     XCS~$ ssh-add /home/pi/.ssh/rpizero_rsa
+    Identity added: /home/pi/.ssh/rpizero_rsa (/home/pi/.ssh/rpizero_rsa)
     ```
     
 1. Test connection:
@@ -213,27 +220,6 @@ Currently, you need to type your password each time you connect with the RPi. Wi
 ### SSH-Keys : root
 For synchronisation of the RPi-rootfs in our crosscompile environment and the root of the 'real' RPi, ssh requires root acces.
 
-1. Configure ssh connection in `ssh_config`
-    ```
-    XCS~$ sudo nano /etc/ssh/ssh_config
-    ```
-  
-    Depending on the configuration of `dhcpcd.conf` on the RPi, add the following lines:
-    ```
-    #connect via static ip
-    Host rpizero-root
-      HostName 172.16.60.200
-      IdentityFile ~/.ssh/rpizero_rsa
-      User root
-      Port 22
-  
-    # connect via hostname
-    Host rpizero-local-root
-      HostName rpizw.local
-      IdentityFile ~/.ssh/rpizero_rsa
-      User root
-      Port 22
-    ```
 1. Login to the RPi the enable root.
     ```
     XCS~$ ssh rpizero-local
@@ -242,6 +228,9 @@ For synchronisation of the RPi-rootfs in our crosscompile environment and the ro
 1. Setup root-password.   
     ```
     RPI~$ sudo passwd root
+    New password: 
+    Retype new password: 
+    passwd: password updated successfully
     ```
     > IMPORTANT: the given password should equal the password for the user `pi` !!
     
@@ -256,11 +245,45 @@ For synchronisation of the RPi-rootfs in our crosscompile environment and the ro
     ```
     RPI~$ sudo service ssh restart
     ```
+ 
+1. Exit connection
+    ```
+    RPI~$ exit
+    ```
+    
+1. Configure ssh connection in `ssh_config`
+    ```
+    XCS~$ sudo nano /etc/ssh/ssh_config
+    ```
   
+    Depending on the configuration of `dhcpcd.conf` on the RPi, add the following lines:
+    ```
+    #connect via static ip
+    Host rpizero-root
+      HostName 192.168.1.100
+      IdentityFile ~/.ssh/rpizero_rsa
+      User root
+      Port 22
+  
+    # connect via hostname
+    Host rpizero-local-root
+      HostName rpizw.local
+      IdentityFile ~/.ssh/rpizero_rsa
+      User root
+      Port 22
+    ```
+    
 1. Send a copy of the ssh-keys for the root user to the RPi:
     ```
     XCS~$ cat ~/.ssh/rpizero_rsa.pub | ssh root@rpizw.local "mkdir -p ~/.ssh && cat >>  ~/.ssh/authorized_keys"
     ```
+    
+1. Test connection:
+    ```
+    XCS~$ ssh rpizero-local-root
+    ```
+    
+    You should now be logged in onto the RPi via ssh as `root` without entering your password.
     
 # Next
 
@@ -273,7 +296,6 @@ Or, if you do not need those: [setup the crosscompilation environment](04-xc-set
 
 When the RPi is used in an environment without network connectivity, enabling SSH over USB might be a solution. 
 
-## setup
 1. Detect SDCard & mount SMALLEST partition (the boot partition)
     ```
     XCS~$ lsblk
@@ -313,44 +335,42 @@ When the RPi is used in an environment without network connectivity, enabling SS
     dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait modules-load=dwc2,g_ether
     ```
 
+1. Unmount SDCard / smallest partition 
+    ```
+    XCS~$ sudo umount /home/pi/rpi/mnt
+    ```
+    
+1. Mount largest partition
+    ```
+    XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt 
+    ```
+
+1. Setup static fallback when DHCP is not providing an IP.
+    ```
+    XCS~$ sudo nano /home/pi/rpi/mnt/etc/dhcpcd.conf
+    ```
+    
+    Add the following lines to `dhcpcd.conf`:
+    ```
+    interface usb0
+    fallback static_ip
+    ```
+    
+    > Note that this example is using the static profile, configured earlier in this guide. You could setup a different IP adress as shown before. 
+    
 1. Unmount SDCard
     ```
     XCS~$ sudo umount /home/pi/rpi/mnt
     ```
     
-1. Bootup the RPI with the USB cable connected to your local machine and to the USB port of the device. Make sure that in case of the Raspberry Pi Zero you do not connect the USB cable with with the PWR port as this port does not support the USB protocol.
+1. Bootup the RPi with the USB cable connected to your local machine and to the USB port of the device. Make sure that in case of the Raspberry Pi Zero you do not connect the USB cable with with the PWR port as this port does not support the USB protocol.
 
-1. After booting, connect to the raspberry pi via the set hostname, eg.
-    ```
-    XCS~$ ssh pi@rpizw.local
-    ```
-
-## Static IP
-
-At this point you should be to boot the RPi and connect via SSH over the USB. As the ipaddress of the RPi is propobly assigned by a DHCP service running on your computer, it will have a dynamic address. Follow these steps to make it static:
-
-1. Boot the RPi and login.
-1. Update the configuration file
-    ```
-    RPi~$ sudo nano /etc/network/interfaces
-    ```
-    
-    Add the following at the bottom of the file:
-    ```
-    allow-hotplug usb0
-    iface usb0 inet static
-            address 192.168.10.2
-            netmask 255.255.255.0
-            network 192.168.10.0
-            broadcast 192.168.10.255
-            gateway 192.168.10.1
-    ```
 1. Setup connection details on the HOST~$ (OSX):
     - System Preference > Network > RNDIS/Ethernet Gadget
     - Configure IPv4: Manually
-        - IP Address: 192.168.10.1
+        - IP Address: 192.168.1.1
         - Subnet Mask: 255.255.255.0
-        - Router: 192.168.10.1
-1. Save changes and reboot the RPi. You should now be able to connect via the set ipaddress
-1. More info: https://learn.adafruit.com/turning-your-raspberry-pi-zero-into-a-usb-gadget/ethernet-gadget
+        - Router: 192.168.1.1
+
+1. You should now be able to connect with the RPi via the set IP address. 
 
