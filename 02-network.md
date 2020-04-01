@@ -27,28 +27,23 @@ As we have a functioning VM and as we have installed Raspbian on the SDCard, let
     XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt 
     ```
     
-1. If required, setup static ipaddress, DNS-servers and/or router IP:
+1. If required, configure ipadress handling. For example, use a static ipaddress (`192.168.1.100`) as an fallback, when DHCP fails:
     ```
     XCS~$ sudo nano /home/pi/rpi/mnt/etc/dhcpcd.conf
     ```
     
     Edit and add the following lines to `dhcpcd.conf` as required for your setup: 
     ```
-    # we do not use eth0, only wifi
-    #interface eth0 
+    profile static_ip
+    static ip_address=192.168.1.100/24
+    static routers=192.168.1.1
+    static domain_name_servers=192.168.1.1
 
-    profile 172.16.254.254
-    static ip_address=172.16.60.200
-    static routers=172.16.254.254
-    static domain_name_servers=172.16.1.11 172.16.1.9
-
-    # 1) try static settings
-    # 2) if fails, just settle with dhcp
     interface wlan0
-    arping 172.16.254.254
+    fallback static_ip
     ```
     
-    > Somehow, this approach does not work in conjunction with multiple WiFi network configurations. The exact reason why this fails is (yet) unkown to me. Perhaps a wrong settting is messing up my setup?
+    > More information on how to manage (multiple) (static) networks be found [here](https://www.raspberrypi.org/forums/viewtopic.php?t=140252).
     
 1. Setup WiFi credentials
     ```
