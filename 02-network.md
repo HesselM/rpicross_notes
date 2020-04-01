@@ -372,5 +372,34 @@ When the RPi is used in an environment without network connectivity, enabling SS
         - Subnet Mask: 255.255.255.0
         - Router: 192.168.1.1
 
-1. You should now be able to connect with the RPi via the set IP address. 
+1. You should now be able to connect with the RPi via the set IP address. A dump of `ifconfig` on the RPi might look like:
+   ```
+   RPI~$ ifconfig
+   lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 
+   usb0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.1.100  netmask 255.255.255.0  broadcast 192.168.1.255
+        inet6 fe80::66a1:27c3:5dc2:b760  prefixlen 64  scopeid 0x20<link>
+        ether 4a:3a:94:3c:c8:e5  txqueuelen 1000  (Ethernet)
+        RX packets 420  bytes 76163 (74.3 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 174  bytes 17378 (16.9 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+   wlan0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.2.181  netmask 255.255.255.0  broadcast 192.168.2.255
+        inet6 fe80::95d0:e9ed:d380:bb04  prefixlen 64  scopeid 0x20<link>
+        ether b8:27:eb:68:cc:d8  txqueuelen 1000  (Ethernet)
+        RX packets 1151  bytes 195875 (191.2 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 353  bytes 52663 (51.4 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+   ```
+   > Note that in this example `wlan0` is configured by DHCP, whereas `usb0` has been initialised with the static setup.
