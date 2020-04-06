@@ -1,10 +1,14 @@
 ## Raspberry Pi Peripherals
-The used setup contains both a Real Time Clock (RTC - https://thepihut.com/collections/raspberry-pi-hats/products/rtc-pizero ) and a Raspberry Pi Camera ( https://thepihut.com/collections/raspberry-pi-camera/products/raspberry-pi-camera-module ). Hence, to be complete, I included the taken steps to install these peripherals. 
+This page describes how to add i2c perhiperals and a Pi Camera. The examples below are created with:
 
-## Real-time Clock
-For the RTC we first need to enable i2c, after which the RTC can be configured.
+1. i2c : [Real Time Clock (RTC)](https://thepihut.com/collections/raspberry-pi-hats/products/rtc-pizero) 
+1. i2c : [MCP23017 IO Exanpeder](https://www.kiwi-electronics.nl/io-pi-zero) 
+1. [Noir V2 Raspberry Pi Camera](https://thepihut.com/collections/raspberry-pi-camera/products/raspberry-pi-camera-module) 
 
-### Enable i2c
+These steps assume that the RPi is up and running. 
+
+## Enable i2c
+
 Source: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c
 
 1. Connect to the RPi
@@ -42,20 +46,16 @@ Source: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/co
 1. Allow pi-user to use i2c & reboot
     ```
     RPI~$ sudo adduser pi i2c
-    RPI~$ sudo reboot
     ```
-
-### Enable RTC
-Source: https://thepihut.com/collections/raspberry-pi-hats/products/rtc-pizero
 
 1. Shutdown RPi and disconnect from the power supply
-1. Connect the RTC and powerup.
-1. After powerup, login via SSH
     ```
-    XCS~$ ssh rpizero-local
+    RPI~$ sudo shutdown now
     ```
-  
-1. Check if the RTC clock is found:
+    
+1. Connect your i2c device and powerup.
+
+1. Check if an RTC device is found:
     ```
     RPI~$ sudo i2cdetect -y 1
        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
@@ -67,8 +67,14 @@ Source: https://thepihut.com/collections/raspberry-pi-hats/products/rtc-pizero
       50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
       60: -- -- -- -- -- -- -- -- 68 -- -- -- -- -- -- -- 
       70: -- -- -- -- -- -- -- --  
-    ```
-    
+   ```
+   
+   > The number shown is the i2c address of the device you connected.
+  
+## Setup RTC
+Source: https://thepihut.com/collections/raspberry-pi-hats/products/rtc-pizero
+
+1. Ensure that the RTC is attached to the RPi and that `i2cdetect` lists it as a i2c device.
 1. Edit `boot.txt` so the rtc is loaded upon startup
     ```
     RPI~$ sudo nano /boot/config.txt
@@ -120,7 +126,7 @@ Source: https://thepihut.com/collections/raspberry-pi-hats/products/rtc-pizero
     RPI~$ sudo hwclock -w  
     ```
   
-## Camera
+## Setup RPi Camera
 
 1. Shutdown RPi and disconnect from the power supply
 1. Connect the camera and powerup.
