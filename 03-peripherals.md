@@ -146,6 +146,7 @@ Source: https://thepihut.com/collections/raspberry-pi-hats/products/rtc-pizero
     ```
     XCS~$ ssh -X rpizero-local
     ```
+    >  Take not on the message on login. If you see "Warning: untrusted X11 forwarding setup failed: xauth key data not generated" you might need to use the "-Y" instead of "-X" option. 
     
 1. Install the `links2` image viewer
     ```
@@ -162,8 +163,18 @@ Source: https://thepihut.com/collections/raspberry-pi-hats/products/rtc-pizero
     RPI~$ links2 -g test.jpg
     ```
     
-    > Depending on the speed of the connection, this might take a while.
+    > 1. Depending on the speed of the connection, this might take a while.
 
+    > 2. If you see a message similiar to: 
+    ```
+    Could not initialize any graphics driver. Tried the following drivers:
+    x:
+    Can't open display "(null)"
+    fb:
+    Could not get VT mode.
+    ```
+    >  you should review the "ssh"-login-message and might need to use the "-Y" instead of "-X" option of `ssh` as noted above. 
+    
 # Next
 
 Having installed the peripherals, it is time to [setup the crosscompilation environment](04-xc-setup.md).
