@@ -1,6 +1,9 @@
 set( RPI_ROOTFS /home/pi/rpi/rootfs )
 set( CMAKE_FIND_ROOT_PATH ${RPI_ROOTFS} )
 
+# make
+set( CMAKE_MAKE_PROGRAM "/usr/bin/make" CACHE FILEPATH "")
+
 # compilers
 set( CMAKE_C_COMPILER   "/usr/bin/rpizero-gcc"    CACHE FILEPATH "")
 set( CMAKE_CXX_COMPILER "/usr/bin/rpizero-g++"    CACHE FILEPATH "")
