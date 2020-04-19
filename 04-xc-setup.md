@@ -142,16 +142,30 @@ Several crosscompile steps are simplified by the usage of scripts in this reposi
 
 ## Synchronisation
 
-Both `rootfs` and the RPi need to be kept in sync when new libraries are compiled, installed or added. The tool used for this task is `rsync`.
+Both `rootfs` and the RPi need to be kept in sync when new libraries are compiled, installed or added. For this task some scripts have been developed:
 
-### From RPi to VM
+1. Sync RPi with XCS-`rootfs` (from: [init repository](#init-repository))
+    ```
+    XCS~$ ~/rpicross_notes/scripts/sync-rpi-vm.sh
+    ```
 
-As we do not care much about filepermissions, the call is relatively straighforward:
+1. Sync XCS-`rootfs` with RPi (from: [init repository](#init-repository))
+    ```
+    XCS~$ ~/rpicross_notes/scripts/sync-vm-rpi.sh
+    ```
+    
+The next section explains the mechanisms used in the script. 
+
+### BACKGROUND: syncing from RPi to XCS and back
+
+#### RPi ==> XCS
+
+For synchronising the files, `rsync` is used. Assuming that we do not care about file-permissions as we are moving from a (potentially resricted) RPi to a less restriced XCS, syncing the RPi to VM is relatively straighforward:
 ```
 XCS~$ rsync -auHWv rpizero-local-root:{/usr,/lib} ~/rpi/rootfs
 ```
 
-Which copies all data from `/usr` and `/lib` from the RPi to the VM. Care should be taken with symbolic links (symlinks): links including absolute paths will brake becaue the paths of `/usr` and `/lib` become  `/home/pi/rpi/usr` and `/home/pi/rpi/lib` respectively on the VM. Using the commands `file` and `ln` required links can be fixed:
+This copies all data from `/usr` and `/lib` from the RPi to the VM. Care should be taken with symbolic links (symlinks): links including absolute paths will brake becaue the paths of `/usr` and `/lib` become  `/home/pi/rpi/usr` and `/home/pi/rpi/lib` respectively on the VM. Using the commands `file` and `ln` required links can be fixed:
 ```
 XCS~$ file /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/librt.so
   /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/librt.so: broken symbolic link to /lib/arm-linux-gnueabihf/librt.so.1
@@ -159,14 +173,11 @@ XCS~$ file /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/librt.so
 XCS~$:  ln -sf /home/pi/rpi/rootfs/lib/arm-linux-gnueabihf/librt.so.1 /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/librt.so
 ```
 
+The synchronisation-scripts are able to detect and correct these broken symlinks.
+
 > IMPORTANT: each time `rsync` is used for retrieving libraries from the RPi, the symlinks are updated to the broken links, hence they should be fixed again. It might be usefull to create a simple shell script to fix this such as [`sync-rpi-vm.sh`](scripts/sync-rpi-vm.sh):
 
-1. Sync RPi with VM-`rootfs` (from: [init repository](#init-repository))
-    ```
-    XCS~$ ~/rpicross_notes/scripts/sync-rpi-vm.sh
-    ```
-
-### From VM to RPi
+#### XCS ==> RPi
 
 When copying files from the VM to the RPi we do need to take care of file-permissions. Especially since `~/rpi/rootfs` contains the `bin` folder (and therefore also `sudo`). Synchronizing to the RPi with improper settings might result in `sudo`-errors on the RPi and an instable system.
 
@@ -174,13 +185,6 @@ When taking care of permissions, the sync-command becomes:
 ```
 XCS~$ sudo rsync -auHWv --no-perms --no-owner --no-group /home/pi/rpi/rootfs/ rpizero-local-root:/
 ```
-
-It should be noted that this command also updates the 'corrected' symbolic links. Therefore we need to fix these on the RPi. Using [`sync-vm-rpi.sh`](sync-vm-rpi.sh), this correction is done for us. 
-    
-1. Sync VM-`rootfs` with RPi` (from: [init repository](#init-repository))
-    ```
-    XCS~$ ~/rpicross_notes/scripts/sync-vm-rpi.sh
-    ```
 
 # Test Setup
 Prerequisites: 
@@ -208,27 +212,6 @@ Steps:
     RPI~$ ./hello 
       Hello World!
     ```
-
-# Test Setup : Trouble shooting
-
-```
-Change Dir: /home/pi/rpi/build/hello/pi/CMakeFiles/CMakeTmp
-
-Run Build Command:"/home/pi/rpi/rootfs/usr/bin/make" "cmTC_cbaa5/fast"
-/home/pi/rpi/rootfs/usr/bin/make: 1: /home/pi/rpi/rootfs/usr/bin/make: Syntax error: word unexpected (expecting ")"
-```
-If you encounter such an error, the toolchain invokes the rpi based arm-`make` executable instead of the system-`make` executable. As your computer does not know how to read the arm-based executable, it throws an error. If this happend, you might be able to fix it as noted by [Skammi](https://github.com/HesselM/rpicross_notes/issues/14) :
-
-> I Got in the same issue as some other people that the running the command:
-cmake -D CMAKE_TOOLCHAIN_FILE=~/rpicross_notes/rpi-generic-toolchain.cmake ~/rpicross_notes/hello/pi
-would evoke the RPI make program. I think that is due to the statements:
-set( RPI_ROOTFS /home/pi/rpi/rootfs )
-set( CMAKE_FIND_ROOT_PATH ${RPI_ROOTFS} )
-in the "rpi-generic-toolchain.cmake" file. I solved this by adding:
-set( CMAKE_MAKE_PROGRAM "/usr/bin/make" CACHE FILEPATH "")
-in the "rpi-generic-toolchain.cmake" file.
-
-
 
 # Next
 Having a functional crosscompilation several steps can be taken next:
