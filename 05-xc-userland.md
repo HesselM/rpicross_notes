@@ -23,6 +23,8 @@ No additional packages should be required for the RPi or the VM.
     > The `userland` repository is downloaded in `rootfs` because the `make install` does not copy the headers of the libraries. 
         
 1. Create build location for `userland` and build with [rpi-generic-toolchain](rpi-generic-toolchain.cmake)
+   
+   > NOTE: make sure you sync the RPi with the VM before compiling userland, otherwise linking might fail due too symlinks which have not been corrected.
  
     ```
     XCS~$ mkdir -p ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
@@ -71,10 +73,11 @@ No additional packages should be required for the RPi or the VM.
     XCS~$ make install DESTDIR=/home/pi/rpi/rootfs
     ```
   
-1. Remove build files from the src.
+1. Remove build and git files from the src (these are not needed on the RPi)
     ```
     XCS~$ cd ~/
     XCS~$ rm -rf /home/pi/rpi/rootfs/usr/src/userland/build
+    XCS~$ rm -rf /home/pi/rpi/rootfs/usr/src/userland/.git*
     ```
  
 ## Synchronisation
