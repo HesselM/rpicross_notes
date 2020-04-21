@@ -73,10 +73,11 @@ No additional packages should be required for the RPi or the VM.
     XCS~$ make install DESTDIR=/home/pi/rpi/rootfs
     ```
   
-1. Remove build files from the src.
+1. Remove build and git files from the src (these are not needed on the RPi)
     ```
     XCS~$ cd ~/
     XCS~$ rm -rf /home/pi/rpi/rootfs/usr/src/userland/build
+    XCS~$ rm -rf /home/pi/rpi/rootfs/usr/src/userland/.git*
     ```
  
 ## Synchronisation
