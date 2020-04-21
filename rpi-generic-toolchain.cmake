@@ -1,14 +1,19 @@
-set( RPI_ROOTFS /home/pi/rpi/rootfs )
-set( CMAKE_FIND_ROOT_PATH ${RPI_ROOTFS} )
+cmake_minimum_required(VERSION 3.8)
 
-# make
-set( CMAKE_MAKE_PROGRAM "/usr/bin/make" CACHE FILEPATH "")
+set( RPI_ROOTFS "/home/pi/rpi/rootfs" )
+set( CMAKE_SYSROOT ${RPI_ROOTFS})
+
+set( CMAKE_FIND_ROOT_PATH ${RPI_ROOTFS} )
+set( CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set( CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set( CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set( CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
 # compilers
-set( CMAKE_C_COMPILER   "/usr/bin/rpizero-gcc"    CACHE FILEPATH "")
-set( CMAKE_CXX_COMPILER "/usr/bin/rpizero-g++"    CACHE FILEPATH "")
-set( CMAKE_AR           "/usr/bin/rpizero-ar"     CACHE FILEPATH "")
-set( CMAKE_RANLIB       "/usr/bin/rpizero-ranlib" CACHE FILEPATH "")
+set( CMAKE_C_COMPILER   "/usr/bin/arm-linux-gnueabihf-gcc"    CACHE FILEPATH "")
+set( CMAKE_CXX_COMPILER "/usr/bin/arm-linux-gnueabihf-g++"    CACHE FILEPATH "")
+set( CMAKE_AR           "/usr/bin/arm-linux-gnueabihf-ar"     CACHE FILEPATH "")
+set( CMAKE_RANLIB       "/usr/bin/arm-linux-gnueabihf-ranlib" CACHE FILEPATH "")
 
 # Platform
 set( CMAKE_SYSTEM_NAME Linux )
@@ -31,20 +36,23 @@ set( RPI_PKGCONFIG_LIBDIR "${RPI_PKGCONFIG_LIBDIR}:${RPI_ROOTFS}/usr/share/pkgco
 set( RPI_PKGCONFIG_LIBDIR "${RPI_PKGCONFIG_LIBDIR}:${RPI_ROOTFS}/opt/vc/lib/pkgconfig" )
 set( RPI_PKGCONFIG_LIBDIR "${RPI_PKGCONFIG_LIBDIR}:/home/pi/ros/src_cross/devel_isolated" )
 
-# C/CXX flags
-set( CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS} ${RPI_INCLUDE_DIR}" CACHE STRING "" FORCE)
-set( CMAKE_C_FLAGS          "${CMAKE_CXX_FLAGS} ${RPI_INCLUDE_DIR}" CACHE STRING "" FORCE)
+set( RPI_B_PREFIX "${RPI_B_PREFIX} -B${RPI_ROOTFS}")
+set( RPI_B_PREFIX "${RPI_B_PREFIX} -B${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf")
+set( RPI_B_PREFIX "${RPI_B_PREFIX} -B${RPI_ROOTFS}/lib/arm-linux-gnueabihf")
+
+# C/CXX flagscd
+set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${RPI_B_PREFIX} ${RPI_INCLUDE_DIR}" CACHE STRING "" FORCE)
+set( CMAKE_C_FLAGS    "${CMAKE_C_FLAGS} ${RPI_B_PREFIX} ${RPI_INCLUDE_DIR}" CACHE STRING "" FORCE)
 set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${RPI_LIBRARY_DIR}" CACHE STRING "" FORCE)
 
 # Pkg-config settings
-set( PKG_CONFIG_EXECUTABLE "/usr/bin/pkg-config" CACHE FILEPATH "")
 set( ENV{PKG_CONFIG_DIR}         "" CACHE FILEPATH "")
 set( ENV{PKG_CONFIG_LIBDIR}      "${RPI_PKGCONFIG_LIBDIR}" CACHE FILEPATH "")
 set( ENV{PKG_CONFIG_SYSROOT_DIR} "${RPI_ROOTFS}" CACHE FILEPATH "")
 
 # Python2.7
-set( PYTHON_EXECUTABLE          "/usr/bin/python2.7" CACHE STRING "")
-set( PYTHON_LIBRARY_DEBUG       "${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/libpython2.7.so" CACHE STRING "")
+#set( PYTHON_EXECUTABLE          "/usr/bin/python2.7" CACHE STRING "")
+#et( PYTHON_LIBRARY_DEBUG       "${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/libpython2.7.so" CACHE STRING "")
 set( PYTHON_LIBRARY_RELEASE     "${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/libpython2.7.so" CACHE STRING "")
 set( PYTHON_LIBRARY             "${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/libpython2.7.so" CACHE STRING "")
 set( PYTHON_INCLUDE_DIR         "${RPI_ROOTFS}/usr/include/python2.7" CACHE STRING "")
