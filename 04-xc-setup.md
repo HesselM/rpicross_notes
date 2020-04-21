@@ -17,7 +17,7 @@ For compilation a compiler is needed which can build, create and link our c-code
 
 1. Install the following packages for syncing/crosscompilation:
     ```
-    XCS~$ sudo apt-get install build-essential pkg-config cmake unzip gzip rsync
+    XCS~$ sudo apt-get install build-essential pkg-config cmake unzip gzip rsync python2.7 python3
     XCS~$ ssh rpizero-local
     RPI~$ sudo apt-get install rsync
     ```
