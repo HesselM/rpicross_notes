@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ROOTFS="/home/pi/rpi/rootfs"
+ROOTFS="/home/pi/rpi/rootfs/"
 # Directory with faulty symlinks
 TARGET_DIR="usr/lib/arm-linux-gnueabihf"
 
