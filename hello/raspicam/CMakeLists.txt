@@ -2,9 +2,9 @@ cmake_minimum_required (VERSION 2.8.11)
 
 project(hellocam)
 
-SET(COMPILE_DEFINITIONS -Werror)
+SET( COMPILE_DEFINITIONS -Werror )
 
-#include required packages
+# include required packages
 find_package( Threads REQUIRED )
 find_package( PkgConfig REQUIRED )
 
@@ -12,10 +12,12 @@ find_package( PkgConfig REQUIRED )
 pkg_search_module(MMAL REQUIRED mmal)
 include_directories(${MMAL_INCLUDE_DIRS})
 link_directories(${MMAL_LIBRARY_DIRS} )
+set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath ${MMAL_LIBRARY_DIRS}" )
 
 # Userland
 include_directories(${USERLAND_DIR})
 include_directories(${USERLAND_DIR}/host_applications/linux/libs/sm)
+include_directories(${USERLAND_DIR}/host_applications/linux/libs/bcm_host/include)
 
 # Projectdirs
 include_directories(${CMAKE_SOURCE_DIR})
@@ -33,10 +35,10 @@ set (GL_SCENE_SOURCES
 )
 
 set (COMMON_SOURCES
-    RaspiCommonSettings.c
     RaspiCamControl.c
     RaspiCLI.c
     RaspiPreview.c
+    RaspiCommonSettings.c
     RaspiHelpers.c
     RaspiGPS.c
     libgps_loader.c
