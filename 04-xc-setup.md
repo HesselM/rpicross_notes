@@ -21,34 +21,34 @@ For compilation a compiler is needed which can build, create and link our c-code
     XCS~$ ssh rpizero-local
     RPI~$ sudo apt-get install rsync
     ```
-  
+
 1. Install the tools for compilation (this will create a folder `~/rpi/tools` in the VM)
     ```
     XCS~$ mkdir -p ~/rpi
     XCS~$ cd ~/rpi
     XCS~$ git clone https://github.com/raspberrypi/tools.git --depth 1
     ```
-    
+
 1. Create links to the proper gcc-binairies.
     ```
-    XCS~$ sudo ln -s /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc /usr/bin/rpizero-gcc
-    XCS~$ sudo ln -s /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ /usr/bin/rpizero-g++
-    XCS~$ sudo ln -s /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-ar /usr/bin/rpizero-ar
-    XCS~$ sudo ln -s /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-ranlib /usr/bin/rpizero-ranlib
+    XCS~$ sudo ln -s /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc /usr/bin/arm-linux-gnueabihf-gcc
+    XCS~$ sudo ln -s /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ /usr/bin/arm-linux-gnueabihf-g++
+    XCS~$ sudo ln -s /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-ar /usr/bin/arm-linux-gnueabihf-ar
+    XCS~$ sudo ln -s /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-ranlib /usr/bin/arm-linux-gnueabihf-ranlib
     ```
-  
+
 1. Clean up unneeded branches in the tools-directory to save space.
     ```
     XCS~$ rm -rf /home/pi/rpi/tools/arm-bcm2708/arm-bcm2708*
     ```
-   
+
 ## Note on base-directory
 
 This guide assumes `/home/pi/` to be the `~/` home dir. If you have a different directory, make sure you update the `/home/pi` to the proper path. Note that setting it to `~/` will not work.
 
 ## Setting up `rootfs`
 
-The crosscompiler requires access to (`/usr` and `/lib`) RPi-binairies and libraries to link properly. Therefore we need to create a local copy of the RPi-filesystem in the VM: `rootfs`. 
+The crosscompiler requires access to (`/usr` and `/lib`) RPi-binairies and libraries to link properly. Therefore we need to create a local copy of the RPi-filesystem in the VM: `rootfs`.
 
 1. Shutdown RPi, disconnect the power supply and remove SDCard.
     > As the inital setup might take a while, the initial setup copies data from the SDCard. Future synchronisation actions will do the syncing via SSH.
@@ -56,7 +56,7 @@ The crosscompiler requires access to (`/usr` and `/lib`) RPi-binairies and libra
     ```
     XCS~$ lsblk
       ...
-    XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt 
+    XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt
     ```
 1. Create the `rootfs` location
     ```
@@ -68,7 +68,7 @@ The crosscompiler requires access to (`/usr` and `/lib`) RPi-binairies and libra
     XCS~$ rsync -auHWv /home/pi/rpi/mnt/lib /home/pi/rpi/rootfs/
     XCS~$ rsync -auHWv /home/pi/rpi/mnt/usr /home/pi/rpi/rootfs/
     ```
-        
+
  1. OPTIONAL (requires [SDCard backup/reset](#sdcard-backupreset)): create `rootfs` from backup
     ```
     XCS~$ gzip -dc /home/pi/rpi/img/rpi_backup.img.gz > /home/pi/rpi/img/rpi_backup.img
@@ -78,8 +78,8 @@ The crosscompiler requires access to (`/usr` and `/lib`) RPi-binairies and libra
       Sector size (logical/physical): 512 bytes / 512 bytes
       I/O size (minimum/optimal): 512 bytes / 512 bytes
       Disklabel type: dos
-      Disk identifier: 0xa11202a8 
- 
+      Disk identifier: 0xa11202a8
+
       Device                              Boot  Start      End  Sectors  Size Id Type
       /home/pi/rpi/img/rpi_backup.img1           8192   137215   129024   63M  c W95 FAT32 (LBA)
       /home/pi/rpi/img/rpi_backup.img2         137216 15353855 15216640  7.3G 83 Linux
@@ -88,14 +88,14 @@ The crosscompiler requires access to (`/usr` and `/lib`) RPi-binairies and libra
     > - determine `unit size`, e.g. 512
     > - multiply these values: 137216 * 512 = 70254592
     > - mount and copy
-    
+
     ```
     XCS~$ sudo mount -o loop,offset=70254592 /home/pi/rpi/img/rpi_backup.img /home/pi/rpi/mnt
     XCS~$ rsync -auHWv /home/pi/rpi/mnt/lib /home/pi/rpi/rootfs/
     XCS~$ rsync -auHWv /home/pi/rpi/mnt/usr /home/pi/rpi/rootfs/
-    XCS~$ sudo umount /home/pi/rpi/mnt 
+    XCS~$ sudo umount /home/pi/rpi/mnt
     ```
-    
+
 ## SDCard backup/reset
 
 Syncing or crosscompilation can mistakingly result in faulty libraries or libraries installed in wrong locations. To save a lot of (re)installation time, these steps show how to backup or reinitiate the SDCard.
@@ -104,37 +104,37 @@ Syncing or crosscompilation can mistakingly result in faulty libraries or librar
     ```
     XCS~$ lsblk
       NAME                        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-      sda                           8:0    0   25G  0 disk 
+      sda                           8:0    0   25G  0 disk
       ├─sda1                        8:1    0  487M  0 part /boot
-      ├─sda2                        8:2    0    1K  0 part 
-      └─sda5                        8:5    0 24.5G  0 part 
+      ├─sda2                        8:2    0    1K  0 part
+      └─sda5                        8:5    0 24.5G  0 part
         ├─XCS--rpizero--vg-root   252:0    0 20.5G  0 lvm  /
         └─XCS--rpizero--vg-swap_1 252:1    0    4G  0 lvm  [SWAP]
       sdb                           8:16   1  7.3G  0 disk       <=== Our RPI SDCard!
-      ├─sdb1                        8:17   1   63M  0 part 
-      └─sdb2                        8:18   1  7.3G  0 part 
+      ├─sdb1                        8:17   1   63M  0 part
+      └─sdb2                        8:18   1  7.3G  0 part
       sr0                          11:0    1 55.7M  0 rom  
     ```
-    
+
 1. Create a (compressed) backup
     ```
     XCS~$ sudo dd bs=4M if=/dev/sdb | gzip > /home/pi/rpi/img/rpi_backup.img.gz
     ```
-    
+
 1. To restore a backup, use:
     ```
     XCS~$ gzip -dc /home/pi/rpi/img/rpi_backup.img.gz | sudo dd bs=4M of=/dev/sdb
     ```
 ## Init Repository  
 
-Several crosscompile steps are simplified by the usage of scripts in this repository. 
+Several crosscompile steps are simplified by the usage of scripts in this repository.
 
-1. Clone repository 
+1. Clone repository
     ```
     XCS~$ cd ~/
     XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
     ```
-    
+
 1. Allow scripts to be executed
     ```
     XCS~$ chmod +x ~/rpicross_notes/scripts/*
@@ -153,8 +153,8 @@ Both `rootfs` and the RPi need to be kept in sync when new libraries are compile
     ```
     XCS~$ ~/rpicross_notes/scripts/sync-vm-rpi.sh
     ```
-    
-The next section explains the mechanisms used in the script. 
+
+The next section explains the mechanisms used in the script.
 
 ### BACKGROUND: syncing from RPi to XCS and back
 
@@ -187,7 +187,7 @@ XCS~$ sudo rsync -auHWv --no-perms --no-owner --no-group /home/pi/rpi/rootfs/ rp
 ```
 
 # Test Setup
-Prerequisites: 
+Prerequisites:
  - Toolchain [installed](#required-packages)
  - Repository [initialised](#init-repository)
 
@@ -202,14 +202,14 @@ Steps:
         ~/rpicross_notes/hello/pi
     XCS~$ make
     ```
-   
+
     > When omitting the `-D CMAKE_TOOLCHAIN_FILE` option, cmake wil build the `hellopi` with the default compiler, allowing the execution of the binairy in the VM.
-    
+
 1. Sync and run.
     ```
-    XCS~$ scp hello rpizero-local:~/ 
+    XCS~$ scp hello rpizero-local:~/
     XCS~$ ssh rpizero-local
-    RPI~$ ./hello 
+    RPI~$ ./hello
       Hello World!
     ```
 
@@ -218,4 +218,4 @@ Having a functional crosscompilation several steps can be taken next:
 - Crosscompile & install [Userland libraries](05-xc-userland.md) (for communication with the RPi GPU)
 - Crosscompile & install [OpenCV 3.2 with Python Bindings](06-xc-opencv.md) (for computer vision)
 - Crosscompile & install [ROS](07-xc-ros.md) (to run the RPi as Node in a ROS-network)
-- Develop your own code.. 
+- Develop your own code..
