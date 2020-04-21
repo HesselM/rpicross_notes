@@ -28,7 +28,7 @@ No additional packages should be required for the RPi or the VM.
     XCS~$ mkdir -p ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
     XCS~$ cd ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
     XCS~$ cmake \
-      -D CMAKE_TOOLCHAIN_FILE=/home/pi/dev/rpicross_notes/rpi-generic-toolchain.cmake \
+      -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
       -D CMAKE_BUILD_TYPE=Release \
       -D ARM64=OFF \
       /home/pi/rpi/rootfs/usr/src/userland/
@@ -81,7 +81,7 @@ No additional packages should be required for the RPi or the VM.
     
 1. Send the created/updated headers and binaries from `rootfs` on the rpi:
     ```
-    XCS~$ /home/pi/rpicross_notes/sync-vm-rpi.sh
+    XCS~$ /home/pi/rpicross_notes/scripts/sync-vm-rpi.sh
     ```
 
 ## Testing
