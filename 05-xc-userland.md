@@ -28,9 +28,9 @@ No additional packages should be required for the RPi or the VM.
     XCS~$ mkdir -p ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
     XCS~$ cd ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
     XCS~$ cmake \
-      -D CMAKE_ASM_COMPILER=/usr/bin/rpizero-gcc \
-      -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
+      -D CMAKE_TOOLCHAIN_FILE=/home/pi/dev/rpicross_notes/rpi-generic-toolchain.cmake \
       -D CMAKE_BUILD_TYPE=Release \
+      -D ARM64=OFF \
       /home/pi/rpi/rootfs/usr/src/userland/
     ```
     This should produce an ouput similar to:
@@ -38,14 +38,14 @@ No additional packages should be required for the RPi or the VM.
     ```
     -- The C compiler identification is GNU 4.9.3
     -- The CXX compiler identification is GNU 4.9.3
-    -- Check for working C compiler: /usr/bin/rpizero-gcc
-    -- Check for working C compiler: /usr/bin/rpizero-gcc -- works
+    -- Check for working C compiler: /usr/bin/arm-linux-gnueabihf-gcc
+    -- Check for working C compiler: /usr/bin/arm-linux-gnueabihf-gcc -- works
     -- Detecting C compiler ABI info
     -- Detecting C compiler ABI info - done
     -- Detecting C compile features
     -- Detecting C compile features - done
-    -- Check for working CXX compiler: /usr/bin/rpizero-g++
-    -- Check for working CXX compiler: /usr/bin/rpizero-g++ -- works
+    -- Check for working CXX compiler: /usr/bin/arm-linux-gnueabihf-g++
+    -- Check for working CXX compiler: /usr/bin/arm-linux-gnueabihf-g++ -- works
     -- Detecting CXX compiler ABI info
     -- Detecting CXX compiler ABI info - done
     -- Detecting CXX compile features
@@ -53,7 +53,7 @@ No additional packages should be required for the RPi or the VM.
     -- Looking for execinfo.h
     -- Looking for execinfo.h - found
     -- The ASM compiler identification is GNU
-    -- Found assembler: /usr/bin/rpizero-gcc
+    -- Found assembler: /usr/bin/arm-linux-gnueabihf-gcc
     -- Found PkgConfig: /usr/bin/pkg-config (found version "0.29.1") 
     -- Configuring done
     -- Generating done
@@ -78,14 +78,8 @@ No additional packages should be required for the RPi or the VM.
     ```
  
 ## Synchronisation
-Update `rootfs` on the rpi:
-
-1. Use a direct call:
-    ```
-    XCS~$ sudo rsync -auHWv --no-perms --no-owner --no-group /home/pi/rpi/rootfs/ rpizero-local-root:/
-    ```
     
-1. Or use the [link-correcting script](04-xc-setup.md#init-repository):
+1. Send the created/updated headers and binaries from `rootfs` on the rpi:
     ```
     XCS~$ /home/pi/rpicross_notes/sync-vm-rpi.sh
     ```
