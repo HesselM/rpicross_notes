@@ -46,6 +46,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             MMAL_PARAM_EXPOSUREMODE_ANTISHAKE,
             MMAL_PARAM_EXPOSUREMODE_FIREWORKS,
  *
+ * Flicker Avoid Mode
+ *          MMAL_PARAM_FLICKERAVOID_OFF,
+            MMAL_PARAM_FLICKERAVOID_AUTO,
+            MMAL_PARAM_FLICKERAVOID_50HZ,
+            MMAL_PARAM_FLICKERAVOID_60HZ,
+ *
  * AWB Mode
  *          MMAL_PARAM_AWBMODE_OFF,
             MMAL_PARAM_AWBMODE_AUTO,
@@ -57,6 +63,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             MMAL_PARAM_AWBMODE_INCANDESCENT,
             MMAL_PARAM_AWBMODE_FLASH,
             MMAL_PARAM_AWBMODE_HORIZON,
+            MMAL_PARAM_AWBMODE_GREYWORLD
  *
  * Image FX
             MMAL_PARAM_IMAGEFX_NONE,
@@ -142,6 +149,7 @@ typedef struct raspicam_camera_parameters_s
    MMAL_PARAM_IMAGEFX_T imageEffect;
    MMAL_PARAMETER_IMAGEFX_PARAMETERS_T imageEffectsParameters;
    MMAL_PARAM_COLOURFX_T colourEffects;
+   MMAL_PARAM_FLICKERAVOID_T flickerAvoidMode;
    int rotation;              /// 0-359
    int hflip;                 /// 0 or 1
    int vflip;                 /// 0 or 1
@@ -156,11 +164,20 @@ typedef struct raspicam_camera_parameters_s
    int annotate_text_size;    // Text size for annotation
    int annotate_text_colour;  // Text colour for annotation
    int annotate_bg_colour;    // Background colour for annotation
+   unsigned int annotate_justify;
+   unsigned int annotate_x;
+   unsigned int annotate_y;
+
    MMAL_PARAMETER_STEREOSCOPIC_MODE_T stereo_mode;
+   float analog_gain;         // Analog gain
+   float digital_gain;        // Digital gain
+
+   int settings;
 } RASPICAM_CAMERA_PARAMETERS;
 
-typedef enum {
-    ZOOM_IN, ZOOM_OUT, ZOOM_RESET
+typedef enum
+{
+   ZOOM_IN, ZOOM_OUT, ZOOM_RESET
 } ZOOM_COMMAND_T;
 
 
@@ -188,6 +205,7 @@ int raspicamcontrol_set_metering_mode(MMAL_COMPONENT_T *camera, MMAL_PARAM_EXPOS
 int raspicamcontrol_set_video_stabilisation(MMAL_COMPONENT_T *camera, int vstabilisation);
 int raspicamcontrol_set_exposure_compensation(MMAL_COMPONENT_T *camera, int exp_comp);
 int raspicamcontrol_set_exposure_mode(MMAL_COMPONENT_T *camera, MMAL_PARAM_EXPOSUREMODE_T mode);
+int raspicamcontrol_set_flicker_avoid_mode(MMAL_COMPONENT_T *camera, MMAL_PARAM_FLICKERAVOID_T mode);
 int raspicamcontrol_set_awb_mode(MMAL_COMPONENT_T *camera, MMAL_PARAM_AWBMODE_T awb_mode);
 int raspicamcontrol_set_awb_gains(MMAL_COMPONENT_T *camera, float r_gain, float b_gain);
 int raspicamcontrol_set_imageFX(MMAL_COMPONENT_T *camera, MMAL_PARAM_IMAGEFX_T imageFX);
@@ -200,8 +218,10 @@ int raspicamcontrol_set_shutter_speed(MMAL_COMPONENT_T *camera, int speed_ms);
 int raspicamcontrol_set_DRC(MMAL_COMPONENT_T *camera, MMAL_PARAMETER_DRC_STRENGTH_T strength);
 int raspicamcontrol_set_stats_pass(MMAL_COMPONENT_T *camera, int stats_pass);
 int raspicamcontrol_set_annotate(MMAL_COMPONENT_T *camera, const int bitmask, const char *string,
-                                 const int text_size, const int text_colour, const int bg_colour);
+                                 const int text_size, const int text_colour, const int bg_colour,
+                                 const unsigned int justify, const unsigned int x, const unsigned int y);
 int raspicamcontrol_set_stereo_mode(MMAL_PORT_T *port, MMAL_PARAMETER_STEREOSCOPIC_MODE_T *stereo_mode);
+int raspicamcontrol_set_gains(MMAL_COMPONENT_T *camera, float analog, float digital);
 
 //Individual getting functions
 int raspicamcontrol_get_saturation(MMAL_COMPONENT_T *camera);
@@ -214,9 +234,15 @@ int raspicamcontrol_get_video_stabilisation(MMAL_COMPONENT_T *camera);
 int raspicamcontrol_get_exposure_compensation(MMAL_COMPONENT_T *camera);
 MMAL_PARAM_THUMBNAIL_CONFIG_T raspicamcontrol_get_thumbnail_parameters(MMAL_COMPONENT_T *camera);
 MMAL_PARAM_EXPOSUREMODE_T raspicamcontrol_get_exposure_mode(MMAL_COMPONENT_T *camera);
+MMAL_PARAM_FLICKERAVOID_T raspicamcontrol_get_flicker_avoid_mode(MMAL_COMPONENT_T *camera);
 MMAL_PARAM_AWBMODE_T raspicamcontrol_get_awb_mode(MMAL_COMPONENT_T *camera);
 MMAL_PARAM_IMAGEFX_T raspicamcontrol_get_imageFX(MMAL_COMPONENT_T *camera);
 MMAL_PARAM_COLOURFX_T raspicamcontrol_get_colourFX(MMAL_COMPONENT_T *camera);
+
+/** Default camera callback function
+  */
+void default_camera_control_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer);
+
 
 
 #endif /* RASPICAMCONTROL_H_ */
