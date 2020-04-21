@@ -13,11 +13,6 @@ pkg_search_module(MMAL REQUIRED mmal)
 include_directories(${MMAL_INCLUDE_DIRS})
 link_directories(${MMAL_LIBRARY_DIRS} )
 
-# EGL
-pkg_search_module(EGL REQUIRED egl)
-include_directories(${EGL_INCLUDE_DIRS})
-link_directories(${EGL_LIBRARY_DIRS} )
-
 # Userland
 include_directories(${USERLAND_DIR})
 include_directories(${USERLAND_DIR}/host_applications/linux/libs/sm)
@@ -38,9 +33,13 @@ set (GL_SCENE_SOURCES
 )
 
 set (COMMON_SOURCES
+    RaspiCommonSettings.c
     RaspiCamControl.c
     RaspiCLI.c
     RaspiPreview.c
+    RaspiHelpers.c
+    RaspiGPS.c
+    libgps_loader.c
 )
 
 set (HELLOCAM_SOURCES
@@ -56,5 +55,8 @@ add_executable(hellocam ${HELLOCAM_SOURCES} ${COMMON_SOURCES} ${GL_SCENE_SOURCES
 # Libraries
 target_link_libraries(hellocam ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(hellocam ${MMAL_LIBRARIES})
-target_link_libraries(hellocam ${EGL_LIBRARIES})
+target_link_libraries(hellocam bcm_host)
+target_link_libraries(hellocam brcmGLESv2)
+target_link_libraries(hellocam brcmEGL)
 target_link_libraries(hellocam m)
+target_link_libraries(hellocam dl)
