@@ -14,10 +14,10 @@ int main( int argc, char** argv )
         
     // Read image
     Mat image;
-    image = imread(argv[1], CV_LOAD_IMAGE_COLOR);
+    image = imread( argv[1], IMREAD_COLOR);
     
     // Check for invalid input
-    if(! image.data ) {
+    if( image.empty() ) {
         cout <<  "Could not open or find the image" << std::endl ;
         return -1;
     }

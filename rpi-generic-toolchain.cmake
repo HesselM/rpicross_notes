@@ -51,13 +51,24 @@ set( ENV{PKG_CONFIG_LIBDIR}      "${RPI_PKGCONFIG_LIBDIR}" CACHE FILEPATH "")
 set( ENV{PKG_CONFIG_SYSROOT_DIR} "${RPI_ROOTFS}" CACHE FILEPATH "")
 
 # Python2.7
-#set( PYTHON_EXECUTABLE          "/usr/bin/python2.7" CACHE STRING "")
-#et( PYTHON_LIBRARY_DEBUG       "${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/libpython2.7.so" CACHE STRING "")
+set( PYTHON_EXECUTABLE          "/usr/bin/python2.7" CACHE STRING "")
+set( PYTHON_LIBRARY_DEBUG       "${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/libpython2.7.so" CACHE STRING "")
 set( PYTHON_LIBRARY_RELEASE     "${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/libpython2.7.so" CACHE STRING "")
 set( PYTHON_LIBRARY             "${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/libpython2.7.so" CACHE STRING "")
-set( PYTHON_INCLUDE_DIR         "${RPI_ROOTFS}/usr/include/python2.7" CACHE STRING "")
+set( PYTHON2_INCLUDE_DIR        "${RPI_ROOTFS}/usr/include/python2.7" CACHE STRING "")
+set( PYTHON2_INCLUDE_DIR2       "${RPI_ROOTFS}/usr/include/arm-linux-gnueabihf/python2.7" CACHE STRING "")
 set( PYTHON2_NUMPY_INCLUDE_DIRS "${RPI_ROOTFS}/usr/lib/python2.7/dist-packages/numpy/core/include" CACHE STRING "")
 set( PYTHON2_PACKAGES_PATH      "${RPI_ROOTFS}/usr/local/lib/python2.7/site-packages" CACHE STRING "")
+
+# Python3
+set( PYTHON3_EXECUTABLE         "/usr/bin/python3" CACHE STRING "")
+set( PYTHON3_LIBRARY_DEBUG      "${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/libpython3.7m.so" CACHE STRING "")
+set( PYTHON3_LIBRARY_RELEASE    "${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/libpython3.7m.so" CACHE STRING "")
+set( PYTHON3_LIBRARY            "${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/libpython3.7m.so" CACHE STRING "")
+set( PYTHON3_INCLUDE_DIR        "${RPI_ROOTFS}/usr/include/python3.7m" CACHE STRING "")
+set( PYTHON3_INCLUDE_DIR2       "${RPI_ROOTFS}/usr/include/arm-linux-gnueabihf/python3.7m/" CACHE STRING "")
+set( PYTHON3_NUMPY_INCLUDE_DIRS "${RPI_ROOTFS}/usr/lib/python3/dist-packages/numpy/core/include" CACHE STRING "")
+set( PYTHON3_PACKAGES_PATH      "${RPI_ROOTFS}/usr/local/lib/python3.7/site-packages" CACHE STRING "")
 
 # Boost
 set( BOOST_LIBRARYDIR "${RPI_ROOTFS}/usr/lib/arm-linux-gnueabihf/" CACHE STRING "")
