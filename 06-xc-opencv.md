@@ -84,112 +84,112 @@ To crosscompile `OpenCV`, only packages on the RPi need te be installed.
   
     ```
     -- General configuration for OpenCV 4.3.0 =====================================
---   Version control:               unknown
--- 
---   Extra modules:
---     Location (extra):            /home/pi/rpi/src/opencv_contrib-4.3.0/modules
---     Version control (extra):     unknown
--- 
---   Platform:
---     Timestamp:                   2020-04-21T18:10:59Z
---     Host:                        Linux 4.15.0-96-generic x86_64
---     Target:                      Linux 1 arm
---     CMake:                       3.10.2
---     CMake generator:             Unix Makefiles
---     CMake build tool:            /usr/bin/make
---     Configuration:               Release
--- 
---   CPU/HW features:
---     Baseline:
---       requested:                 DETECT
---       disabled:                  VFPV3 NEON
--- 
---   C/C++:
---     Built as dynamic libs?:      YES
---     C++ standard:                11
---     C++ Compiler:                /usr/bin/arm-linux-gnueabihf-g++  (ver 4.9.3)
---     C++ flags (Release):         -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include  -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include   -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wundef -Winit-self -Wpointer-arith -Wsign-promo -Wuninitialized -Winit-self -Wno-delete-non-virtual-dtor -Wno-comment -Wno-missing-field-initializers -fdiagnostics-show-option -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections  -fvisibility=hidden -fvisibility-inlines-hidden -O3 -DNDEBUG  -DNDEBUG
---     C++ flags (Debug):           -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include  -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include   -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wundef -Winit-self -Wpointer-arith -Wsign-promo -Wuninitialized -Winit-self -Wno-delete-non-virtual-dtor -Wno-comment -Wno-missing-field-initializers -fdiagnostics-show-option -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections  -fvisibility=hidden -fvisibility-inlines-hidden -g  -O0 -DDEBUG -D_DEBUG
---     C Compiler:                  /usr/bin/arm-linux-gnueabihf-gcc
---     C flags (Release):           -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include  -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include   -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wuninitialized -Winit-self -Wno-comment -Wno-missing-field-initializers -fdiagnostics-show-option -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections  -fvisibility=hidden -O3 -DNDEBUG  -DNDEBUG
---     C flags (Debug):             -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include  -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include   -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wuninitialized -Winit-self -Wno-comment -Wno-missing-field-initializers -fdiagnostics-show-option -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections  -fvisibility=hidden -g  -O0 -DDEBUG -D_DEBUG
---     Linker flags (Release):      -Wl,--gc-sections -Wl,--as-needed  
---     Linker flags (Debug):        -Wl,--gc-sections -Wl,--as-needed  
---     ccache:                      NO
---     Precompiled headers:         NO
---     Extra dependencies:          dl m pthread rt
---     3rdparty dependencies:
--- 
---   OpenCV modules:
---     To be built:                 aruco bgsegm bioinspired calib3d ccalib core datasets dnn dnn_objdetect dnn_superres dpm face features2d flann freetype fuzzy gapi hfs highgui img_hash imgcodecs imgproc intensity_transform line_descriptor ml objdetect optflow phase_unwrapping photo plot python2 python3 quality rapid reg rgbd saliency shape stereo stitching structured_light superres surface_matching text tracking video videoio videostab xfeatures2d ximgproc xobjdetect xphoto
---     Disabled:                    world
---     Disabled by dependency:      -
---     Unavailable:                 alphamat cnn_3dobj cudaarithm cudabgsegm cudacodec cudafeatures2d cudafilters cudaimgproc cudalegacy cudaobjdetect cudaoptflow cudastereo cudawarping cudev cvv hdf java js matlab ovis sfm ts viz
---     Applications:                apps
---     Documentation:               NO
---     Non-free algorithms:         NO
--- 
---   GUI: 
---     GTK+:                        YES (ver 2.24.32)
---       GThread :                  YES (ver 2.58.3)
---       GtkGlExt:                  NO
--- 
---   Media I/O: 
---     ZLib:                        /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libz.so (ver 1.2.11)
---     JPEG:                        /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libjpeg.so (ver 62)
---     WEBP:                        build (ver encoder: 0x020f)
---     PNG:                         /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libpng.so (ver 1.6.36)
---     TIFF:                        /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libtiff.so (ver 42 / 4.1.0)
---     JPEG 2000:                   /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libjasper.so (ver 1.900.1)
---     HDR:                         YES
---     SUNRASTER:                   YES
---     PXM:                         YES
---     PFM:                         YES
--- 
---   Video I/O:
---     DC1394:                      YES (2.2.5)
---     FFMPEG:                      NO
---       avcodec:                   YES (58.35.100)
---       avformat:                  YES (58.20.100)
---       avutil:                    YES (56.22.100)
---       swscale:                   YES (5.3.100)
---       avresample:                NO
---     GStreamer:                   NO
---     v4l/v4l2:                    YES (linux/videodev2.h)
--- 
---   Parallel framework:            pthreads
--- 
---   Trace:                         YES (with Intel ITT)
--- 
---   Other third-party libraries:
---     Lapack:                      NO
---     Custom HAL:                  NO
---     Protobuf:                    build (3.5.1)
--- 
---   OpenCL:                        YES (no extra features)
---     Include path:                /home/pi/rpi/src/opencv-4.3.0/3rdparty/include/opencl/1.2
---     Link libraries:              Dynamic load
--- 
---   Python 2:
---     Interpreter:                 /usr/bin/python2.7 (ver 2.7.17)
---     Libraries:                   /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libpython2.7.so (ver 2.7.16)
---     numpy:                       /home/pi/rpi/rootfs/usr/lib/python2.7/dist-packages/numpy/core/include (ver undefined - cannot be probed because of the cross-compilation)
---     install path:                /home/pi/rpi/rootfs/usr/local/lib/python2.7/site-packages/cv2/python-2.7
--- 
---   Python 3:
---     Interpreter:                 /usr/bin/python3 (ver 3.6.9)
---     Libraries:                   /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libpython3.7m.so (ver 3.7.3)
---     numpy:                       /home/pi/rpi/rootfs/usr/lib/python3/dist-packages/numpy/core/include (ver undefined - cannot be probed because of the cross-compilation)
---     install path:                /home/pi/rpi/rootfs/usr/local/lib/python3.7/site-packages/cv2/python-3.6
--- 
---   Python (for build):            /usr/bin/python2.7
--- 
---   Install to:                    /home/pi/rpi/rootfs/usr
--- -----------------------------------------------------------------
--- 
--- Configuring done
--- Generating done
--- Build files have been written to: /home/pi/rpi/build/opencv
+    --   Version control:               unknown
+    -- 
+    --   Extra modules:
+    --     Location (extra):            /home/pi/rpi/src/opencv_contrib-4.3.0/modules
+    --     Version control (extra):     unknown
+    -- 
+    --   Platform:
+    --     Timestamp:                   2020-04-21T18:10:59Z
+    --     Host:                        Linux 4.15.0-96-generic x86_64
+    --     Target:                      Linux 1 arm
+    --     CMake:                       3.10.2
+    --     CMake generator:             Unix Makefiles
+    --     CMake build tool:            /usr/bin/make
+    --     Configuration:               Release
+    -- 
+    --   CPU/HW features:
+    --     Baseline:
+    --       requested:                 DETECT
+    --       disabled:                  VFPV3 NEON
+    -- 
+    --   C/C++:
+    --     Built as dynamic libs?:      YES
+    --     C++ standard:                11
+    --     C++ Compiler:                /usr/bin/arm-linux-gnueabihf-g++  (ver 4.9.3)
+    --     C++ flags (Release):         -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include  -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include   -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wundef -Winit-self -Wpointer-arith -Wsign-promo -Wuninitialized -Winit-self -Wno-delete-non-virtual-dtor -Wno-comment -Wno-missing-field-initializers -fdiagnostics-show-option -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections  -fvisibility=hidden -fvisibility-inlines-hidden -O3 -DNDEBUG  -DNDEBUG
+    --     C++ flags (Debug):           -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include  -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include   -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wundef -Winit-self -Wpointer-arith -Wsign-promo -Wuninitialized -Winit-self -Wno-delete-non-virtual-dtor -Wno-comment -Wno-missing-field-initializers -fdiagnostics-show-option -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections  -fvisibility=hidden -fvisibility-inlines-hidden -g  -O0 -DDEBUG -D_DEBUG
+    --     C Compiler:                  /usr/bin/arm-linux-gnueabihf-gcc
+    --     C flags (Release):           -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include  -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include   -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wuninitialized -Winit-self -Wno-comment -Wno-missing-field-initializers -fdiagnostics-show-option -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections  -fvisibility=hidden -O3 -DNDEBUG  -DNDEBUG
+    --     C flags (Debug):             -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include  -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs -B/home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf -B/home/pi/rpi/rootfs/lib/arm-linux-gnueabihf  -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include -isystem /home/pi/rpi/rootfs/usr/include/arm-linux-gnueabihf -isystem /home/pi/rpi/rootfs/usr/include -isystem /home/pi/rpi/rootfs/usr/local/include   -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wuninitialized -Winit-self -Wno-comment -Wno-missing-field-initializers -fdiagnostics-show-option -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections  -fvisibility=hidden -g  -O0 -DDEBUG -D_DEBUG
+    --     Linker flags (Release):      -Wl,--gc-sections -Wl,--as-needed  
+    --     Linker flags (Debug):        -Wl,--gc-sections -Wl,--as-needed  
+    --     ccache:                      NO
+    --     Precompiled headers:         NO
+    --     Extra dependencies:          dl m pthread rt
+    --     3rdparty dependencies:
+    -- 
+    --   OpenCV modules:
+    --     To be built:                 aruco bgsegm bioinspired calib3d ccalib core datasets dnn dnn_objdetect dnn_superres dpm face features2d flann freetype fuzzy gapi hfs highgui img_hash imgcodecs imgproc intensity_transform line_descriptor ml objdetect optflow phase_unwrapping photo plot python2 python3 quality rapid reg rgbd saliency shape stereo stitching structured_light superres surface_matching text tracking video videoio videostab xfeatures2d ximgproc xobjdetect xphoto
+    --     Disabled:                    world
+    --     Disabled by dependency:      -
+    --     Unavailable:                 alphamat cnn_3dobj cudaarithm cudabgsegm cudacodec cudafeatures2d cudafilters cudaimgproc cudalegacy cudaobjdetect cudaoptflow cudastereo cudawarping cudev cvv hdf java js matlab ovis sfm ts viz
+    --     Applications:                apps
+    --     Documentation:               NO
+    --     Non-free algorithms:         NO
+    -- 
+    --   GUI: 
+    --     GTK+:                        YES (ver 2.24.32)
+    --       GThread :                  YES (ver 2.58.3)
+    --       GtkGlExt:                  NO
+    -- 
+    --   Media I/O: 
+    --     ZLib:                        /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libz.so (ver 1.2.11)
+    --     JPEG:                        /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libjpeg.so (ver 62)
+    --     WEBP:                        build (ver encoder: 0x020f)
+    --     PNG:                         /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libpng.so (ver 1.6.36)
+    --     TIFF:                        /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libtiff.so (ver 42 / 4.1.0)
+    --     JPEG 2000:                   /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libjasper.so (ver 1.900.1)
+    --     HDR:                         YES
+    --     SUNRASTER:                   YES
+    --     PXM:                         YES
+    --     PFM:                         YES
+    -- 
+    --   Video I/O:
+    --     DC1394:                      YES (2.2.5)
+    --     FFMPEG:                      NO
+    --       avcodec:                   YES (58.35.100)
+    --       avformat:                  YES (58.20.100)
+    --       avutil:                    YES (56.22.100)
+    --       swscale:                   YES (5.3.100)
+    --       avresample:                NO
+    --     GStreamer:                   NO
+    --     v4l/v4l2:                    YES (linux/videodev2.h)
+    -- 
+    --   Parallel framework:            pthreads
+    -- 
+    --   Trace:                         YES (with Intel ITT)
+    -- 
+    --   Other third-party libraries:
+    --     Lapack:                      NO
+    --     Custom HAL:                  NO
+    --     Protobuf:                    build (3.5.1)
+    -- 
+    --   OpenCL:                        YES (no extra features)
+    --     Include path:                /home/pi/rpi/src/opencv-4.3.0/3rdparty/include/opencl/1.2
+    --     Link libraries:              Dynamic load
+    -- 
+    --   Python 2:
+    --     Interpreter:                 /usr/bin/python2.7 (ver 2.7.17)
+    --     Libraries:                   /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libpython2.7.so (ver 2.7.16)
+    --     numpy:                       /home/pi/rpi/rootfs/usr/lib/python2.7/dist-packages/numpy/core/include (ver undefined - cannot be probed because of the cross-compilation)
+    --     install path:                /home/pi/rpi/rootfs/usr/local/lib/python2.7/site-packages/cv2/python-2.7
+    -- 
+    --   Python 3:
+    --     Interpreter:                 /usr/bin/python3 (ver 3.6.9)
+    --     Libraries:                   /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libpython3.7m.so (ver 3.7.3)
+    --     numpy:                       /home/pi/rpi/rootfs/usr/lib/python3/dist-packages/numpy/core/include (ver undefined - cannot be probed because of the cross-compilation)
+    --     install path:                /home/pi/rpi/rootfs/usr/local/lib/python3.7/site-packages/cv2/python-3.6
+    -- 
+    --   Python (for build):            /usr/bin/python2.7
+    -- 
+    --   Install to:                    /home/pi/rpi/rootfs/usr
+    -- -----------------------------------------------------------------
+    -- 
+    -- Configuring done
+    -- Generating done
+    -- Build files have been written to: /home/pi/rpi/build/opencv
     ```  
     
     > Note the detection of libraries such as `gtk`, additional modules such as `freetype` and the proper settings for `Python`.
