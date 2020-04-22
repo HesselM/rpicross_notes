@@ -182,3 +182,30 @@ Steps:
      ...
      ...
     RPI~$ links2 -g testcam.jpg
+
+
+## Trouble shooting
+
+```
+../../../../lib/libvcos.so: undefined reference to `_dl_init_static_tls'
+../../../../lib/libvcos.so: undefined reference to `_dl_pagesize'
+../../../../lib/libvcos.so: undefined reference to `__pointer_chk_guard_local'
+../../../../lib/libvcos.so: undefined reference to `__dlclose'
+../../../../lib/libvcos.so: undefined reference to `__dlerror'
+../../../../lib/libvcos.so: undefined reference to `_dl_stack_flags'
+../../../../lib/libvcos.so: undefined reference to `__dlopen'
+../../../../lib/libvcos.so: undefined reference to `__dlsym'
+../../../../lib/libvcos.so: undefined reference to `_dl_wait_lookup_done'
+../../../../lib/libvcos.so: undefined reference to `__pthread_create'
+```
+
+If such message appear during building (`make`) it might be because you need to fix the symlinks of the RPi-filesytem. Try building after syncing:
+
+```
+    XCS~$ /home/pi/rpicross_notes/scripts/sync-rpi-vm.sh
+    ...
+    XCS~$ cd ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
+    XCS~$ make
+
+```
+
