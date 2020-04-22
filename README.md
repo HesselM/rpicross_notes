@@ -8,13 +8,13 @@ At the end of manual list you should have:
   - Crosscompilation environment including:
     - Toolchain /  compilers to compile for the Raspberry Pi (zero)
     - Userland libraries (GPU support for the Raspberry Pi)
-    - OpenCV 3.2 with additional modules, library support such as GTK+ and Python bindings
+    - OpenCV 4.3 with additional modules, library support such as GTK+ and Python2/3 bindings
     - ROS-comm with Python bindings
     - Synchronisation tools to update the Raspberry Pi with the (cross) compiled libraries.
     - WiringPi support
   - Native environment supporting:
     - ROS with Python bindings
-    - OpenCV 3.2 with Python bindings
+    - OpenCV 4.3 with Python bindings
 - A Raspberry Pi (zero) (RPi) running Buster Lite, including
   - OpenCV with Python Bindings
   - ROS-comm with Python Bindings
