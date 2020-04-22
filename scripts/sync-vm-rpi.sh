@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ROOTFS="/home/pi/rpi/rootfs/"
+ROOTFS="/home/pi/rpi/rootfs"
 # Directory with faulty symlinks
 TARGET_DIR="usr/lib/arm-linux-gnueabihf"
 
@@ -11,12 +11,15 @@ if [ -z "$1" ]; then
 fi
 
 # sync
-rsync -auHWv --no-perms --no-owner --no-group $ROOTFS $host:/
+rsync -auHWv --no-perms --no-owner --no-group $ROOTFS/ $host:/
+
+# wait a bit so the RPi is able to update its internal file system with the updates
+sleep 3
 
 # Updates are pushed into a "cmd", which is send/executed to/on the RPi with ssh.
 CMD=""
 # Fetch corrected symlinks
-RELINK=$(file $ROOTFS/$TARGET_DIR/* | grep "symbolic link to $TARGET_ROOT" | awk '{print $1""$5}' )
+RELINK=$(file $ROOTFS/$TARGET_DIR/* | grep "symbolic link to $ROOTFS" | awk '{print $1""$5}' )
 # Fix each symlink
 for i in $RELINK ; do
   IFS=':' # split line by ':'
@@ -25,12 +28,18 @@ for i in $RELINK ; do
   LN_SRC="${LN_SPLIT[0]}"
   LN_DST="${LN_SPLIT[1]}"
   # clear target root from "src" and "dst"
-  LN_SRC="${LN_SRC/#$ROOTFS}"
-  LN_DST="${LN_DST/#$ROOTFS}"
+  LN_SRC=$(echo "${LN_SRC/#$ROOTFS}" | sed "s/\/\//\//g")
+  LN_DST=$(echo "${LN_DST/#$ROOTFS}" | sed "s/\/\//\//g")
   echo "$LN_SRC >> $LN_DST"
   # update link
   CMD="$CMD ln -sf $LN_DST $LN_SRC;"
 done
-
 # fix links on rpi
 ssh $host "$CMD"
+
+# fix links which are not pointing to /usr or /lib
+CMD=""
+CMD="$CMD ln -sf /etc/alternatives/libblas.so.3-arm-linux-gnueabihf /usr/lib/arm-linux-gnueabihf/libblas.so.3;"
+CMD="$CMD ln -sf /etc/alternatives/liblapack.so.3-arm-linux-gnueabihf /usr/lib/arm-linux-gnueabihf/liblapack.so.3;"
+ssh $host "$CMD"
+

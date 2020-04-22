@@ -13,6 +13,9 @@ fi
 # sync
 rsync -auHWv $host:{/usr,/lib} $ROOTFS
 
+# wait a bit so the VM is able to update its internal file system with the updates
+sleep 3
+
 CMD=""
 # Fetch broken symlinks
 RELINK=$(file $ROOTFS/$TARGET_DIR/* | grep "broken symbolic" | awk '{print $1""$6}' )
@@ -23,8 +26,8 @@ for i in $RELINK ; do
   read -a LN_SPLIT <<< "${i}"
   LN_SRC="${LN_SPLIT[0]}"
   LN_DST="${LN_SPLIT[1]}"
-  # add target root to "dst"
-  LN_DST="$ROOTFS$LN_DST"
+  # add target root to "dst" and clear double slashes
+  LN_DST=$(echo "$ROOTFS/$LN_DST" | sed "s/\/\//\//g")
   echo "$LN_SRC >> $LN_DST"
   # update link
   CMD="$CMD ln -sf $LN_DST $LN_SRC;"
