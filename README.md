@@ -63,3 +63,5 @@ If you encounter problems or see mistakes, feel free to create an issue or merge
 
 Enjoy!
 Hessel.
+
+PS. This guide is also available at https://hesselm.github.io/rpicross_notes/
