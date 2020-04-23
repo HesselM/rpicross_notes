@@ -1,4 +1,22 @@
-# Crosscompiling : ROS
+# Guide to Cross Compilation for a Raspberry Pi
+
+1. [Start](readme.md)
+1. [Setup XCS and RPi](01-setup.md)
+1. [Setup RPi Network and SSH](02-network.md)
+1. [Setup RPi Peripherals](03-peripherals.md)
+1. [Setup Cross-compile environment](04-xc-setup.md)
+1. [Cross-compile and Install Userland](05-xc-userland.md)
+1. [Cross-compile and Install OpenCV](06-xc-opencv.md)
+1. **> [Cross-compile and Install ROS](07-xc-ros.md)**
+1. [Compile and Install OpenCV](08-native-opencv.md)
+1. [Compile and Install ROS](09-native-ros.md)
+1. [Remote ROS (RPi node and XCS master)](10-ros-remote.md)
+1. [ROS package development (RPi/XCS)](11-ros-dev.md)
+1. [Compile and Install WiringPi](12-wiringpi.md)
+
+# 8. Cross-compile and Install ROS
+
+TO BE UPDATED. GUIDE MIGHT STILL WORK.
 
 Before continuing, please make sure you followed the steps in:
 - [Setup](01-setup.md)
@@ -18,15 +36,15 @@ As ROS has its own package-management system and eco system, multiple dependenci
     RPI~$ sudo apt-get install pkg-config python2.7 python-dev python-pip sbcl libboost-all-dev libtinyxml-dev libgtest-dev liblz4-dev libbz2-dev libyaml-dev python-nose python-empy python-netifaces python-defusedxml
     RPI~$ sudo pip install -U rospkg catkin_pkg
     ```
-    
+
     > The call to `sudo apt-get install` on the RPi might take a while as approximately 250Mb extracted and installed.
-    > Installing `rospkg` and `catkin_pkg` may produce several errors when building `yaml` support while finishing gracefully. My guess is that all might be fine, but perhaps some future tests might show some issues. 
-    
+    > Installing `rospkg` and `catkin_pkg` may produce several errors when building `yaml` support while finishing gracefully. My guess is that all might be fine, but perhaps some future tests might show some issues.
+
 1. Sync [RPi libs to VM](4-xc-setup.md#from-rpi-to-vm)
     ```
-    XCS~$ ~/rpicross_notes/scripts/sync-rpi-vm.sh
+    XCS~$ ~/rpicross_notes/scripts/sync-rpi-xcs.sh
     ```
-    
+
 ## Compilation
 
 As mentioned before, the use of `rsync` results in broken symlinks. Hence we need to restore the ones required for `ROS`:
@@ -40,7 +58,7 @@ As mentioned before, the use of `rsync` results in broken symlinks. Hence we nee
     XCS~$ ln -sf /home/pi/rpi/rootfs/lib/arm-linux-gnueabihf/libbz2.so.1.0 /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libbz2.so
     XCS~$ ln -sf /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libpython2.7.so.1.0 /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/libpython2.7.so
     ```
-    
+
 1. `ROS` uses `gtest` for several tests. The `apt-get` call for `libgtest-dev` only installs the source for `gtest`, therefore we need to crosscompile it for ourselfs to generate the libraries, using [rpi-generic-toolchain](rpi-generic-toolchain.cmake).
     ```
     XCS~$ mkdir -p ~/rpi/build/gtest
@@ -53,7 +71,7 @@ As mentioned before, the use of `rsync` results in broken symlinks. Hence we nee
     ```
     > SOURCE: https://www.eriksmistad.no/getting-started-with-google-test-on-ubuntu/
     > There is not `make install` so the generated libraries need to be copied manually to the appropriate folder.
-    
+
 1. We also need an utility called `console_bridge`, which we compile and install from source too. Again we use [rpi-generic-toolchain](rpi-generic-toolchain.cmake).
     ```
     XCS~$ cd ~/rpi/src
@@ -66,7 +84,7 @@ As mentioned before, the use of `rsync` results in broken symlinks. Hence we nee
     XCS~$ make
     XCS~$ make install DESTDIR=/home/pi/rpi/rootfs
     ```
-    
+
 1. After installing all dependencies, init `rosdep`.
     ```
     XCS~$ sudo rosdep init
@@ -75,7 +93,7 @@ As mentioned before, the use of `rsync` results in broken symlinks. Hence we nee
 
 1. Create `catkin` workspace for the RPi-builds.
     > Note that this workspace is not located in the `~/rpi` or `~/rpi/rootfs` directories. Because ROS comes with its own environment management system, a seperate directory is created which is synced with the RPi in a similar way as `rootfs`. Most important is that the path of the workspace in the VM equals (`/home/pi/ros/src_cross`) the path to which the workspace is synchronised on the RPi (which will be `/home/pi/ros/src_cross`).
-    
+
     ```
     XCS~$ mkdir -p ~/ros/src_cross
     XCS~$ cd ~/ros/src_cross
@@ -86,7 +104,7 @@ As mentioned before, the use of `rsync` results in broken symlinks. Hence we nee
     XCS~$ rosinstall_generator ros_comm --rosdistro kinetic --deps --wet-only --tar > kinetic-ros_comm-wet.rosinstall
     XCS~$ wstool init -j8 src kinetic-ros_comm-wet.rosinstall
     ```
-    
+
 1. Build `ROS`
     ```
     XCS~$ ./src/catkin/bin/catkin_make_isolated \
@@ -102,18 +120,18 @@ When additional ros-packages are needed, but ROS is already build, the following
     ```
     XCS~$ cd ~/ros/src_cross
     ```
-    
+
 1. Use `rosinstall_generator` to create an additional `.rosinstall`, including the specified package(s). E.g `sensor_msgs`:
     ```
-    XCS~$ rosinstall_generator sensor_msgs --rosdistro kinetic --deps --wet-only --tar > sensor_msgs.rosinstall 
+    XCS~$ rosinstall_generator sensor_msgs --rosdistro kinetic --deps --wet-only --tar > sensor_msgs.rosinstall
     ```
 
 1. Merge the file with the existing `.rosinstall` and update ROS it's source tree
     ```
-    XCS~$ wstool merge -t src sensor_msgs.rosinstall 
+    XCS~$ wstool merge -t src sensor_msgs.rosinstall
     XCS~$ wstool update -t src
     ```
-    
+
 1. Finally, rebuild `ROS`
     ```
     XCS~$ ./src/catkin/bin/catkin_make_isolated \
@@ -133,7 +151,7 @@ Starting with `rootfs`:
     ```
 1. Or use the [link-correcting script](4-xc-setup.md#init-repository):
     ```
-    XCS~$ /home/pi/rpicross_notes/scripts/sync-vm-rpi.sh
+    XCS~$ /home/pi/rpicross_notes/scripts/sync-xcs-rpi.sh
     ```
 
 And for `~/ros/src_cross`:
@@ -156,12 +174,12 @@ And for `~/ros/src_cross`:
     RPI~$ mkdir -p /home/pi/rpi
     RPI~$ ln -s / /home/pi/rpi/rootfs
     ```
-    
+
 ## Testing
 
 Testing the compiled `ROS`-libraries and `catkin` workspace
 
-Prerequisites: 
+Prerequisites:
 - Toolchain [installed](04-xc-setup.md#required-packages)
 - ROS [compiled](#compilation) & [synced](#synchronisation)
 
@@ -171,10 +189,10 @@ Steps:
     ```
     XCS~$ source ~/rpicross_notes/scripts/ros_cross
     ```
-    
+
     > ROS biniaries such as `catkin_make` are actually python scripts. Therefore we can use several libraires/scripts from the crosscompiled workspace on both the RPi and VM.
 
-1. Crosscompile the `helloros` code with the toolchain in this repositiory. 
+1. Cross-compile the `helloros` code with the toolchain in this repositiory.
     ```
     XCS~$ mkdir -p ~/rpi/build/hello/ros
     XCS~$ cd ~/rpi/build/hello/ros
@@ -183,18 +201,18 @@ Steps:
         ~/rpicross_notes/hello/ros/
     XCS~$ make
     ```
-    > Note that the toolchain sets the proper path for pkg-config (`/home/pi/ros/src_cross/devel_isolated`) to find `XXXConfig.cmake` files for ROS. 
-    
+    > Note that the toolchain sets the proper path for pkg-config (`/home/pi/ros/src_cross/devel_isolated`) to find `XXXConfig.cmake` files for ROS.
+
 1. Transfer `helloros` to the RPi (located in `devel/lib/helloros`)
     ```
     XCS~$ scp devel/lib/helloros/helloros rpizero-local:~/
     ```
-    
+
 1. Connect two terminals with the RPi
    1. Launch `roscore` in the first
        ```
        XCS~$ ssh rpizero-local
-       RPI~$ source ~/ros/src_cross/devel_isolated/setup.bash 
+       RPI~$ source ~/ros/src_cross/devel_isolated/setup.bash
        RPI~$ roscore
          ... logging to /home/pi/.ros/log/9d57fc26-0efa-11e7-97cb-b827eb418803/roslaunch-rpizw-hessel.local-893.log
          Checking log directory for disk usage. This may take awhile.
@@ -222,18 +240,17 @@ Steps:
          process[rosout-1]: started with pid [924]
          started core service [/rosout]
        ```
-       
+
    1. Launch `helloros` in the second
        ```
        XCS~$ ssh rpizero-local
-       RPI~$ source ~/ros/src_cross/devel_isolated/setup.bash 
-       RPI~$ ./helloros 
+       RPI~$ source ~/ros/src_cross/devel_isolated/setup.bash
+       RPI~$ ./helloros
          [ INFO] [1490185604.127013218]: hello world 0
          [ INFO] [1490185604.226970277]: hello world 1
          [ INFO] [1490185604.326862336]: hello world 2
          [ INFO] [1490185604.426858394]: hello world 3
          ...
        ```
-       
-> Code for this test is partially taken from http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber(c%2B%2B)
 
+> Code for this test is partially taken from http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber(c%2B%2B)

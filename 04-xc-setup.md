@@ -1,35 +1,59 @@
-# Crosscompiling : Setup
+# Guide to Cross Compilation for a Raspberry Pi
 
-Before continuing, please make sure you followed the steps in:
-- [Setup](01-setup.md)
-- [Network/SSH](02-network.md)
-- Optional: [Peripherals](03-peripherals.md)
+1. [Start](readme.md)
+1. [Setup XCS and RPi](01-setup.md)
+1. [Setup RPi Network and SSH](02-network.md)
+1. [Setup RPi Peripherals](03-peripherals.md)
+1. **> [Setup Cross-compile environment](04-xc-setup.md)**
+1. [Cross-compile and Install Userland](05-xc-userland.md)
+1. [Cross-compile and Install OpenCV](06-xc-opencv.md)
+1. [Cross-compile and Install ROS](07-xc-ros.md)
+1. [Compile and Install OpenCV](08-native-opencv.md)
+1. [Compile and Install ROS](09-native-ros.md)
+1. [Remote ROS (RPi node and XCS master)](10-ros-remote.md)
+1. [ROS package development (RPi/XCS)](11-ros-dev.md)
+1. [Compile and Install WiringPi](12-wiringpi.md)
 
-Most of the commands I use in this and the upcoming guides make use of absolute paths. Therefore, take extra care if you use a different environment/VM or different install paths.   
+# 5. Setup Cross-compile environment
 
-In this document the setup for our local RPi-filesystem (`rootfs`) and tools to compile for the RPi are introduced. Furthermore additional commands for syncing and maintaining a proper setup are shown.
+You are now at a point to create the foundation of the cross-compilation environment. In the next steps a "rootfs" will be created in XCS, mimicking the RPi filesystem. This "rootfs" contains all necessary headers and libraries to compile new ARM (system) binaries or applications for the RPi. Using a cross-compiler and toolchain these new binaries or applications can be created, which with some synchronisation tools are pushed to the RPi.
 
-## Required Packages
+An important note has to be made: most of the commands and scripts used for compilation and synchronisation makes use of absolute system-paths. As such, if you decided previously in this guide to deviate with system or user names, extra case need to be taken to verify that your paths are still ok.
 
-Both the RPi and VM need several packages to allow us to sync the `rootfs` and do our crosscompilation.
+## Table of Contents
 
-For compilation a compiler is needed which can build, create and link our c-code with libraries and transform it in to arm-instructions. This is done by a toolchain. Toolchains can be created with e.g. `linearo` or `gcc` (see: http://preshing.com/20141119/how-to-build-a-gcc-cross-compiler/).  In case of the RPi, we simplify life a bit by using the existing toolchain available at [https://github.com/raspberrypi/]( https://github.com/raspberrypi/).
+1. [Prerequisites](#prerequisites)
+1. [Preparation](#preparation)
+1. [SDCard backup](#sdcard-backup)
+1. [Setup rootfs](#setup-rootfs)
+1. [Synchronisation of rootfs](#synchronisation-of-rootfs)
+1. [Testing](#testing)
+1. [Next](#next)
 
-1. Install the following packages for syncing/crosscompilation:
+## Prerequisites
+- Setup of XCS and RPi
+- Setup of RPi Network and SSH
+
+## Preparation
+
+> IMPORTANT: This guide assumes `/home/pi/` to be the `~/` home dir. If you have a different directory, make sure you update the `/home/pi` to the proper path. Note that setting it to `~/` will not work.
+
+1. First we need to install some system packages on both the XCS and RPi to ensure our build tools and synchronisation scripts will function.
     ```
     XCS~$ sudo apt-get install build-essential pkg-config cmake unzip gzip rsync python2.7 python3
     XCS~$ ssh rpizero-local
     RPI~$ sudo apt-get install rsync
     ```
 
-1. Install the tools for compilation (this will create a folder `~/rpi/tools` in the VM)
+1. Now we can install the cross-compiler.
     ```
     XCS~$ mkdir -p ~/rpi
     XCS~$ cd ~/rpi
     XCS~$ git clone https://github.com/raspberrypi/tools.git --depth 1
     ```
+    > For compilation of source code a compiler is needed which can build, create and link the sources with libraries and transform it into arm-instructions. This is done via a toolchain. Toolchains can be created with for example [`linearo` or `gcc`](http://preshing.com/20141119/how-to-build-a-gcc-cross-compiler/).  In case of the RPi, life is simplified by using the existing toolchain developed by the RPi Foundation available at [https://github.com/raspberrypi/]( https://github.com/raspberrypi/).
 
-1. Create links to the proper gcc-binairies.
+1. Create links to the proper gcc-binaries.
     ```
     XCS~$ sudo ln -s /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc /usr/bin/arm-linux-gnueabihf-gcc
     XCS~$ sudo ln -s /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ /usr/bin/arm-linux-gnueabihf-g++
@@ -37,39 +61,79 @@ For compilation a compiler is needed which can build, create and link our c-code
     XCS~$ sudo ln -s /home/pi/rpi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-ranlib /usr/bin/arm-linux-gnueabihf-ranlib
     ```
 
-1. Clean up unneeded branches in the tools-directory to save space.
+1. To save space, unneeded folders from the tools-directory can be deleted.
     ```
     XCS~$ rm -rf /home/pi/rpi/tools/arm-bcm2708/arm-bcm2708*
     ```
 
-## Note on base-directory
+1. Install the repo of this guide. It contains several scripts and examples to ease the cross-compilation steps.
+    ```
+    XCS~$ cd ~/
+    XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
+    ```
 
-This guide assumes `/home/pi/` to be the `~/` home dir. If you have a different directory, make sure you update the `/home/pi` to the proper path. Note that setting it to `~/` will not work.
+1. Allow scripts to be executed
+    ```
+    XCS~$ chmod +x ~/rpicross_notes/scripts/*
+    ```
 
-## Setting up `rootfs`
+## SDCard backup
 
-The crosscompiler requires access to (`/usr` and `/lib`) RPi-binairies and libraries to link properly. Therefore we need to create a local copy of the RPi-filesystem in the VM: `rootfs`.
+Errors and mistakes may occur and happen during syncing, cross-compilation or installation, resulting in faulty libraries or libraries installed in wrong locations. To save a lot of (re)installation time, these steps show how to backup or reinitiate the SDCard.
 
-1. Shutdown RPi, disconnect the power supply and remove SDCard.
-    > As the inital setup might take a while, the initial setup copies data from the SDCard. Future synchronisation actions will do the syncing via SSH.
-1. Connect and mount SDCard with the VM.
+1. Shutdown the RPi and connect SDCard to the XCS
+    ```
+    XCS~$ lsblk
+      NAME                        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+      sda                           8:0    0   25G  0 disk
+      ├─sda1                        8:1    0  487M  0 part /boot
+      ├─sda2                        8:2    0    1K  0 part
+      └─sda5                        8:5    0 24.5G  0 part
+        ├─XCS--rpizero--vg-root   252:0    0 20.5G  0 lvm  /
+        └─XCS--rpizero--vg-swap_1 252:1    0    4G  0 lvm  [SWAP]
+      sdb                           8:16   1  7.3G  0 disk       <=== Our RPi SDCard!
+      ├─sdb1                        8:17   1   63M  0 part
+      └─sdb2                        8:18   1  7.3G  0 part
+      sr0                          11:0    1 55.7M  0 rom  
+    ```
+
+1. Create a (compressed) backup
+    ```
+    XCS~$ sudo dd bs=4M if=/dev/sdb | gzip > /home/pi/rpi/img/rpi_backup.img.gz
+    ```
+    > Depending on de SDCard size, this might take several minutes.
+
+1. To restore a backup, use:
+    ```
+    XCS~$ gzip -dc /home/pi/rpi/img/rpi_backup.img.gz | sudo dd bs=4M of=/dev/sdb
+    ```
+    > Depending on de SDCard size, this might take several minutes.
+
+## Setup rootfs
+
+The cross-compiler requires access to (`/usr` and `/lib`) RPi-binaries, headers and libraries to link properly. Therefore we need to create a local copy of the RPi-filesystem in the XCS: "rootfs".
+
+For the initial setup of "rootfs" it is advised to use the SDCard as this will save a lot of time. Future syncs will be done via scripts utilising the SSH setup.
+
+1. Connect and mount the largest partition of the SDCard.
     ```
     XCS~$ lsblk
       ...
     XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt
     ```
-1. Create the `rootfs` location
+
+1. Create the "rootfs" location
     ```
     XCS~$ mkdir -p ~/rpi/rootfs
     ```
 
-1. Copy libraries from SDCard and unmount
+1. Copy libraries from SDCard
     ```
     XCS~$ rsync -auHWv /home/pi/rpi/mnt/lib /home/pi/rpi/rootfs/
     XCS~$ rsync -auHWv /home/pi/rpi/mnt/usr /home/pi/rpi/rootfs/
     ```
 
- 1. OPTIONAL (requires [SDCard backup/reset](#sdcard-backupreset)): create `rootfs` from backup
+ 1. OPTIONAL (requires [SDCard backup](#sdcard-backup)): create "rootfs" from backup:
     ```
     XCS~$ gzip -dc /home/pi/rpi/img/rpi_backup.img.gz > /home/pi/rpi/img/rpi_backup.img
     XCS~$ fdisk -l /home/pi/rpi/img/rpi_backup.img
@@ -96,116 +160,72 @@ The crosscompiler requires access to (`/usr` and `/lib`) RPi-binairies and libra
     XCS~$ sudo umount /home/pi/rpi/mnt
     ```
 
-## SDCard backup/reset
+## Synchronisation of rootfs
 
-Syncing or crosscompilation can mistakingly result in faulty libraries or libraries installed in wrong locations. To save a lot of (re)installation time, these steps show how to backup or reinitiate the SDCard.
+Both `rootfs` and the RPi need to be kept in sync when new libraries are compiled, installed or added. The initial sync is done with [rsync](https://linux.die.net/man/1/rsync) after which broken symbolic links need to be fixed. To ease this process sync-scripts have been developed:
 
-1. Detect SDCard
+1. Sync RPi with "rootfs"
     ```
-    XCS~$ lsblk
-      NAME                        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-      sda                           8:0    0   25G  0 disk
-      ├─sda1                        8:1    0  487M  0 part /boot
-      ├─sda2                        8:2    0    1K  0 part
-      └─sda5                        8:5    0 24.5G  0 part
-        ├─XCS--rpizero--vg-root   252:0    0 20.5G  0 lvm  /
-        └─XCS--rpizero--vg-swap_1 252:1    0    4G  0 lvm  [SWAP]
-      sdb                           8:16   1  7.3G  0 disk       <=== Our RPI SDCard!
-      ├─sdb1                        8:17   1   63M  0 part
-      └─sdb2                        8:18   1  7.3G  0 part
-      sr0                          11:0    1 55.7M  0 rom  
+    XCS~$ ~/rpicross_notes/scripts/sync-rpi-xcs.sh
     ```
 
-1. Create a (compressed) backup
+1. Sync "rootfs" with RPi
     ```
-    XCS~$ sudo dd bs=4M if=/dev/sdb | gzip > /home/pi/rpi/img/rpi_backup.img.gz
-    ```
-
-1. To restore a backup, use:
-    ```
-    XCS~$ gzip -dc /home/pi/rpi/img/rpi_backup.img.gz | sudo dd bs=4M of=/dev/sdb
-    ```
-## Init Repository  
-
-Several crosscompile steps are simplified by the usage of scripts in this repository.
-
-1. Clone repository
-    ```
-    XCS~$ cd ~/
-    XCS~$ git clone https://github.com/HesselM/rpicross_notes.git --depth=1
+    XCS~$ ~/rpicross_notes/scripts/sync-xcs-rpi.sh
     ```
 
-1. Allow scripts to be executed
-    ```
-    XCS~$ chmod +x ~/rpicross_notes/scripts/*
-    ```
-
-## Synchronisation
-
-Both `rootfs` and the RPi need to be kept in sync when new libraries are compiled, installed or added. For this task some scripts have been developed:
-
-1. Sync RPi with XCS-`rootfs` (from: [init repository](#init-repository))
-    ```
-    XCS~$ ~/rpicross_notes/scripts/sync-rpi-vm.sh
-    ```
-
-1. Sync XCS-`rootfs` with RPi (from: [init repository](#init-repository))
-    ```
-    XCS~$ ~/rpicross_notes/scripts/sync-vm-rpi.sh
-    ```
-
-The next section explains the mechanisms used in the script.
-
-### BACKGROUND: syncing from RPi to XCS and back
-
-#### RPi ==> XCS
-
-For synchronising the files, `rsync` is used. Assuming that we do not care about file-permissions as we are moving from a (potentially resricted) RPi to a less restriced XCS, syncing the RPi to VM is relatively straighforward:
+> BACKGROUND INFORMATION
+>
+> For synchronising the files, `rsync` is used. This an advanced synchronisation tool allowing several settings or restrictions such as file-permissions, ownership of files, symbolic link copying and much more.
+>
+> To sync from the RPi to the XCS, we do not care about file-permissions as we are moving from a (potentially restricted) RPi to a less restricted rootfs in the XCS. We also manually correct symbolic links, so synchronisation can be done with:
 ```
 XCS~$ rsync -auHWv rpizero-local-root:{/usr,/lib} ~/rpi/rootfs
 ```
-
-This copies all data from `/usr` and `/lib` from the RPi to the VM. Care should be taken with symbolic links (symlinks): links including absolute paths will brake becaue the paths of `/usr` and `/lib` become  `/home/pi/rpi/usr` and `/home/pi/rpi/lib` respectively on the VM. Using the commands `file` and `ln` required links can be fixed:
+> This copies all data from `/usr` and `/lib` from the RPi to the XCS.
+>
+> As symbolic links are copied without correction, links with absolute paths will brake because the paths of `/usr` and `/lib` on the RPi become `/home/pi/rpi/rootfs/usr` and `/home/pi/rpi/rootfs/lib` respectively on the XCS. Using the commands `file` and `ln` we can detect these files and fix the links:
 ```
 XCS~$ file /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/librt.so
   /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/librt.so: broken symbolic link to /lib/arm-linux-gnueabihf/librt.so.1
 
-XCS~$:  ln -sf /home/pi/rpi/rootfs/lib/arm-linux-gnueabihf/librt.so.1 /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/librt.so
+XCS~$ ln -sf /home/pi/rpi/rootfs/lib/arm-linux-gnueabihf/librt.so.1 /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/librt.so
 ```
-
-The synchronisation-scripts are able to detect and correct these broken symlinks.
-
-> IMPORTANT: each time `rsync` is used for retrieving libraries from the RPi, the symlinks are updated to the broken links, hence they should be fixed again. It might be usefull to create a simple shell script to fix this such as [`sync-rpi-vm.sh`](scripts/sync-rpi-vm.sh):
-
-#### XCS ==> RPi
-
-When copying files from the VM to the RPi we do need to take care of file-permissions. Especially since `~/rpi/rootfs` contains the `bin` folder (and therefore also `sudo`). Synchronizing to the RPi with improper settings might result in `sudo`-errors on the RPi and an instable system.
-
-When taking care of permissions, the sync-command becomes:
+> The synchronisation-script "sync-rpi-xcs.sh" contains a process which does this automatically.
+>
+> When we sync files from the XCS to the RPi we do need to take care of file-permissions. Especially since `home/pi/rpi/rootfs` contains the `/usr/bin` folder (and therefore also `sudo`). Synchronising to the RPi with improper settings might result in `sudo`-errors on the RPi and an unstable system.
+>
+> To take into account the permissions, syncing fromt "rootfs" to the RPi is done with:
 ```
 XCS~$ sudo rsync -auHWv --no-perms --no-owner --no-group /home/pi/rpi/rootfs/ rpizero-local-root:/
 ```
+>
+> It should be noted that the "corrected" symbolic links will brake again: `/home/pi/rpi/rootfs/usr` should be corrected to `/usr`. The script "sync-xcs-rpi.sh" takes care of this.
 
-# Test Setup
-Prerequisites:
- - Toolchain [installed](#required-packages)
- - Repository [initialised](#init-repository)
+## Testing
 
-Steps:
+Having setup the basic structure for cross-compilation, it's time to build the hello-world example!
 
-1. Build the code with the [rpi-generic-toolchain](rpi-generic-toolchain.cmake)
+1. First we create a specific build-directory in which al build-files will be put. This is part of proper development and eases the search of fixing errors or clearing a build.
     ```
     XCS~$ mkdir -p ~/rpi/build/hello/pi
     XCS~$ cd ~/rpi/build/hello/pi
+    ```
+1. Compilation is done with [CMake](https://cmake.org), a tool which eases the process of grouping, linking and building our binary. To compile for the RPi, we invoke a specific toolchain-file, which contains settings on where to find "rootfs", which compiler to use and for what target platform (ARM) we want to build.
+    ```
     XCS~$ cmake \
         -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
         ~/rpicross_notes/hello/pi
+    ```
+
+    > When omitting the `-D CMAKE_TOOLCHAIN_FILE` option, cmake wil build the `hellopi` with the default compiler, allowing the execution of the binairy in the XCS.
+
+1. When CMake completed successfully, we can build the program.
+    ```
     XCS~$ make
     ```
 
-    > When omitting the `-D CMAKE_TOOLCHAIN_FILE` option, cmake wil build the `hellopi` with the default compiler, allowing the execution of the binairy in the VM.
-
-1. Sync and run.
+1. Now we only need to sync and run the program.
     ```
     XCS~$ scp hello rpizero-local:~/
     XCS~$ ssh rpizero-local
@@ -213,9 +233,10 @@ Steps:
       Hello World!
     ```
 
-# Next
-Having a functional crosscompilation several steps can be taken next:
-- Crosscompile & install [Userland libraries](05-xc-userland.md) (for communication with the RPi GPU)
-- Crosscompile & install [OpenCV 3.2 with Python Bindings](06-xc-opencv.md) (for computer vision)
-- Crosscompile & install [ROS](07-xc-ros.md) (to run the RPi as Node in a ROS-network)
-- Develop your own code..
+## Next
+
+Having a functional cross-compilation environment, several steps can be taken next:
+- Cross-compile & install the [Userland libraries](05-xc-userland.md) (for communication with the RPi GPU)
+- Cross-compile & install [OpenCV with Python Bindings](06-xc-opencv.md) (for computer vision)
+- Cross-compile & install [ROS](07-xc-ros.md) (to run the RPi as Node in a ROS-network)
+- Or develop your own code..

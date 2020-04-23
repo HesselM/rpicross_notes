@@ -1,97 +1,65 @@
-# Guide to Setup and Cross Compile for a Raspberry Pi
+# Guide to Cross Compilation for a Raspberry Pi
 
-This repository is a personal guide to setup a cross compilation environment to compile [OpenCV](http://opencv.org/), [ROS](http://www.ros.org/) and [WiringPi](http://wiringpi.com) programs for a Raspberry Pi. It contains details on how to setup a VirtualBox, configure SSH / X-server / network settings, how to sync / back up files to and from the Raspberry Pi and of course how to compile and install OpenCV, ROS and WiringPi. Experience with VirtualBox, C, Python and the terminal/nano are assumed. Usage of external keyboards or monitors for the Raspberry Pi is not required: setup is done via card mounting or SSH. 
+1. **> [Start](readme.md)**
+1. [Setup XCS and RPi](01-setup.md)
+1. [Setup RPi Network and SSH](02-network.md)
+1. [Setup RPi Peripherals](03-peripherals.md)
+1. [Setup Cross-compile environment](04-xc-setup.md)
+1. [Cross-compile and Install Userland](05-xc-userland.md)
+1. [Cross-compile and Install OpenCV](06-xc-opencv.md)
+1. [Cross-compile and Install ROS](07-xc-ros.md)
+1. [Compile and Install OpenCV](08-native-opencv.md)
+1. [Compile and Install ROS](09-native-ros.md)
+1. [Remote ROS (RPi node and XCS master)](10-ros-remote.md)
+1. [ROS package development (RPi/XCS)](11-ros-dev.md)
+1. [Compile and Install WiringPi](12-wiringpi.md)
 
-At the end of manual list you should have:
-- A Virtualbox (VM) running Ubuntu Server 18.04 LTS (or 16.04), with:
-  - SSH and DNS connectivity from HOST to GUEST and from GUEST to the Raspberry Pi
-  - Crosscompilation environment including:
-    - Toolchain /  compilers to compile for the Raspberry Pi (zero)
-    - Userland libraries (GPU support for the Raspberry Pi)
-    - OpenCV 3.2 with additional modules, library support such as GTK+ and Python bindings
-    - ROS-comm with Python bindings
-    - Synchronisation tools to update the Raspberry Pi with the (cross) compiled libraries.
-    - WiringPi support
-  - Native environment supporting:
-    - ROS with Python bindings
-    - OpenCV 3.2 with Python bindings
-- A Raspberry Pi (zero) (RPi) running Buster Lite, including
-  - OpenCV with Python Bindings
-  - ROS-comm with Python Bindings
-  - WiringPi support
-  - Running PiCamera
-  - i2c, including:
-    - Real Time Clock (RTC)
-    - IO Expander
-- A VM able to run `roscore` to which the Raspberry Pi (RPi) can connect as a node. 
+# 1. Start
 
-Before the required steps are explained, some disclaimers:
+Welcome at this Cross Compilation Guide for a Raspberry Pi.
 
-1. Many, many, many StackOverflow questions, Github issues, form-posts and blog-pages have helped me developing these notes. Unfortunatly I haven't written down all these links and hence cannot thank or link all authors, for which my apology. Here is an incomplete list of used sources:
-  - VirtualBox SSH: https://forums.virtualbox.org/viewtopic.php?f=8&t=55766
-  - DNS: https://askubuntu.com/questions/1040304/dns-issues-with-virtualbox-vm-and-ubuntu-18-04
-  - DNS: https://superuser.com/questions/641933/how-to-get-virtualbox-vms-to-use-hosts-dns
-  - SSH X-server: http://unix.stackexchange.com/questions/12755/how-to-forward-x-over-ssh-from-ubuntu-machine
-  - RPI: https://www.raspberrypi.org/documentation/installation/installing-images/linux.md
-  - RPI RTC: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c
-  - RPI RTC: https://thepihut.com/collections/raspberry-pi-hats/products/rtc-pizero
-  - PkgConfig: http://dev.gentoo.org/~mgorny/pkg-config-spec.html
-  - PkgConfig: https://autotools.io/pkgconfig/cross-compiling.html
-  - OpenCV: http://docs.opencv.org/2.4/doc/tutorials/introduction/linux_gcc_cmake/linux_gcc_cmake.html
-  - OpenCV/RPI: http://docs.opencv.org/2.4/doc/tutorials/introduction/crosscompilation/arm_crosscompile_with_cmake.html
-  - OpenCV/Raspicam: https://thinkrpi.wordpress.com/2013/05/22/opencvpi-cam-step-2-compilation/
-  - OpenCV/AR: http://answers.opencv.org/question/90298/static-lib-cross-compile-zlib-error/
-  - OpenCV/Python: http://thebbbdiary.blogspot.nl/2015_01_01_archive.html
-  - Shared Libraries: http://redmine.webtoolkit.eu/projects/wt/wiki/Cross_compile_Wt_on_Raspberry_Pi/
-  - ROS: http://answers.ros.org/question/191070/compile-roscore-for-arm-board/
-  - ROS: http://wiki.ros.org/kinetic/Installation/Source
-  - gtest: https://www.eriksmistad.no/getting-started-with-google-test-on-ubuntu/
-  - X11: https://answers.ssh.com/questions/479/how-to-forward-x11-applications-after-su-to-root
-1. There is no guarantee that the steps described in these notes are the best available. As I'm not an expert, better solutions might be out there. The provided steps however resulted in a working/workable setup for me.
-1. If you happen to know a better (and working) solution, have a question, suggestion or if you spot a mistake: feel free to post an issue!
+It started as a personal guide to keep track of how to setup a proper system, but grew to a public guide, where it hopefully can help many others too. This repository also holds toolchains and scripts to ease the cross-compilation as well as examples and tests to verify the setup.
+
+The system is setup around a VirtualBox running an Ubuntu OS. This VirtualBox will hold all tools for the cross-compilation. A VirtualBox is chosen to ensure that we cannot mess up the main machine with faulty installations accidentally changing symbolic links (which happened to me on earlier journeys).
+
+During this guide the following systems will be and cross-compiled (and some also native) and configured:
+- [Userland](https://github.com/raspberrypi/userland)
+- [OpenCV](http://opencv.org/) (with GTK and Python Bindings)
+- [ROS](http://www.ros.org/) (with Python Bindings)
+- [WiringPi](http://wiringpi.com)
+
+Additionally we setup:
+- headless Pi and headless VirtualBox (you do not need an additional monitor or keyboard for the pi!)
+- DNS and folder sharing of the VirtualBox with the Host
+- Wifi and SSH access on the raspberry Pi
+- SSH over USB to connect to the Pi.
+- Peripherals such as: i2c, RTC, IO expanders and the Pi camera
+- Different ROS configurations
+- and some more!
 
 # How to Read?
 
-The notes are more or less in chronological order, hence start from top the bottom. Commands are prefixed with the system on which the commands needs to be run:
+The notes are in chronological order and can be followed with the table of contents on the top of the page.
+As both the VirtualBox and Raspberry Pi will be configured to run headless (that is, without a display) instructions are command-line styled. Because we use 3 different systems, the commands are prefixed:
 
-- `HOST~$` commands executed on the Host. As this guide is developed using OSX, commands will be unix-styled.
-- `XCS~$` commands executed on the Cross-Compiler Server / Virtualbox
-- `RPI~$` commands executed on the Raspberry Pi
+- `HOST~$` commands executed on the Host. (Developed on an OSX system, but probably works on Linux or Windows with MinGW or PuTTy too)
+- `XCS~$` commands executed on the Cross-Compiler Server / VirtualBox. (Also called XCS)
+- `RPI~$` commands executed on the Raspberry Pi. (Shortend as RPi)
 
-# Index
+In the github-repo 3 important folders can be found:
 
-Information:
-1. [Setup VM and RPi](01-setup.md)
-1. [Setup Network/SSH](02-network.md)
-1. [Setup RPi Peripherals](03-xc-peripherals.md)
-1. [Setup Crosscompile environment](04-xc-setup.md)
-1. [Crosscompile and Install Userland](05-xc-userland.md)
-1. [Crosscompile and Install OpenCV](06-xc-opencv.md)
-1. [Crosscompile and Install ROS](07-xc-ros.md)
-1. [Compile and Install OpenCV](08-native-opencv.md)
-1. [Compile and Install ROS](09-native-ros.md)
-1. [Remote ROS (RPi node and VM master)](10-ros-remote.md)
-1. [ROS package development (RPi/VM)](11-ros-dev.md)
-1. [Compile and Install WiringPi](12-wiringpi.md)
+- "hello" - containing examples and test files:
+  - pi: our "Hello World:" (testing cross-compile setup)
+  - raspicam: a copy of the raspicam program from Userland (testing the cross-compiled Userland setup)
+  - ocv: a tool to display an image (used to test the cross-compiled OpenCV infrastructure)
+  - ros: "Hello World" for ros (testing the cross-compiled ROS setup)
+  - WiringPi: blinking a led (testing the cross-compiling WiringPi libraries)
+- "scripts" - containing several synchronisation tools
+- "ros" - more complex tests for more complex ROS setups.
 
-Test-code:
-- Setup: [hello/pi](hello/pi)
-- Userland: [hello/raspicam](hello/raspicam)
-- OpenCV: [hello/ocv](hello/ocv)
-- ROS: [hello/ros](hello/ros)
-- WiringPi: [hello/wiringpi](hello/wiringpi)
+In the main directory you can also find the toolchain which will be used throughout this guide.
 
-ROS publish-subscriber (for remote operation)
-- [chatter](ros/chatter)
-
-Tools:
-- Generic Toolchain: [rpi-generic-toolchain.cmake](rpi-generic-toolchain.cmake)
-- Sync RPi to VM: [sync-rpi-vm.sh](scripts/sync-rpi-vm.sh) (see: [setup](04-xc-setup.md))
-- Sync VM to RPi: [sync-vm-rpi.sh](scripts/sync-vm-rpi.sh) (see: [setup](04-xc-setup.md))
-- Sync ROS to RPi: [sync-ros.sh](scripts/sync-ros.sh) (see: [xc-ros](07-xc-ros.md#synchronisation) and [ros remote](10-ros-remote))
-
-ROS (compile) environment setters:
-- Compile for RPi: [ros-cross](scripts/ros-cross) (see: [xc-ros](07-xc-ros.md) and [ros remote](10-ros-remote))
-- Compile for VM: [ros-native](scripts/ros-native) (see: [ros](08-native-ros.md) and [ros remote](10-ros-remote))
+If you encounter problems or see mistakes, feel free to create an issue or merge request.
 
 Enjoy!
+Hessel.

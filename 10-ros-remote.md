@@ -1,8 +1,26 @@
-# ROS and remote nodes
+# Guide to Cross Compilation for a Raspberry Pi
+
+1. [Start](readme.md)
+1. [Setup XCS and RPi](01-setup.md)
+1. [Setup RPi Network and SSH](02-network.md)
+1. [Setup RPi Peripherals](03-peripherals.md)
+1. [Setup Cross-compile environment](04-xc-setup.md)
+1. [Cross-compile and Install Userland](05-xc-userland.md)
+1. [Cross-compile and Install OpenCV](06-xc-opencv.md)
+1. [Cross-compile and Install ROS](07-xc-ros.md)
+1. [Compile and Install OpenCV](08-native-opencv.md)
+1. [Compile and Install ROS](09-native-ros.md)
+1. **> [Remote ROS (RPi node and XCS master)](10-ros-remote.md)**
+1. [ROS package development (RPi/XCS)](11-ros-dev.md)
+1. [Compile and Install WiringPi](12-wiringpi.md)
+
+# 11. Remote ROS (RPi node and XCS master)
+
+TO BE UPDATED. GUIDE MIGHT STILL WORK.
 
 When all previous steps are followed the setup should currently be able to:
 - (cross) compile aribtrary c(++)-code
-- (cross) compile OpenCV code 
+- (cross) compile OpenCV code
 - (cross) compile ROS code
 - Run the native-compiled code in the VM
 - Run the cross-compiled code on the RPi
@@ -10,11 +28,11 @@ When all previous steps are followed the setup should currently be able to:
 - Call OpenCV and ROS functions from Python
 - Start/Stop ROS-nodes on both the VM and RPi
 
-The next step is to setup extend the communication functions between the RPi and VM, such that we can run `roscore` in the VM and connect a node from the RPi. 
+The next step is to setup extend the communication functions between the RPi and VM, such that we can run `roscore` in the VM and connect a node from the RPi.
 
 # ROS_MASTER_URI
 
-ROS nodes connect to a master (`roscore`) via a tcp-connection. This allows a ROS system to have external nodes, hence we should be able to connect the RPi to our VM. 
+ROS nodes connect to a master (`roscore`) via a tcp-connection. This allows a ROS system to have external nodes, hence we should be able to connect the RPi to our VM.
 
 Unfortunally there is a challenge: the VM is configured to be attached to the NAT, therefore it is not visible by any device in the network except the `HOST~$`. As a result, the RPi is cannot detect the VM and hence cannot connect to the ROS-master (`roscore`) running in the VM.
 
@@ -46,9 +64,9 @@ In a similar manner as the SSH-setting (see [Installation](01-setup.md#installat
     - Host Port: 11311
     - Guest IP: (leave empty)
     - Guest Port: 11311
-    
+
 # Compilation
-    
+
 1. Compile for VM
     ```
     XCS~$ source ~/rpicross_notes/scripts/ros-native
@@ -69,7 +87,7 @@ In a similar manner as the SSH-setting (see [Installation](01-setup.md#installat
     XCS~$ make
     XCS~$ ~/rpicross_notes/scripts/sync-ros.sh
     ```
-    
+
 # Testing
 
 1. First we need to determine the (external) IP (or hostname) of the `HOST~$` on which the VM is active. This is the IP on which the ROS-master will be reachable. When using an unix system, the hostname can be determined by:
@@ -78,7 +96,7 @@ In a similar manner as the SSH-setting (see [Installation](01-setup.md#installat
       Hessels-MacBook-Pro.local
     ```
     > While the IP of the host can also be used, in different networks different IPs might be active. Using the hostname of the `HOST~$` eliminates this potential issue.
-    
+
 1. Open three terminals in the VM:
     1. Source ROS-files and start `roscore`
         ```
@@ -96,8 +114,8 @@ In a similar manner as the SSH-setting (see [Installation](01-setup.md#installat
         XCS~$ source ~/rpicross_notes/scripts/ros-native <hostname>
         XCS~$ rosrun chatter subscriber
         ```
-        > Note that we do not need to update the RPi anymore. 
-        
+        > Note that we do not need to update the RPi anymore.
+
     1.  Start publisher on rpi       
         ```
         XCS~$ ssh rpizero-local
@@ -105,11 +123,11 @@ In a similar manner as the SSH-setting (see [Installation](01-setup.md#installat
         RPI~$ rosrun chatter publisher
         ```
         > The contents of `~/ros/rossetup-rpi` are created by copying and adapting `~/rpicross_notes/ros/rossetup-rpi` in the VM.
-        
+
 1. When succesfull, you should see:
     1. Publisher (RPi):
         ```
-        RPI~$ rosrun chatter publisher 
+        RPI~$ rosrun chatter publisher
           [ INFO] [1490361500.794854734]: hello world 0
           [ INFO] [1490361500.894476970]: hello world 1
           [ INFO] [1490361500.994248202]: hello world 2
@@ -140,7 +158,7 @@ It can become quite tedious to constantly `source` the ros-files. Luckily we can
     ```
     XCS~$ nano ~/.bashrc
     ```
-    
+
     Add the following to the bottom of the file
     ```
     # Load ROS biniaries and setup ROS_MASTER_URI
@@ -151,13 +169,13 @@ It can become quite tedious to constantly `source` the ros-files. Luckily we can
     XCS~$ ssh rpizero-local
     RPI~$ nano ~/.bashrc
     ```
-    
+
     Add the following to the bottom of the file
     ```
     # Load ROS biniaries
     source ~/ros/rossetup-rpi
     ```
-    
+
 So, the steps to execute the example become:
 
 1. Open three terminals in the VM:
@@ -170,12 +188,12 @@ So, the steps to execute the example become:
         XCS~$ source ~/rpicross_notes/scripts/ros-native Hessels-MacBook-Pro.local rpizero-local
         XCS~$ roscore
         ```
-        
+
     1. Start subscriber in the second terminal
         ```
         XCS~$ rosrun chatter subscriber
         ```
-        
+
     1.  Start publisher on RPi       
         ```
         XCS~$ ssh rpizero-local

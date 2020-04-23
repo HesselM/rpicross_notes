@@ -1,6 +1,24 @@
-# OpenCV
+# Guide to Cross Compilation for a Raspberry Pi
 
-In addition to installing `OpenCV` on the RPi, we might need it too in the VM for some projects. 
+1. [Start](readme.md)
+1. [Setup XCS and RPi](01-setup.md)
+1. [Setup RPi Network and SSH](02-network.md)
+1. [Setup RPi Peripherals](03-peripherals.md)
+1. [Setup Cross-compile environment](04-xc-setup.md)
+1. [Cross-compile and Install Userland](05-xc-userland.md)
+1. [Cross-compile and Install OpenCV](06-xc-opencv.md)
+1. [Cross-compile and Install ROS](07-xc-ros.md)
+1. **> [Compile and Install OpenCV](08-native-opencv.md)**
+1. [Compile and Install ROS](09-native-ros.md)
+1. [Remote ROS (RPi node and XCS master)](10-ros-remote.md)
+1. [ROS package development (RPi/XCS)](11-ros-dev.md)
+1. [Compile and Install WiringPi](12-wiringpi.md)
+
+# 9. Compile and Install OpenCV
+
+TO BE UPDATED. GUIDE MIGHT STILL WORK.
+
+In addition to installing `OpenCV` on the RPi, we might need it too in the VM for some projects.
 This guide describes the steps for compiling and installing `OpenCV` in the VM.
 The described steps are similair to [06-xc-opencv.md](06-xc-opencv.md) and are take from the official [install page](http://docs.opencv.org/2.4/doc/tutorials/introduction/linux_install/linux_install.html).
 
@@ -20,10 +38,10 @@ XCS~$ sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-de
     ```
     XCS~$ cd ~/src
     XCS~$ wget https://github.com/opencv/opencv/archive/3.2.0.zip
-    XCS~$ unzip 3.2.0.zip 
+    XCS~$ unzip 3.2.0.zip
     XCS~$ rm 3.2.0.zip
     XCS~$ wget https://github.com/opencv/opencv_contrib/archive/3.2.0.zip
-    XCS~$ unzip 3.2.0.zip 
+    XCS~$ unzip 3.2.0.zip
     XCS~$ rm 3.2.0.zip
     ```
 
@@ -42,17 +60,17 @@ XCS~$ sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-de
         -D BUILD_PERF_TESTS=NO \
         -D BUILD_PYTHON_SUPPORT=ON \
         -D OPENCV_EXTRA_MODULES_PATH=/home/pi/src/opencv_contrib-3.2.0/modules \
-        /home/pi/src/opencv-3.2.0 
-        
+        /home/pi/src/opencv-3.2.0
+
         ...
 
         -- General configuration for OpenCV 3.2.0 =====================================
         --   Version control:               unknown
-        -- 
+        --
         --   Extra modules:
         --     Location (extra):            /home/pi/src/opencv_contrib-3.2.0/modules
         --     Version control (extra):     unknown
-        -- 
+        --
         --   Platform:
         --     Timestamp:                   2017-03-23T08:26:57Z
         --     Host:                        Linux 4.4.0-64-generic x86_64
@@ -60,7 +78,7 @@ XCS~$ sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-de
         --     CMake generator:             Unix Makefiles
         --     CMake build tool:            /usr/bin/make
         --     Configuration:               Release
-        -- 
+        --
         --   C/C++:
         --     Built as dynamic libs?:      YES
         --     C++ Compiler:                /usr/bin/c++  (ver 5.4.0)
@@ -75,22 +93,22 @@ XCS~$ sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-de
         --     Precompiled headers:         YES
         --     Extra dependencies:          /usr/lib/x86_64-linux-gnu/libpng.so /usr/lib/x86_64-linux-gnu/libz.so /usr/lib/x86_64-linux-gnu/libtiff.so /usr/lib/x86_64-linux-gnu/libjasper.so /usr/lib/x86_64-linux-gnu/libjpeg.so gtk-x11-2.0 gdk-x11-2.0 pangocairo-1.0 atk-1.0 cairo gdk_pixbuf-2.0 gio-2.0 pangoft2-1.0 pango-1.0 gobject-2.0 glib-2.0 fontconfig freetype gthread-2.0 dc1394 avcodec-ffmpeg avformat-ffmpeg avutil-ffmpeg swscale-ffmpeg dl m pthread rt
         --     3rdparty dependencies:       libwebp IlmImf libprotobuf
-        -- 
+        --
         --   OpenCV modules:
         --     To be built:                 core flann imgproc ml photo reg surface_matching video dnn freetype fuzzy imgcodecs shape videoio highgui objdetect plot superres xobjdetect xphoto bgsegm bioinspired dpm face features2d line_descriptor saliency text calib3d ccalib datasets rgbd stereo tracking videostab xfeatures2d ximgproc aruco optflow phase_unwrapping stitching structured_light python2
         --     Disabled:                    world contrib_world
         --     Disabled by dependency:      -
         --     Unavailable:                 cudaarithm cudabgsegm cudacodec cudafeatures2d cudafilters cudaimgproc cudalegacy cudaobjdetect cudaoptflow cudastereo cudawarping cudev java python3 ts viz cnn_3dobj cvv hdf matlab sfm
-        -- 
-        --   GUI: 
+        --
+        --   GUI:
         --     QT:                          NO
         --     GTK+ 2.x:                    YES (ver 2.24.30)
         --     GThread :                    YES (ver 2.48.2)
         --     GtkGlExt:                    NO
         --     OpenGL support:              NO
         --     VTK support:                 NO
-        -- 
-        --   Media I/O: 
+        --
+        --   Media I/O:
         --     ZLib:                        /usr/lib/x86_64-linux-gnu/libz.so (ver 1.2.8)
         --     JPEG:                        /usr/lib/x86_64-linux-gnu/libjpeg.so (ver )
         --     WEBP:                        build (ver 0.3.1)
@@ -100,7 +118,7 @@ XCS~$ sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-de
         --     OpenEXR:                     build (ver 1.7.1)
         --     GDAL:                        NO
         --     GDCM:                        NO
-        -- 
+        --
         --   Video I/O:
         --     DC1394 1.x:                  NO
         --     DC1394 2.x:                  YES (ver 2.2.4)
@@ -123,9 +141,9 @@ XCS~$ sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-de
         --     XIMEA:                       NO
         --     Xine:                        NO
         --     gPhoto2:                     NO
-        -- 
+        --
         --   Parallel framework:            pthreads
-        -- 
+        --
         --   Other third-party libraries:
         --     Use IPP:                     9.0.1 [9.0.1]
         --          at:                     /home/pi/build/opencv/3rdparty/ippicv/ippicv_lnx
@@ -138,44 +156,44 @@ XCS~$ sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-de
         --     Use OpenCL:                  YES
         --     Use OpenVX:                  NO
         --     Use custom HAL:              NO
-        -- 
+        --
         --   OpenCL:                        <Dynamic loading of OpenCL library>
         --     Include path:                /home/pi/src/opencv-3.2.0/3rdparty/include/opencl/1.2
         --     Use AMDFFT:                  NO
         --     Use AMDBLAS:                 NO
-        -- 
+        --
         --   Python 2:
         --     Interpreter:                 /usr/bin/python2.7 (ver 2.7.12)
         --     Libraries:                   /usr/lib/x86_64-linux-gnu/libpython2.7.so (ver 2.7.12)
         --     numpy:                       /usr/lib/python2.7/dist-packages/numpy/core/include (ver 1.11.0)
         --     packages path:               lib/python2.7/dist-packages
-        -- 
+        --
         --   Python 3:
         --     Interpreter:                 /usr/bin/python3 (ver 3.5.2)
-        -- 
+        --
         --   Python (for build):            /usr/bin/python2.7
-        -- 
+        --
         --   Java:
         --     ant:                         NO
         --     JNI:                         NO
         --     Java wrappers:               NO
         --     Java tests:                  NO
-        -- 
+        --
         --   Matlab:                        Matlab not found or implicitly disabled
-        -- 
+        --
         --   Documentation:
         --     Doxygen:                     NO
-        -- 
+        --
         --   Tests and samples:
         --     Tests:                       NO
         --     Performance tests:           NO
         --     C/C++ Examples:              NO
-        -- 
+        --
         --   Install path:                  /usr/local
-        -- 
+        --
         --   cvconfig.h is in:              /home/pi/build/opencv
         -- -----------------------------------------------------------------
-        -- 
+        --
         -- Configuring done
         -- Generating done
         -- Build files have been written to: /home/pi/build/opencv
@@ -190,7 +208,7 @@ XCS~$ sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-de
 ## Testing
 Testing the compiled `OpenCV`-libraries
 
-Prerequisites: 
+Prerequisites:
 - OpenCV [installed in VM](#compilation)
 
 Steps:
@@ -201,13 +219,13 @@ Steps:
     XCS~$ cmake rpicross_notes/hello/ocv
     XCS~$ make
     ```
-    
+
 1. grab image and run.
     ```
     XCS~$ ./hellocv ~/rpi/build/rpicross_notes/hello/ocv/testimg.jpg
     ```
-    
-    As a result, a window should be opened displaying the image. 
+
+    As a result, a window should be opened displaying the image.
     > Depending on the size of the image, this may take a while.
     > Make sure you are connected to the VM with X-server (`ssh -X`) enabled.
 

@@ -1,4 +1,22 @@
-# ROS
+# Guide to Cross Compilation for a Raspberry Pi
+
+1. [Start](readme.md)
+1. [Setup XCS and RPi](01-setup.md)
+1. [Setup RPi Network and SSH](02-network.md)
+1. [Setup RPi Peripherals](03-peripherals.md)
+1. [Setup Cross-compile environment](04-xc-setup.md)
+1. [Cross-compile and Install Userland](05-xc-userland.md)
+1. [Cross-compile and Install OpenCV](06-xc-opencv.md)
+1. [Cross-compile and Install ROS](07-xc-ros.md)
+1. [Compile and Install OpenCV](08-native-opencv.md)
+1. **> [Compile and Install ROS](09-native-ros.md)**
+1. [Remote ROS (RPi node and XCS master)](10-ros-remote.md)
+1. [ROS package development (RPi/XCS)](11-ros-dev.md)
+1. [Compile and Install WiringPi](12-wiringpi.md)
+
+# 10. Cross-compile and Install ROS
+
+TO BE UPDATED. GUIDE MIGHT STILL WORK.
 
 The key idea of this guide is to have a RPi running as a node in a ROS network. Of this network, the core shall be running in the VM, hence we also need to install ROS locally. Most of the steps of this guide are described at the [ROS wiki](http://wiki.ros.org/kinetic/Installation/Ubuntu)
 
@@ -14,20 +32,20 @@ As ROS is installed via `apt-get`, no additional packages need to be installed.
     XCS~$ sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
     XCS~$ sudo apt-get update
     ```
-    
+
 1. Install ROS-Desktop (omitting similations etc.)
     ```
     XCS~$ sudo apt-get install ros-kinetic-desktop
     XCS~$ rosdep update
     ```
-   
+
 ## Synchronisation
 
 No synchronisation is required.
 
 ## Testing
 
-Prerequisites: 
+Prerequisites:
  - ROS [compiled](#compilation)
  - Repository [initialised](04-xc-setup.md#init-repository)
 
@@ -37,8 +55,8 @@ Steps:
     ```
     XCS~$ source ~/rpicross_notes/scripts/ros_native
     ```
-    
-1. Compile the `helloros` code *without* the toolchain. 
+
+1. Compile the `helloros` code *without* the toolchain.
     ```
     XCS~$ mkdir -p ~/build/hello/ros
     XCS~$ cd ~/build/hello/ros
@@ -61,7 +79,7 @@ Steps:
 
           SUMMARY
           ========
-          
+
           PARAMETERS
            * /rosdistro: kinetic
            * /rosversion: 1.12.7
@@ -76,11 +94,11 @@ Steps:
           process[rosout-1]: started with pid [2624]
           started core service [/rosout]
        ```
-       
+
     1. Launch `helloros` in the second
         ```
         XCS~$ source ~/rpicross_notes/scripts/ros_native
-        XCS~$ ~/build/hello/ros/devel/lib/helloros/helloros 
+        XCS~$ ~/build/hello/ros/devel/lib/helloros/helloros
           [ INFO] [1490274566.925321564]: hello world 0
           [ INFO] [1490274567.026256196]: hello world 1
           [ INFO] [1490274567.125635032]: hello world 2
@@ -88,5 +106,5 @@ Steps:
           [ INFO] [1490274567.325554161]: hello world 4
           ...
         ```
-        
+
 > Code for this test is partially taken from http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber(c%2B%2B)

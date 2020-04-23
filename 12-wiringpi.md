@@ -1,4 +1,23 @@
-# Wiring Pi
+# Guide to Cross Compilation for a Raspberry Pi
+
+1. [Start](readme.md)
+1. [Setup XCS and RPi](01-setup.md)
+1. [Setup RPi Network and SSH](02-network.md)
+1. [Setup RPi Peripherals](03-peripherals.md)
+1. [Setup Cross-compile environment](04-xc-setup.md)
+1. [Cross-compile and Install Userland](05-xc-userland.md)
+1. [Cross-compile and Install OpenCV](06-xc-opencv.md)
+1. [Cross-compile and Install ROS](07-xc-ros.md)
+1. [Compile and Install OpenCV](08-native-opencv.md)
+1. [Compile and Install ROS](09-native-ros.md)
+1. [Remote ROS (RPi node and XCS master)](10-ros-remote.md)
+1. [ROS package development (RPi/XCS)](11-ros-dev.md)
+1. **> [Compile and Install WiringPi](12-wiringpi.md)**
+
+# 13. Compile and Install WiringPi
+
+TO BE UPDATED. GUIDE MIGHT STILL WORK.
+
 Library to control GPIO / PWM on the Raspberry Pi using [wiringPi](http://wiringpi.com/)
 
 Steps on this page are derived from http://wiringpi.com/download-and-install/
@@ -36,13 +55,13 @@ Note: As compilation-process of the library polls several hardware features, the
 
 1. Sync updates to VM
     ```
-    XCS~$ ~/rpicross-notes/scripts/sync-rpi-vm.sh
+    XCS~$ ~/rpicross-notes/scripts/sync-rpi-xcs.sh
     ```
 
 ## Testing
 Testing the compiled and installed wiringPi libraries with a PWM signal.
 
-Prerequisites: 
+Prerequisites:
 - Toolchain [installed](04-xc-setup.md#required-packages)
 - Repository [initialised](04-xc-setup.md#init-repository)
 - WiringPi [installed and synchronised](#compilation--synchronisation)
@@ -64,14 +83,14 @@ Steps:
 
 1. Sync and run.
     ```
-    XCS~$ scp wpi rpizero-local:~/ 
+    XCS~$ scp wpi rpizero-local:~/
     XCS~$ ssh -X rpizero-local
     RPI~$ sudo ./wpi
      Raspberry Pi wiringPi PWM test program
      Iteration:  5/ 5 - Brightness:    0/1024
      Done
    ```
-   
+
 ## Note application utilising X server.
 
 When an application uses both `wiringPi` and requires Xserver to run the application, errors might be encountered when using `sudo`:

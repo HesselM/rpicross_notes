@@ -1,10 +1,41 @@
-# Network/SSH
+# Guide to Cross Compilation for a Raspberry Pi
 
-As we have a functioning VM and as we have installed Raspbian on the SDCard, lets configure the network settings.
+1. [Start](readme.md)
+1. [Setup XCS and RPi](01-setup.md)
+1. **> [Setup RPi Network and SSH](02-network.md)**
+1. [Setup RPi Peripherals](03-peripherals.md)
+1. [Setup Cross-compile environment](04-xc-setup.md)
+1. [Cross-compile and Install Userland](05-xc-userland.md)
+1. [Cross-compile and Install OpenCV](06-xc-opencv.md)
+1. [Cross-compile and Install ROS](07-xc-ros.md)
+1. [Compile and Install OpenCV](08-native-opencv.md)
+1. [Compile and Install ROS](09-native-ros.md)
+1. [Remote ROS (RPi node and XCS master)](10-ros-remote.md)
+1. [ROS package development (RPi/XCS)](11-ros-dev.md)
+1. [Compile and Install WiringPi](12-wiringpi.md)
 
-## RPi-Network Connection
+# 3. Setup RPi Network and SSH
 
-1. If not connected, connect SDCard to the VM.
+On this page we configure the network settings of the RPi and setup the required SSH connectivity. When completed you should be able to access the RPi from the XCS with the use of SSH keys via either WiFi and/or USB.
+
+## Table of Contents
+
+1. [Prerequisites](#prerequisites)
+1. [Setup Wifi](#setup-wifi)
+1. [Setup SSH](#setup-ssh)
+1. [Setup Hostname](#setup-hostname)
+1. [First Boot](#first-boot)
+1. [SSH from XCS: pi](#ssh-from-xcs-pi)
+1. [SSH from XCS: root](#ssh-from-xcs-root)
+1. [SSH from XCS: usb](#ssh-from-xcs-usb)
+1. [Next](#next)
+
+## Prerequisites
+- Setup of XCS and RPi
+
+## Setup Wifi and SSH
+
+1. If not connected, connect SDCard to the XCS.
 1. Detect SDCard & find largest partition (the RPi filesystem)
     ```
     XCS~$ lsblk
@@ -16,8 +47,8 @@ As we have a functioning VM and as we have installed Raspbian on the SDCard, let
         ├─XCS--rpizero--vg-root   252:0    0 20.5G  0 lvm  /
         └─XCS--rpizero--vg-swap_1 252:1    0    4G  0 lvm  [SWAP]
       sdb                           8:16   1  7.3G  0 disk
-      ├─sdb1                        8:17   1   63M  0 part
-      └─sdb2                        8:18   1  7.3G  0 part       <=== Largest partion
+      ├─sdb1                        8:17   1   63M  0 part       <=== Smallest partition (boot)
+      └─sdb2                        8:18   1  7.3G  0 part       <=== Largest partition
       sr0                          11:0    1 55.7M  0 rom  
     ```
 
@@ -27,7 +58,7 @@ As we have a functioning VM and as we have installed Raspbian on the SDCard, let
     XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt
     ```
 
-1. If required, configure ipadress handling. For example, use a static ipaddress (`192.168.1.100`) as an fallback, when DHCP fails:
+1. If required, configure the ipaddress handling on the RPi. For example, you can use a static ipaddress (e.g. `192.168.1.100`) as an fallback, when DHCP fails:
     ```
     XCS~$ sudo nano /home/pi/rpi/mnt/etc/dhcpcd.conf
     ```
@@ -50,7 +81,7 @@ As we have a functioning VM and as we have installed Raspbian on the SDCard, let
     XCS~$ sudo nano /home/pi/rpi/mnt/etc/wpa_supplicant/wpa_supplicant.conf
     ```
 
-    Add the required credentials. In this example, the order equals the connection order. So initially `network1` is tried for setting up a connection, after which, when failing/not available, `network2` is tested.
+    Add the required credentials. In this example, the order equals the connection order. So initially `network1` is tried for setting up a connection, when failing, `network2` is tested.
     ```
     network={
       ssid="<network1>"
@@ -63,16 +94,26 @@ As we have a functioning VM and as we have installed Raspbian on the SDCard, let
     }
     ```
 
-1. Finish setup by unmounting the mounted partition
+## Setup SSH
+
+1. To setup SSH we need access to the boot (or smallest) partition on the SDCard. As such, we first need to unmount the large partition and connect the smallest.
+
     ```
+    XCS~$ sudo umount /home/pi/rpi/mnt
+    XCS~$ sudo mount /dev/sdb1 /home/pi/rpi/mnt
+    ```
+
+1. Add ssh file and we are done.
+    ```
+    XCS~$ sudo touch /home/pi/rpi/mnt/ssh`
     XCS~$ sudo umount /home/pi/rpi/mnt
     ```
 
-## RPi Hostname
+## Setup Hostname
 
 By default, the hostname of a RPi is `raspberrypi`, hence the RPi can be accessed via the dns `raspberrypi.local`. As multiple RPi's might be active in the environment, connection issues may occur. The following steps show how to change the hostname properly.
 
-1. Mount largest partion of the SDCard in the VM. (if not yet mounted)
+1. Mount the largest partition of the SDCard in the XCS.
     ```
     XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt
     ```
@@ -105,46 +146,12 @@ By default, the hostname of a RPi is `raspberrypi`, hence the RPi can be accesse
     XCS~$ sudo umount /home/pi/rpi/mnt
     ```
 
-
-## SSH Setup
-
-### RPi: Enable SSH
-
-1. If not connected, connect SDCard to the VM.
-1. Detect SDCard & mount SMALLEST partition (the boot partition)
-    ```
-    XCS~$ lsblk
-      NAME                        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-      sda                           8:0    0   25G  0 disk
-      ├─sda1                        8:1    0  487M  0 part /boot
-      ├─sda2                        8:2    0    1K  0 part
-      └─sda5                        8:5    0 24.5G  0 part
-        ├─XCS--rpizero--vg-root   252:0    0 20.5G  0 lvm  /
-        └─XCS--rpizero--vg-swap_1 252:1    0    4G  0 lvm  [SWAP]
-      sdb                           8:16   1  7.3G  0 disk
-      ├─sdb1                        8:17   1   63M  0 part       <=== Smallest partition
-      └─sdb2                        8:18   1  7.3G  0 part
-      sr0                          11:0    1 55.7M  0 rom   
-
-    XCS~$ sudo mount /dev/sdb1 /home/pi/rpi/mnt
-    ```
-
-1. Add ssh file
-    ```
-    XCS~$ sudo touch /home/pi/rpi/mnt/ssh
-    ```
-
-1. Finish setup by unmounting the mounted partition
-    ```
-    XCS~$ sudo umount /home/pi/rpi/mnt
-    ```
-
-### RPi: First Boot
+## First Boot
 
 Hooray! We can now finally boot the RPi. But before we can continue our quest to cross-compiling, we need to do some RPi-maintenance.
 
 1. Insert the SDCard in the RPi and power it up.
-1. SSH to the RPi (use hostname or ipadress if known)
+1. SSH to the RPi (use hostname or ip-address if known)
     ```
     XCS~$ ssh pi@rpizw.local
     ```
@@ -162,11 +169,11 @@ Hooray! We can now finally boot the RPi. But before we can continue our quest to
     RPI~$ sudo apt-get dist-upgrade
     ```
 
-### SSH-Keys : pi-user
+## SSH from XCS: pi
 
-Currently, you need to type your password each time you connect with the RPi. With the use of ssh-keys, we can automate this process.
+Currently, you need to enter your password each time you connect to the RPi. With the use of SSH-keys, we can automate this process.
 
-1. Generate ssh-keys in the VM.
+1. Generate ssh-keys in the XCS.
     ```
     XCS~$ cd ~/.ssh
     XCS~$ ssh-keygen -t rsa
@@ -178,19 +185,19 @@ Currently, you need to type your password each time you connect with the RPi. Wi
       Your public key has been saved in rpizero_rsa.pub.
       ...
     ```
-    > Optionally you can choose a different rsa-name (required if you are planning to use multie keys for different systems) and set a passphrase (increasing security). In my setup I left the passphrase empty (just hitting enter).
+      > Optionally you can choose a different rsa-name (required if you are planning to use multiple keys for different systems) and set a passphrase (increasing security). In my setup I left the passphrase empty (just hitting enter).
 
-1. Set correct permisions of the key-set
+1. Set correct permissions of the key-set
     ```
     XCS~$ chmod 700 rpizero_rsa rpizero_rsa.pub
     ```
 
-1. Send a copy of the public key to the RPi so it can verify the connection  
+1. Send a copy of the public key to the RPi so the RPi can verify the automated connection upon request.
     ```
     XCS~$ cat ~/.ssh/rpizero_rsa.pub | ssh pi@rpizw.local "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
     ```
 
-1. Configure ssh connection in `ssh_config`
+1. Setup ssh connection in `ssh_config` so we can login by only using a reference
     ```
     XCS~$ sudo nano /etc/ssh/ssh_config
     ```
@@ -211,6 +218,7 @@ Currently, you need to type your password each time you connect with the RPi. Wi
       User pi
       Port 22
     ```
+    > You can edit the `Host XX` lines to any reference you seem fit. This reference is only used in the SSH call `ssh XX` to login to the defined setup.
 
 1. Allow bash to invoke the configuration upon a ssh-call
     ```
@@ -224,10 +232,11 @@ Currently, you need to type your password each time you connect with the RPi. Wi
     XCS~$ ssh rpizero-local
     ```
 
-    You should now be logged in onto the RPi via ssh, without entering your password.
+    You should now be logged in onto the RPi via SSH, without entering your password.
 
-### SSH-Keys : root
-For synchronisation of the RPi-rootfs in our crosscompile environment and the root of the 'real' RPi, ssh requires root acces.
+## SSH from XCS: root
+
+For synchronisation with our cross-compile environment the setup required root access over SSH.
 
 1. Login to the RPi the enable root.
     ```
@@ -250,13 +259,9 @@ For synchronisation of the RPi-rootfs in our crosscompile environment and the ro
 
     set `PermitRootLogin XXXX` to `PermitRootLogin yes`.
 
-1. Restart ssh service
+1. Restart ssh service and quit connection
     ```
     RPI~$ sudo service ssh restart
-    ```
-
-1. Exit connection
-    ```
     RPI~$ exit
     ```
 
@@ -281,6 +286,7 @@ For synchronisation of the RPi-rootfs in our crosscompile environment and the ro
       User root
       Port 22
     ```
+    > You can edit the `Host XX` lines to any reference you seem fit. This reference is only used in the SSH call `ssh XX` to login to the defined setup.
 
 1. Send a copy of the ssh-keys for the root user to the RPi:
     ```
@@ -294,23 +300,15 @@ For synchronisation of the RPi-rootfs in our crosscompile environment and the ro
 
     You should now be logged in onto the RPi via ssh as `root` without entering your password.
 
-# Next
+## SSH from XCS: USB
 
-Next step: [activating/installing peripherals](03-peripherals.md) such as i2c, a Real Time Clock or the Camera.
+If you will only access the RPi via WiFi, this step is optional. In this step we enable SSH access over the USB connector, to ensure we can connect to the RPi an environments without network connectivity.
 
-Or, if you do not need those: [setup the crosscompilation environment](04-xc-setup.md).
-
-
-# EXTRA: SSH over USB
-
-When the RPi is used in an environment without network connectivity, enabling SSH over USB might be a solution.
-
-1. If the RP=i is running, shutdown RPi and remove SDCard.
+1. If the RPi is running, shutdown, remove SDCard, connect the SDCard to the XCS and mount the smallest partition.
     ```
     $RPI~$ sudo shutdown now
     ```
 
-1. Detect SDCard & mount SMALLEST partition (the boot partition)
     ```
     XCS~$ lsblk
       NAME                        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
@@ -333,7 +331,7 @@ When the RPi is used in an environment without network connectivity, enabling SS
     XCS~$ sudo nano /home/pi/rpi/mnt/config.txt
     ```
 
-    Add the following at the bottom of the file:
+    Add the following lines at the bottom of the file:
     ```
     #allow ssh over usb
     dtoverlay=dwc2
@@ -349,13 +347,9 @@ When the RPi is used in an environment without network connectivity, enabling SS
     dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait modules-load=dwc2,g_ether
     ```
 
-1. Unmount SDCard / smallest partition
-    ```
-    XCS~$ sudo umount /home/pi/rpi/mnt
-    ```
-
 1. Mount largest partition
     ```
+    XCS~$ sudo umount /home/pi/rpi/mnt
     XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt
     ```
 
@@ -370,7 +364,7 @@ When the RPi is used in an environment without network connectivity, enabling SS
     fallback static_ip
     ```
 
-    > Note that this example is using the static profile, configured earlier in this guide. You could setup a different IP adress as shown before. If you copied the settings from this guide, `dhcpcd.conf` should read:
+    > Note that this example is using the static profile, configured earlier in this guide. You could setup a different IP address as shown before. If you copied the settings from this guide, `dhcpcd.conf` should read:
     ```
     profile static_ip
     static ip_address=192.168.1.100/24
@@ -391,7 +385,7 @@ When the RPi is used in an environment without network connectivity, enabling SS
 
 1. Bootup the RPi with the USB cable connected to your local machine and to the USB port of the device. Make sure that in case of the Raspberry Pi Zero you do not connect the USB cable with with the PWR port as this port does not support the USB protocol.
 
-1. Setup connection details on the HOST~$ (OSX):
+1. As we do not have DHCP server running, configure a static connection on the `HOST~$z` (OSX):
     - System Preference > Network > RNDIS/Ethernet Gadget
     - Configure IPv4: Manually
         - IP Address: 192.168.1.1
@@ -429,3 +423,7 @@ When the RPi is used in an environment without network connectivity, enabling SS
         TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
    ```
    > Note that in this example `wlan0` is configured by DHCP, whereas `usb0` has been initialised with the static setup.
+
+## Next
+
+You can either [setup some peripherals such as i2c devices or the camera](03-peripherals.md) or start to [setup the cross-compilation environment](04-xc-setup.md).

@@ -1,18 +1,44 @@
-# Crosscompiling : Userland
+# Guide to Cross Compilation for a Raspberry Pi
 
-Before continuing, please make sure you followed the steps in:
-- [Setup](01-setup.md)
-- [Network/SSH](02-network.md)
-- [Crosscompile environment](04-xc-setup.md)
-- Optional (only for testing): [Peripherals](03-peripherals.md)
+1. [Start](readme.md)
+1. [Setup XCS and RPi](01-setup.md)
+1. [Setup RPi Network and SSH](02-network.md)
+1. [Setup RPi Peripherals](03-peripherals.md)
+1. [Setup Cross-compile environment](04-xc-setup.md)
+1. **> [Cross-compile and Install Userland](05-xc-userland.md)**
+1. [Cross-compile and Install OpenCV](06-xc-opencv.md)
+1. [Cross-compile and Install ROS](07-xc-ros.md)
+1. [Compile and Install OpenCV](08-native-opencv.md)
+1. [Compile and Install ROS](09-native-ros.md)
+1. [Remote ROS (RPi node and XCS master)](10-ros-remote.md)
+1. [ROS package development (RPi/XCS)](11-ros-dev.md)
+1. [Compile and Install WiringPi](12-wiringpi.md)
 
-The [userland](https://github.com/raspberrypi/userland) repository of the Pi Foundation contains several libraires to communicate with the GPU and use GPU related actions such as `mmal`, `GLES` and others.
+# 6. Cross-compile and Install Userland
 
-## Required Packages
+The [userland](https://github.com/raspberrypi/userland) repository of the Pi Foundation contains several libraries to communicate with the RPi's GPU and use GPU related actions such as `mmal`, `GLES` and others. It also contains the camera functions such as `raspivid` and `raspistill`
 
-No additional packages should be required for the RPi or the VM.
+## Table of Contents
 
-## Compilation
+1. [Prerequisites](#prerequisites)
+1. [Preparation](#preparation)
+1. [Compilation](#compilation)
+1. [Installation](#installation)
+1. [Testing](#testing)
+1. [Troubleshooting](#troubleshooting)
+
+## Prerequisites
+- Setup of XCS and RPi
+- Setup of RPi Network and SSH
+- Setup of the Cross-compile environment
+- Optional: RPi Camera (only used for testing)
+
+## Preparation
+
+1. Sync RPi with the XCS. This ensures all symbolic links will be corrected.
+    ```
+    XCS~$ ~/rpicross_notes/scripts/sync-rpi-xcs.sh
+    ```
 
 1. Download userland
     ```
@@ -20,12 +46,12 @@ No additional packages should be required for the RPi or the VM.
     XCS~$ cd ~/rpi/rootfs/usr/src/
     XCS~$ git clone https://github.com/raspberrypi/userland.git --depth 1
     ```
-    > The `userland` repository is downloaded in `rootfs` because the `make install` does not copy the headers of the libraries. 
-        
-1. Create build location for `userland` and build with [rpi-generic-toolchain](rpi-generic-toolchain.cmake)
-   
-   > NOTE: make sure you sync the RPi with the VM before compiling userland, otherwise linking might fail due too symlinks which have not been corrected.
- 
+    > The `userland` repository is downloaded in `rootfs` because the `make install` does not copy the headers of the libraries.
+
+## Compilation
+
+1. Create the build location for `userland` and run CMake.
+
     ```
     XCS~$ mkdir -p ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
     XCS~$ cd ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
@@ -35,8 +61,8 @@ No additional packages should be required for the RPi or the VM.
       -D ARM64=OFF \
       /home/pi/rpi/rootfs/usr/src/userland/
     ```
-    This should produce an ouput similar to:
-  
+    This should produce an output similar to:
+
     ```
     -- The C compiler identification is GNU 4.9.3
     -- The CXX compiler identification is GNU 4.9.3
@@ -56,7 +82,7 @@ No additional packages should be required for the RPi or the VM.
     -- Looking for execinfo.h - found
     -- The ASM compiler identification is GNU
     -- Found assembler: /usr/bin/arm-linux-gnueabihf-gcc
-    -- Found PkgConfig: /usr/bin/pkg-config (found version "0.29.1") 
+    -- Found PkgConfig: /usr/bin/pkg-config (found version "0.29.1")
     -- Configuring done
     -- Generating done
     -- Build files have been written to: /home/pi/rpi/rootfs/usr/src/userland/build/arm-linux/release
@@ -66,39 +92,32 @@ No additional packages should be required for the RPi or the VM.
     ```
     XCS~$ make -j 4
     ```
-    > `-j 4` tells make to use 4 threads, which speeds up the process. 
-  
+    > `-j 4` tells make to use 4 threads, which speeds up the process.
+
 1. Install the created libraries:
     ```
     XCS~$ make install DESTDIR=/home/pi/rpi/rootfs
     ```
-  
+
 1. Remove build and git files from the src (these are not needed on the RPi)
     ```
     XCS~$ cd ~/
     XCS~$ rm -rf /home/pi/rpi/rootfs/usr/src/userland/build
     XCS~$ rm -rf /home/pi/rpi/rootfs/usr/src/userland/.git*
     ```
- 
-## Synchronisation
-    
-1. Send the created/updated headers and binaries from `rootfs` on the rpi:
+
+## Installation
+
+1. Sync the updated "rootfs" with the RPi:
     ```
-    XCS~$ /home/pi/rpicross_notes/scripts/sync-vm-rpi.sh
+    XCS~$ ~/rpicross_notes/scripts/sync-rpi-xcs.sh
     ```
 
 ## Testing
-Testing the compiled `userland`-libraries
 
-Prerequisites: 
-- Toolchain [installed](04-xc-setup.md#required-packages)
-- Repository [initialised](04-xc-setup.md#init-repository)
-- Userland [installed](#compilation) & [synced](#synchronisation)
-- RPi Camera [connected and activated](03-peripherals.md#camera)
+Testing the compiled `userland`-libraries is done by building our own version of [`raspicam`](https://github.com/raspberrypi/userland.git/trunk/host_applications/linux/apps/raspicam) and creating a picture. Note that this test requires that the RPi has a camera connected and that you have `links2` installed.
 
-Steps:
-
-1. Build the code with the [rpi-generic-toolchain](rpi-generic-toolchain.cmake)
+1. Create the build-dir and build the application
     ```
     XCS~$ mkdir -p ~/rpi/build/hello/raspicam
     XCS~$ cd ~/rpi/build/hello/raspicam
@@ -107,13 +126,13 @@ Steps:
         ~/rpicross_notes/hello/raspicam
     XCS~$ make
     ```
-  
+
 1. Sync and run.
     ```
-    XCS~$ scp hellocam rpizero-local:~/ 
+    XCS~$ scp hellocam rpizero-local:~/
     XCS~$ ssh -X rpizero-local
     RPI~$ ./hellocam -v -o testcam.jpg
-    
+
         hellocam Camera App v1.3.11
 
         Width 3280, Height 2464, quality 85, filename testcam.jpg
@@ -146,46 +165,12 @@ Steps:
 
     RPI~$ links2 -g testcam.jpg
     ```
-    
-    As a result, a window should be opened and show a snapshot of the camera. 
+    As a result, a window should be opened and show a snapshot of the camera.
     > Depending on the size of the image, this may take a while.
-  
-> Code for this test is taken from https://github.com/raspberrypi/userland.git/trunk/host_applications/linux/apps/raspicam. To test the camera with the original code, follow these steps:
 
-1. Download code from original repo
-    ```
-    XCS~$ sudo apt-get install subversion
-    XCS~$ mkdir -p ~/code/hello
-    XCS~$ cd ~/code/hello
-    XCS~$ svn export https://github.com/raspberrypi/userland.git/trunk/host_applications/linux/apps/raspicam
-    ```
+## Troubleshooting
 
-1. Update `CMakeLists.txt` with [hello/raspicam/CMakeLists.txt](hello/raspicam/CMakeLists.txt).
-    ```
-    XCS~$ nano ~/code/hello/raspicam/CMakeLists.txt
-    ```
-    
-1. Build the code 
-    ```
-    XCS~$ mkdir -p ~/rpi/build/hello/raspicam
-    XCS~$ cd ~/rpi/build/hello/raspicam
-    XCS~$ cmake ~/code/hello/raspicam/
-    XCS~$ make
-    ```
-  
-1. Sync and run.
-    ```
-    XCS~$ scp hellocam rpizero-local:~/ 
-    XCS~$ ssh -X rpizero-local
-    RPI~$ ./hellocam -v -o testcam.jpg
-     ...
-     ...
-     ...
-    RPI~$ links2 -g testcam.jpg
-
-
-## Trouble shooting
-
+### Error during build of `userland`:
 ```
 ../../../../lib/libvcos.so: undefined reference to `_dl_init_static_tls'
 ../../../../lib/libvcos.so: undefined reference to `_dl_pagesize'
@@ -199,13 +184,31 @@ Steps:
 ../../../../lib/libvcos.so: undefined reference to `__pthread_create'
 ```
 
-If such message appear during building (`make`) it might be because you need to fix the symlinks of the RPi-filesytem. Try building after syncing:
+If such message appear during building (`make`) it might be because you need to fix the symlinks of the RPi-filesytem. Try building after syncing (and make sure you remove all build files):
 
 ```
-    XCS~$ /home/pi/rpicross_notes/scripts/sync-rpi-vm.sh
-    ...
-    XCS~$ cd ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
-    XCS~$ make
-
+XCS~$ /home/pi/rpicross_notes/scripts/sync-rpi-xcs.sh
+...
+XCS~$ cd ~/rpi/rootfs/usr/src/userland/
+XCS~$ rm -rf build/*
+XCS~$ mkdir -p ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
+XCS~$ cd ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
+XCS~$ cmake \
+  -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
+  -D CMAKE_BUILD_TYPE=Release \
+  -D ARM64=OFF \
+  /home/pi/rpi/rootfs/usr/src/userland/
+XCS~$ make
 ```
 
+### Image is not loaded by `links2`:
+
+```
+Could not initialize any graphics driver. Tried the following drivers:
+x:
+Can't open display "(null)"
+fb:
+Could not get VT mode.
+```
+
+Check if there is a warning upon login on the RPi. If you see "Warning: untrusted X11 forwarding setup failed: xauth key data not generated" you might need to use the "-Y" instead of "-X" option when connecting via SSH.

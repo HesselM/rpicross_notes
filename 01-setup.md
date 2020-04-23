@@ -1,182 +1,217 @@
-# Setup
+# Guide to Cross Compilation for a Raspberry Pi
 
-In order to be able to experiment with compilation and installation of the necessary tools without messing op the main system, all tools will be installed in a clean and headless [VirtualBox](https://www.virtualbox.org/) environment. 
+1. [Start](readme.md)
+1. **> [Setup XCS and RPi](01-setup.md)**
+1. [Setup RPi Network and SSH](02-network.md)
+1. [Setup RPi Peripherals](03-peripherals.md)
+1. [Setup Cross-compile environment](04-xc-setup.md)
+1. [Cross-compile and Install Userland](05-xc-userland.md)
+1. [Cross-compile and Install OpenCV](06-xc-opencv.md)
+1. [Cross-compile and Install ROS](07-xc-ros.md)
+1. [Compile and Install OpenCV](08-native-opencv.md)
+1. [Compile and Install ROS](09-native-ros.md)
+1. [Remote ROS (RPi node and XCS master)](10-ros-remote.md)
+1. [ROS package development (RPi/XCS)](11-ros-dev.md)
+1. [Compile and Install WiringPi](12-wiringpi.md)
 
-Communication, installation and synchronisation of all required dependencies and libraries will be done via commandline. 
+# 2. Setup XCS and RPi
 
-As I prefer the development enviroment of my HOST-system, developed code will be accessible by the toolchain in the virtual machine (VM) via a shared folder construction.
+This page describes how to setup a [VirtualBox](https://www.virtualbox.org/) to be used for cross-compilation and how to initialise the Raspberry Pi (RPi).
+A [VirtualBox](https://www.virtualbox.org/) is used to ensure we can experiment with compilation and installation of the necessary tools without pushing or messing up our main system to an unfixable state.
 
-## Virtualbox / VM / XCS
+Both the Raspberry Pi (RPi) and VirtualBox (aka "Cross-Compile Server" or XCS) will be configured to run headless, that is, without GUI and command line oriented.
+The XCS will be configured with a shared folder so you can develop your code in any program on your main machine, while able to cross-compile it in a controlled setup.
 
-### Installation
-1. Download VirtualBox
-1. Download Ubuntu 18.04 (or 16.04) Server LTS [https://www.ubuntu.com/download/server]
+Throughout this guide the following prefixes for commands are used:
+- `HOST~$` commands executed on the Host, our main system.
+- `XCS~$` commands executed in the VirtualBox / Cross-Compile Server
+- `RPI~$` commands executed on the Raspberry Pi
+
+## Table of Contents
+
+1. [VirtualBox: Setup](#virtualbox-setup)
+1. [VirtualBox: First Boot](#virtualbox-first-boot)
+1. [VirtualBox: SSH from Host](#virtualbox-ssh-from-host)
+1. [VirtualBox: Shared folder](#virtualbox-shared-folder)
+1. [VirtualBox: DNS Resolving](#virtualbox-dns-resolving)
+1. [VirtualBox: Headless Boot](#virtualbox-headless-boot)
+1. [Raspberry Pi: Setup](#raspberry-pi-setup)
+1. [Next](#next)
+
+## VirtualBox: Setup
+
+1. Download [VirtualBox](https://www.virtualbox.org/)
+1. Download [Ubuntu 18.04 (or 16.04) Server LTS](https://www.ubuntu.com/download/server)
 1. Create new VirtualBox Image:
-    - Name: XCS-rpizero
+    - Name: XCS-rpi
     - Type: Linux
     - Version: Ubuntu (64-bit)
     - Memory: 4096 MB
     - Create a virtual hard disk now
         - Size: 25,00 GB
         - Type: VMDK
-        - Storage: Dynamically allocated	
+        - Storage: Dynamically allocated
     - Settings:
         - System > Processor > CPU:	3
+        > Exact value depends on your system capabilities. My Host contains 8 CPU's, hence 3 can be used for the XCS
 
-        > Exact value depends on your system capabilities. My Host contains 8 CPU's, hence 3 can be used for the VM
         - Network > Advanced > Port Forwarding > New Rule
-        
-        > Used to connect to the Guest via SSH from the Host
-        
+        > Used to connect to the XCS via SSH from the Host
+
             - Name: SSH
             - Protocol: TCP
             - Host IP: (leave empty)
             - Host Port: 2222
             - Guest IP: (leave empty)
             - Guest Port: 22
-      
-        - Storage > Controller IDE > Empty > IDE Secondary Master > Choose Virtual Optical Disk File > ubuntu-16.04.2-server-amd64.iso
-    - Ports > USB > USB3 controller
-      
+
+        - Storage > Controller IDE > Empty > IDE Secondary Master > Choose Virtual Optical Disk File > ubuntu-XXX-server-amd64.iso
+    - Select: Ports > USB > USB3 controller
     > My Host does not support the USB2 controller.
-    
-### First Boot
-1. Start VirtualBox/VM, installing Ubuntu:
-    - Hostname: XCS-server
+
+## VirtualBox: First Boot
+
+1. Start VirtualBox / XCS, installing Ubuntu:
+    - Hostname: XCS-rpi
     - User: pi
     - Password: raspberry
-    > You can pretty much leave all options to the default setting. 
+    > The same username and password as in a default Rasbian setup are used to simplify this guide.
 
-1. After installation, update VM (if omitted during installation)
+    > You can pretty much leave all options to the default setting.
+
+1. After installation, update XCS (if omitted during installation)
 
     ```
     XCS~$ sudo apt-get update
     XCS~$ sudo apt-get dist-upgrade
     ```
+
+## VirtualBox: SSH from Host
+
 1. Install SSH-server (if omitted during installation)
 
     ```
     XCS~$ sudo apt-get install openssh-server
     ```
-1. After reboot of the VM, you should be able to connect to the VM via port 2222:
 
-    > Connecting a local shell via SSH eases copy-paste operations from/to the VM!
+1. After reboot of the XCS, you should be able to connect to it from the Host via SSH on port 2222 :
 
     ```
     HOST~$ ssh -p 2222 pi@localhost
     ```
-    
+
     or, when using X-server:
-  
+
     ```
     HOST~$ ssh -X -p 2222 pi@localhost
     ```
-  
-    > For use of X-server ensure that `X11Forwarding yes` in `/etc/ssh/sshd_config` in the VM and `ForwardX11 yes` in `~/.ssh/config` on the Host. When changed, restart ssh: `sudo service ssh restart`.
-     
-### SSH keys
 
-Currently, you need to type your password each time you connect with the VM from the Host via SSH. With the use of ssh-keys, we can automate this process.
+    > For use of X-server ensure that `X11Forwarding yes` in `/etc/ssh/sshd_config` in the XCS is configured and that `ForwardX11 yes` is set in `~/.ssh/config` on the Host. When changed, restart ssh: `sudo service ssh restart`.
 
-1. Generate ssh-keys on the Host (assuming linux or OSX). 
+
+1. To eliminate the need for entering your password each time you open a shell to connect to XCS, we can automate the login process with the use of ssh-keys. On your Host, generate the ssh-keys:
 
     ```
     HOST~$ cd ~/.ssh
     HOST~$ ssh-keygen -t rsa
       Generating public/private rsa key pair.
-      Enter file in which to save the key (/home/XXX/.ssh/id_rsa): xcs_server_rsa
+      Enter file in which to save the key (/home/XXX/.ssh/id_rsa): xcs_rpi_rsa
       Enter passphrase (empty for no passphrase): <empty>
       Enter same passphrase again: <empty>
-      Your identification has been saved in xcs_server_rsa.
-      Your public key has been saved in xcs_server_rsa.pub.
+      Your identification has been saved in xcs_rpi_rsa.
+      Your public key has been saved in xcs_rpi_rsa.pub.
       ...
     ```
-    > Optionally you can choose a different rsa-name (required if you are planning to use multiple keys for different systems) and set a passphrase (increasing security). In my setup I left the passphrase empty (just hitting enter). 
+    > Optionally you can choose a different rsa-name (required if you are planning to use multiple keys for different systems) and set a passphrase (increasing security). In my setup I left the passphrase empty (just hitting enter).
 
-1. Set correct permisions of the key-set
+1. Set correct permissions of the key-set
 
     ```
-    HOST~$ chmod 700 xcs_server_rsa xcs_server_rsa.pub
-    ```
-   
-1. Send a copy of the public key to the RPi so it can verify the connection  
-    ```
-    cat ~/.ssh/xcs_server_rsa.pub | ssh -p 2222 pi@localhost "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+    HOST~$ chmod 700 xcs_rpi_rsa xcs_rpi_rsa.pub
     ```
 
-1. Configure ssh connection in `ssh_config`
+1. Send a copy of the public key to the XCS so the XCS can verify the automated connection upon request.
+    ```
+    HOST~$ cat ~/.ssh/xcs_rpi_rsa.pub | ssh -p 2222 pi@localhost "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+    ```
+
+1. Setup ssh connection in `ssh_config` so we can login by only using a reference (e.g `xcs-rpi`)
 
     ```
     HOST~$ sudo nano ~/.ssh/config
     ```
-  
+
     Add the following lines:
     ```
-    # connect via hostname
-    Host xcs-server
+    # connect to XCS-rpi via hostname
+    Host xcs-rpi
       HostName localhost
-      IdentityFile ~/.ssh/xcs_server_rsa
+      IdentityFile ~/.ssh/xcs_rpi_rsa
       User pi
       Port 2222
     ```
 
 1. Test connection:
     ```
-    HOST~$ ssh xcs-server
-    ```
-    
-    You should now be logged in onto the VM via SSH, without entering your password. Type `exit` to terminate connection.
-  
-### VM booting from shell
-
-1. Now we have SSH-access to the VM, booting and powering down from the Host-shell would allow us to skip all (mouse)handling of Virtual Box (and the activation of extra windows). To do so, add the following alias to your `.bashrc`:
-
-    ```
-    HOST~: sudo nano ~/.bashrc
+    HOST~$ ssh xcs-rpi
     ```
 
-    ```
-    # VM-Management
-    alias xcs-server-start='VBoxManage startvm XCS-server --type headless'
-    alias xcs-server-stop='VBoxManage controlvm XCS-server poweroff'
-    ```
+    You should now be logged in onto the XCS via SSH, without entering your password. Type `exit` to terminate connection.
 
-1. As `.bashrc` is only activated by opening a new shell, we need to do a reload:
+## VirtualBox: Shared folder
 
-    ```
-    HOST~: source ~/.bashrc
-    ```
-    
-1. You can now start the VM with `xcs-server-start`:
- 
-    ```
-    HOST~: xcs-server-start
-    Waiting for VM "XCS-server" to power on...
-    VM "XCS-server" has been successfully started.
-    ```
-    
-1. And stop with `xcs-server-stop`:
+1. Open VirtualBox and start `XCS-rpi`
+1. Insert Guest additions: Devices > Insert Guest Additions CD image...
+1. Install required packages
 
     ```
-    HOST~: xcs-server-stop
-    0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
+    XCS~$ sudo apt-get install make gcc linux-headers-$(uname -r)
     ```
 
-### DNS resolving
-  
-1. To allow the VM to resolve (local) addresses, we need to set it to use the host DNS server. 
-    > VM should be turned off before you can execute this command succesfully.
+1. Install the additions
 
     ```
-    HOST~$ VBoxManage modifyvm "XCS-rpizero" --natdnshostresolver1 on
+    XCS~$ sudo mkdir -P /media/cdrom
+    XCS~$ sudo mount /dev/cdrom /media/cdrom
+    XCS~$ sudo /media/cdrom/VBoxLinuxAdditions.run
+    XCS~$ sudo adduser pi vboxsf
+    ```
+
+1. Add shared Folder: Machine > Settings > Shared Folders > Add
+    - Select Folder Path on your Host machine
+    - Name: code
+    - Automount
+    - Make permanent
+
+1. Reboot XCS to mount shared folder
+
+    ```
+    XCS~$ sudo reboot now
+    ```
+
+1. Create link to home-folder so we can access our (user-)code easily.
+
+    ```
+    XCS~$ ln -s /media/sf_code /home/pi/code
+    ```
+
+## VirtualBox: DNS Resolving
+
+1. To allow the XCS to resolve (local) addresses (so we can connect later on to the RPi by using its hostname), we need to set the XCS to use the Host's DNS server.
+    > XCS should be turned off before you can execute this command successfully.
+
+    ```
+    HOST~$ VBoxManage modifyvm "XCS-rpi" --natdnshostresolver1 on
     ```  
-2. Additonally, in Ubuntu versions > 16.04 we need to set the nameserver adress manually to the Virtualbox DNS ip (`10.0.2.3`). This is required so that we can connect with the rpi by using the hostname of the rpi instead of it's (dynamic) ip-adress.
+
+2. Additionally, in Ubuntu versions > 16.04 we also need to set the name-server address manually to the VirtualBox DNS ip (`10.0.2.3`).
 
     ```
     XCS~$ sudo apt-get install resolvconf
     XCS~$ sudo nano /etc/resolvconf/resolv.conf.d/head
     ```
-        
+
+    Update the name-server:
     ```
     # Dynamic resolv.conf(5) file for glibc resolver(3) generated by resolvconf(8)
     #     DO NOT EDIT THIS FILE BY HAND -- YOUR CHANGES WILL BE OVERWRITTEN
@@ -185,43 +220,47 @@ Currently, you need to type your password each time you connect with the VM from
     nameserver 10.0.2.3    
     ```
 
-### Shared Folder
-1. Select/start `XCS-rpizero` in VirtualBox
-1. Insert Guest additions: Devices > Insert Guest Additions CD image...
-1. When using a Linux-based system: install necessary package
+## VirtualBox: Headless Boot
+
+1. Now we have SSH-access to the XCS, booting and powering down from the Host-shell would allow us to skip all most all (mouse)handling of VirtualBox (and the activation of extra windows). To do so, we add some aliases to `.bashrc`:
 
     ```
-    XCS~$ sudo apt-get install make gcc linux-headers-$(uname -r)
-    ```
-1. Install the additions in the VM
-
-    ```
-    XCS~$ sudo mkdir -P /media/cdrom
-    XCS~$ sudo mount /dev/cdrom /media/cdrom
-    XCS~$ sudo /media/cdrom/VBoxLinuxAdditions.run
-    XCS~$ sudo adduser pi vboxsf
-    ```
-1. Add shared Folder: Machine > Settings > Shared Folders > Add
-    - Select Folder Path
-    - Name: code
-    - Automount
-    - Make permanent
-
-1. Reboot VM to mount shared folder
-
-    ```
-    XCS~$ sudo reboot now
-    ```
-1. Create link to home-folder so we can access our (user-)code easily.
-
-    ```
-    XCS~$ ln -s /media/sf_code /home/pi/code
+    HOST~: sudo nano ~/.bashrc
     ```
 
-## Raspberry Pi
+    Add the following lines:
+    ```
+    # XCS-Management
+    alias xcs-rpi-start='VBoxManage startvm XCS-rpi --type headless'
+    alias xcs-rpi-stop='VBoxManage controlvm XCS-rpi poweroff'
+    ```
+
+1. As `.bashrc` is only activated by opening a new shell, we need to do a reload:
+
+    ```
+    HOST~: source ~/.bashrc
+    ```
+
+1. You can now start the XCS with `xcs-rpi-start`:
+
+    ```
+    HOST~: xcs-rpi-start
+    Waiting for VM "XCS-rpi" to power on...
+    VM "XCS-rpi" has been successfully started.
+    ```
+
+1. And stop with `xcs-rpi-stop`:
+
+    ```
+    HOST~: xcs-rpi-stop
+    0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
+    ```
+
+## Raspberry Pi: Setup
+
 Source: https://www.raspberrypi.org/documentation/installation/installing-images/linux.md
 
-1. Download and Unzip latest Raspbian Lite
+1. Download and Unzip the latest Raspbian Lite
 
     ```
     XCS~S mkdir -p ~/rpi/img
@@ -230,50 +269,52 @@ Source: https://www.raspberrypi.org/documentation/installation/installing-images
     XCS~$ unzip raspbian_lite_latest
     ```
     > This download is the Lite version of raspbian and hence does not include a GUI or commonly used application. If a GUI is required, you can add it later via `apt-get` or download a different raspbian version.
-1. Connect SDCard to the VM.
-    > For this you need to open Virtual Box (in case you are connected to a headless system via SSH). 
+
+1. Connect SDCard to the XCS.
+    > For this you need to open Virtual Box (in case you are connected to a headless system via SSH).
+
 1. Detect SDCard
 
     ```
     XCS~$ lsblk
       NAME                        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-      sda                           8:0    0   25G  0 disk 
+      sda                           8:0    0   25G  0 disk
       ├─sda1                        8:1    0  487M  0 part /boot
-      ├─sda2                        8:2    0    1K  0 part 
-      └─sda5                        8:5    0 24.5G  0 part 
-        ├─XCS--rpizero--vg-root   252:0    0 20.5G  0 lvm  /
-        └─XCS--rpizero--vg-swap_1 252:1    0    4G  0 lvm  [SWAP]
-      sdb                           8:16   1  7.3G  0 disk       <=== Our 8Gb SDCard!
-      ├─sdb1                        8:17   1   63M  0 part 
-      └─sdb2                        8:18   1  7.3G  0 part 
+      ├─sda2                        8:2    0    1K  0 part
+      └─sda5                        8:5    0 24.5G  0 part
+        ├─XCS--rpi--vg-root   252:0    0 20.5G  0 lvm  /
+        └─XCS--rpi--vg-swap_1 252:1    0    4G  0 lvm  [SWAP]
+      sdb                           8:16   1  7.3G  0 disk       <=== Our SDCard!
+      ├─sdb1                        8:17   1   63M  0 part
+      └─sdb2                        8:18   1  7.3G  0 part
       sr0                          11:0    1 55.7M  0 rom  
     ```
-    
+
 1. Install Raspbian (this might take a while..)
-     
+
     ```
     XCS~$ sudo dd bs=4M if=/home/pi/rpi/img/2020-02-13-raspbian-buster-lite.img of=/dev/sdb
-    
-    [sudo] password for pi: 
+
+    [sudo] password for pi:
     441+0 records in
     441+0 records out
     1849688064 bytes (1.8 GB, 1.7 GiB) copied, 71.1205 s, 26.0 MB/s
     ```
-    
-1. Validate that the image is properly copied
+
+1. OPTIONAL: Validate that the image is properly copied
 
     ```
     XCS~$ sudo dd bs=4M if=/dev/sdb of=from-sd-card.img
-    XCS~$ sudo truncate --reference 2020-02-13-raspbian-buster-lite.img from-sd-card.img 
-    XCS~$ sudo diff -s from-sd-card.img 2020-02-13-raspbian-buster-lite.img 
+    XCS~$ sudo truncate --reference 2020-02-13-raspbian-buster-lite.img from-sd-card.img
+    XCS~$ sudo diff -s from-sd-card.img 2020-02-13-raspbian-buster-lite.img
     Files from-sd-card.img and 2020-02-13-raspbian-buster-lite.img are identical
     ```
-    
+
 1. Remove images, we do not need these anymore
 
     ```
     XCS~$ sudo rm *.img
     ```
-# Next
+## Next
 
-Having installed the basic components, lets [setup the network/ssh!](02-network.md)
+Having installed the basic components, lets configure the [network/ssh settings of our RPi!](02-network.md)
