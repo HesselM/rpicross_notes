@@ -16,9 +16,9 @@
 
 # 5. Setup Cross-compile environment
 
-You are now at a point to create the foundation of the cross-compilation environment. In the next steps a "rootfs" will be created in XCS, mimicking the RPi filesystem. This "rootfs" contains all necessary headers and libraries to compile new ARM (system) binaries or applications for the RPi. Using a cross-compiler and toolchain these new binaries or applications can be created, which with some synchronisation tools are pushed to the RPi.
+You are now at a point to create the foundation of the cross-compilation environment. In the next steps a "rootfs" will be created in XCS, mimicking the RPi filesystem. This "rootfs" contains all necessary headers and libraries to compile new ARM (system) binaries or applications for the RPi. Using a cross-compiler and toolchain these new binaries or applications can be created, after which these can be synchronised with the RPi.
 
-An important note has to be made: most of the commands and scripts used for compilation and synchronisation makes use of absolute system-paths. As such, if you decided previously in this guide to deviate with system or user names, extra case need to be taken to verify that your paths are still ok.
+An important note has to be made: most of the commands and scripts used for compilation and synchronisation makes use of absolute system-paths. As such, if you decided previously in this guide to deviate with system or user names, extra care needs to be taken to verify that your paths are still ok.
 
 ## Table of Contents
 
@@ -79,7 +79,7 @@ An important note has to be made: most of the commands and scripts used for comp
 
 ## SDCard backup
 
-Errors and mistakes may occur and happen during syncing, cross-compilation or installation, resulting in faulty libraries or libraries installed in wrong locations. To save a lot of (re)installation time, these steps show how to backup or reinitiate the SDCard.
+Errors and mistakes may occur and happen during syncing, cross-compilation or installation, resulting in faulty libraries or libraries installed in wrong locations. To save (re)installation time, these steps show how to backup or reinitiate the SDCard.
 
 1. Shutdown the RPi and connect SDCard to the XCS
     ```
@@ -113,7 +113,7 @@ Errors and mistakes may occur and happen during syncing, cross-compilation or in
 
 The cross-compiler requires access to (`/usr` and `/lib`) RPi-binaries, headers and libraries to link properly. Therefore we need to create a local copy of the RPi-filesystem in the XCS: "rootfs".
 
-For the initial setup of "rootfs" it is advised to use the SDCard as this will save a lot of time. Future syncs will be done via scripts utilising the SSH setup.
+For the initial setup of "rootfs" it is advised to connect the SDCard with the XCS, as this will synchronise in less time when compared to synchronisation over SSH. Future syncs will be done via scripts utilising the SSH setup.
 
 1. Connect and mount the largest partition of the SDCard.
     ```
@@ -148,10 +148,10 @@ For the initial setup of "rootfs" it is advised to use the SDCard as this will s
       /home/pi/rpi/img/rpi_backup.img1           8192   137215   129024   63M  c W95 FAT32 (LBA)
       /home/pi/rpi/img/rpi_backup.img2         137216 15353855 15216640  7.3G 83 Linux
     ```
-    > - determine `start` of the filesystem parition, e.g: 137216
-    > - determine `unit size`, e.g. 512
-    > - multiply these values: 137216 * 512 = 70254592
-    > - mount and copy
+     - determine `start` of the filesystem parition, e.g: 137216
+     - determine `unit size`, e.g. 512
+     - multiply these values: 137216 * 512 = 70254592
+     - mount and copy
 
     ```
     XCS~$ sudo mount -o loop,offset=70254592 /home/pi/rpi/img/rpi_backup.img /home/pi/rpi/mnt
@@ -162,7 +162,7 @@ For the initial setup of "rootfs" it is advised to use the SDCard as this will s
 
 ## Synchronisation of rootfs
 
-Both `rootfs` and the RPi need to be kept in sync when new libraries are compiled, installed or added. The initial sync is done with [rsync](https://linux.die.net/man/1/rsync) after which broken symbolic links need to be fixed. To ease this process sync-scripts have been developed:
+Both "rootfs" and the RPi need to be kept in sync when new libraries are compiled, installed or added. Synchronisation is done with [rsync](https://linux.die.net/man/1/rsync), but an additional step is required to fix broken symbolic links. To ease the full sync-process, dedicated scripts have been developed:
 
 1. Sync RPi with "rootfs"
     ```
@@ -174,33 +174,37 @@ Both `rootfs` and the RPi need to be kept in sync when new libraries are compile
     XCS~$ ~/rpicross_notes/scripts/sync-xcs-rpi.sh
     ```
 
-> BACKGROUND INFORMATION
+> BACKGROUND INFORMATION ON SYNCHRONISATION
 >
-> For synchronising the files, `rsync` is used. This an advanced synchronisation tool allowing several settings or restrictions such as file-permissions, ownership of files, symbolic link copying and much more.
+> For synchronising files between the RPi and XCS, `rsync` is used. This is an advanced synchronisation tool supporting control over settings and restrictions for file-permissions, ownership of files, symbolic link copying and much more.
 >
-> To sync from the RPi to the XCS, we do not care about file-permissions as we are moving from a (potentially restricted) RPi to a less restricted rootfs in the XCS. We also manually correct symbolic links, so synchronisation can be done with:
+> To sync from the RPi to the XCS, we do not care about file-permissions as we are moving from a (potentially restricted) RPi to a less restricted rootfs in the XCS. We also do not care about broken symbolic links (as we will correct those later), so synchronisation can be done with:
+
 ```
 XCS~$ rsync -auHWv rpizero-local-root:{/usr,/lib} ~/rpi/rootfs
 ```
+
 > This copies all data from `/usr` and `/lib` from the RPi to the XCS.
 >
-> As symbolic links are copied without correction, links with absolute paths will brake because the paths of `/usr` and `/lib` on the RPi become `/home/pi/rpi/rootfs/usr` and `/home/pi/rpi/rootfs/lib` respectively on the XCS. Using the commands `file` and `ln` we can detect these files and fix the links:
+> As symbolic links are copied without correction, links with absolute paths will brake because the paths of `/usr` and `/lib` on the RPi become `/home/pi/rpi/rootfs/usr` and `/home/pi/rpi/rootfs/lib` respectively on the XCS. Using the command `file` we can detect these files and fix the links with `ln`:
+
 ```
 XCS~$ file /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/librt.so
   /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/librt.so: broken symbolic link to /lib/arm-linux-gnueabihf/librt.so.1
 
 XCS~$ ln -sf /home/pi/rpi/rootfs/lib/arm-linux-gnueabihf/librt.so.1 /home/pi/rpi/rootfs/usr/lib/arm-linux-gnueabihf/librt.so
 ```
-> The synchronisation-script "sync-rpi-xcs.sh" contains a process which does this automatically.
+
+> The synchronisation-script "sync-rpi-xcs.sh" contains a process which does this automatically for the symbolic links in "usr/lib/arm-linux-gnueabihf" (as these are for now the only links which require patching to allow us to cross compile).
 >
-> When we sync files from the XCS to the RPi we do need to take care of file-permissions. Especially since `home/pi/rpi/rootfs` contains the `/usr/bin` folder (and therefore also `sudo`). Synchronising to the RPi with improper settings might result in `sudo`-errors on the RPi and an unstable system.
+> When we sync files from the XCS to the RPi we DO need to take care of file-permissions. Especially since `home/pi/rpi/rootfs` contains the `/usr/bin` folder (and therefore also `sudo`). Synchronising to the RPi with improper file-permissions might result in `sudo`-errors on the RPi and an unstable system.
 >
-> To take into account the permissions, syncing fromt "rootfs" to the RPi is done with:
+> To take into account file-permissions, syncing from "rootfs" to the RPi is done with:
 ```
 XCS~$ sudo rsync -auHWv --no-perms --no-owner --no-group /home/pi/rpi/rootfs/ rpizero-local-root:/
 ```
 >
-> It should be noted that the "corrected" symbolic links will brake again: `/home/pi/rpi/rootfs/usr` should be corrected to `/usr`. The script "sync-xcs-rpi.sh" takes care of this.
+> It should be noted that the "corrected" symbolic links will brake again: the prefix `/home/pi/rpi/rootfs/usr` should be corrected to `/usr`. The script "sync-xcs-rpi.sh" takes care of this.
 
 ## Testing
 

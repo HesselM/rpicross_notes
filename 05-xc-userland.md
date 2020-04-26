@@ -16,7 +16,7 @@
 
 # 6. Cross-compile and Install Userland
 
-The [userland](https://github.com/raspberrypi/userland) repository of the Pi Foundation contains several libraries to communicate with the RPi's GPU and use GPU related actions such as `mmal`, `GLES` and others. It also contains the camera functions such as `raspivid` and `raspistill`
+The [userland](https://github.com/raspberrypi/userland) repository of the Pi Foundation contains several libraries to communicate with the RPi's GPU and use GPU related actions such as `mmal`, `GLES` and others. It also contains the camera functions such as `raspivid` and `raspistill`.
 
 ## Table of Contents
 

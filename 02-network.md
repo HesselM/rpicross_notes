@@ -81,7 +81,7 @@ On this page we configure the network settings of the RPi and setup the required
     XCS~$ sudo nano /home/pi/rpi/mnt/etc/wpa_supplicant/wpa_supplicant.conf
     ```
 
-    Add the required credentials. In this example, the order equals the connection order. So initially `network1` is tried for setting up a connection, when failing, `network2` is tested.
+    Add the required credentials. The order equals the connection order. So in this example, `network1` is first tried for setting up a connection, when failing, `network2` is tested.
     ```
     network={
       ssid="<network1>"
@@ -105,13 +105,13 @@ On this page we configure the network settings of the RPi and setup the required
 
 1. Add ssh file and we are done.
     ```
-    XCS~$ sudo touch /home/pi/rpi/mnt/ssh`
+    XCS~$ sudo touch /home/pi/rpi/mnt/ssh
     XCS~$ sudo umount /home/pi/rpi/mnt
     ```
 
 ## Setup Hostname
 
-By default, the hostname of a RPi is `raspberrypi`, hence the RPi can be accessed via the dns `raspberrypi.local`. As multiple RPi's might be active in the environment, connection issues may occur. The following steps show how to change the hostname properly.
+By default, the hostname of a RPi is `raspberrypi`, hence the RPi can be accessed via the dns `raspberrypi.local`. As multiple RPi's might be active in the environment, connection issues may occur. The following steps show how to change the hostname.
 
 1. Mount the largest partition of the SDCard in the XCS.
     ```
@@ -162,7 +162,7 @@ Hooray! We can now finally boot the RPi. But before we can continue our quest to
     RPI~$ sudo reboot now
     ```
 
-1. After boot, connect again & update RPi
+1. After reboot, connect again & update RPi
     ```
     XCS~$ ssh pi@rpizw.local
     RPI~$ sudo apt-get update
@@ -302,7 +302,7 @@ For synchronisation with our cross-compile environment the setup required root a
 
 ## SSH from XCS: USB
 
-If you will only access the RPi via WiFi, this step is optional. In this step we enable SSH access over the USB connector, to ensure we can connect to the RPi an environments without network connectivity.
+If your RPi will always be accessed via WiFi, this step can be skipped. If not: in this step we enable SSH access over the USB connector, to ensure we can connect to the RPi in environments without network connectivity.
 
 1. If the RPi is running, shutdown, remove SDCard, connect the SDCard to the XCS and mount the smallest partition.
     ```
@@ -383,16 +383,24 @@ If you will only access the RPi via WiFi, this step is optional. In this step we
     XCS~$ sudo umount /home/pi/rpi/mnt
     ```
 
-1. Bootup the RPi with the USB cable connected to your local machine and to the USB port of the device. Make sure that in case of the Raspberry Pi Zero you do not connect the USB cable with with the PWR port as this port does not support the USB protocol.
+1. Bootup the RPi with one end of the USB cable connected to your machine and the other end to the USB port of the device. Make sure that in case of the Raspberry Pi Zero you do not connect the USB cable with with the PWR port as this port does not support the USB protocol.
 
-1. As we do not have DHCP server running, configure a static connection on the `HOST~$z` (OSX):
+1. As we do not have DHCP server running, configure a static connection on the `HOST~$` (OSX):
     - System Preference > Network > RNDIS/Ethernet Gadget
     - Configure IPv4: Manually
         - IP Address: 192.168.1.1
         - Subnet Mask: 255.255.255.0
         - Router: 192.168.1.1
 
-1. You should now be able to connect with the RPi via the set IP address. A dump of `ifconfig` on the RPi might look like:
+1. You should now be able to connect with the RPi via the set IP address, hostname or SSH-config
+
+   ```
+   XCS~$ ssh pi@192.168.1.100
+   XCS~$ ssh rpizw.local
+   XCS~$ ssh rpizero-local
+   ```
+
+1. A dump of `ifconfig` on the RPi might look like:
    ```
    RPI~$ ifconfig
    lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536

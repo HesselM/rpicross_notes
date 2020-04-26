@@ -35,7 +35,7 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
 
 ## Preparation
 
-1. For OpenCV support some packages on the RPi are required.
+1. To run OpenCV, additional packages on the RPi are required.
     ```
     XCS~$ ssh rpizero-local
     RPI~$ sudo apt-get install python2.7 python-dev python-numpy python3 python3-dev python3-numpy libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
@@ -77,9 +77,9 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
     ...
     ```
 
-    > The toolchain presumes that a `thumb` instruction-set is available which consists of 32 and 16 bits instructions. As it uses multiple widths of instructions, the `thumb` architecture is able to combine instructions and hence speed up processing time. Only `armv7` or higher has this ability, hence it does not apply to the BCM2835 of the RPi.
+    > The OpenCV toolchain presumes that a `thumb` instruction-set is available which consists of 32 and 16 bits instructions. As a `thumb` instruction-set uses multiple widths of instructions, this architecture is able to combine instructions and hence speed up processing time. Only `armv7` or higher has this ability, hence it does not apply to the BCM2835 of the RPi.
 
-1. OpenCV comes with it's own toolchain for cross-compilation, but we also need to use our own toolchain as it contains several settings regarding "rootfs". Luckily CMake makes it possible to merge these files. To compile OpenCV a special toolchain is created (rpi-generic-toolchain-opencv-4.3.0.cmake). Its contents are:
+1. OpenCV comes with it's own toolchain for cross-compilation, but we also need to use our own toolchain as it contains several settings regarding "rootfs". Luckily CMake makes it possible to merge these files. To compile OpenCV a special toolchain (rpi-generic-toolchain-opencv-4.3.0.cmake) is created and placed in this repo. Its contents are:
 
    ```
    include( /home/pi/rpicross_notes/rpi-generic-toolchain.cmake )
@@ -227,7 +227,7 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
 
 ## Installation
 
-1. During the building process `rootfs` has been linked in python-config files. We need to fix this on the RPi
+1. During the building process "rootfs" has been linked in python-config files. We need to fix this on the RPi
     ```
     XCS~$ /home/pi/rpicross_notes/scripts/sync-xcs-rpi.sh
     RPI~$ sudo nano /usr/local/lib/python2.7/site-packages/cv2/config-2.7.py
@@ -236,7 +236,7 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
     RPI~$ sudo nano /usr/local/lib/python3.7/site-packages/cv2/config.py   
     ```
 
-    > Depending on the python version on the RPi and on the HOST, multiple configs need to be adjusts and might be named differently
+    > Depending on the python versions on the RPi and on the XCS, multiple configs might require adjustments. Also note that the config-names depend on the python versions and hence might differ from the above overview.
 
 1. Remove `/home/pi/rpi/rootfs` from the configs:
 
@@ -304,7 +304,7 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
 
 ## Testing
 
-To test if OpenCV in compiled and installed properly we're going to [display an image on the RPi](http://docs.opencv.org/4.3.0/db/deb/tutorial_display_image.html). For this we need `links2` installed and an image. If you have installed the RPi Camera, you can use a previously taken test-image.  
+To test if OpenCV is compiled and installed properly we're going to [display an image on the RPi](http://docs.opencv.org/4.3.0/db/deb/tutorial_display_image.html). For this we need an image on the RPi. If you have installed the Pi Camera, you can use a previously taken test-image.  
 
 1. Create the build-dir and build the application
     ```
@@ -323,7 +323,7 @@ To test if OpenCV in compiled and installed properly we're going to [display an 
     RPI~$ ./hellocv testcam.jpg
     ```
 
-    As a result, a window should be opened displaying the image.
+    As a result, a window should be open displaying the image.
     > Depending on the size of the image, this may take a while.
 
 

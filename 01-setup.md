@@ -19,12 +19,12 @@
 This page describes how to setup a [VirtualBox](https://www.virtualbox.org/) to be used for cross-compilation and how to initialise the Raspberry Pi (RPi).
 A [VirtualBox](https://www.virtualbox.org/) is used to ensure we can experiment with compilation and installation of the necessary tools without pushing or messing up our main system to an unfixable state.
 
-Both the Raspberry Pi (RPi) and VirtualBox (aka "Cross-Compile Server" or XCS) will be configured to run headless, that is, without GUI and command line oriented.
+Both the Raspberry Pi (RPi) and VirtualBox (aka "Cross-Compile Server" or XCS) will be configured to run headless, that is, without graphical interface (GUI).
 The XCS will be configured with a shared folder so you can develop your code in any program on your main machine, while able to cross-compile it in a controlled setup.
 
 Throughout this guide the following prefixes for commands are used:
 - `HOST~$` commands executed on the Host, our main system.
-- `XCS~$` commands executed in the VirtualBox / Cross-Compile Server
+- `XCS~$` commands executed on the Cross-Compilation Server / VirtualBox.
 - `RPI~$` commands executed on the Raspberry Pi
 
 ## Table of Contents
@@ -40,9 +40,9 @@ Throughout this guide the following prefixes for commands are used:
 
 ## VirtualBox: Setup
 
-1. Download [VirtualBox](https://www.virtualbox.org/)
+1. Download and install [VirtualBox](https://www.virtualbox.org/)
 1. Download [Ubuntu 18.04 (or 16.04) Server LTS](https://www.ubuntu.com/download/server)
-1. Create new VirtualBox Image:
+1. Create a new VirtualBox Image:
     - Name: XCS-rpi
     - Type: Linux
     - Version: Ubuntu (64-bit)
@@ -56,7 +56,7 @@ Throughout this guide the following prefixes for commands are used:
         > Exact value depends on your system capabilities. My Host contains 8 CPU's, hence 3 can be used for the XCS
 
         - Network > Advanced > Port Forwarding > New Rule
-        > Used to connect to the XCS via SSH from the Host
+        > This rule will be used to connect to the XCS via SSH from the Host
 
             - Name: SSH
             - Protocol: TCP
@@ -75,7 +75,7 @@ Throughout this guide the following prefixes for commands are used:
     - Hostname: XCS-rpi
     - User: pi
     - Password: raspberry
-    > The same username and password as in a default Rasbian setup are used to simplify this guide.
+    > The same username and password as in a default Raspbian setup are used to simplify this guide.
 
     > You can pretty much leave all options to the default setting.
 
@@ -179,9 +179,11 @@ Throughout this guide the following prefixes for commands are used:
 
 1. Add shared Folder: Machine > Settings > Shared Folders > Add
     - Select Folder Path on your Host machine
-    - Name: code
+    - Name: shared
     - Automount
     - Make permanent
+
+    > You can use any name, but note that you need to remember it to setup a symbolic link later on.
 
 1. Reboot XCS to mount shared folder
 
@@ -192,19 +194,20 @@ Throughout this guide the following prefixes for commands are used:
 1. Create link to home-folder so we can access our (user-)code easily.
 
     ```
-    XCS~$ ln -s /media/sf_code /home/pi/code
+    XCS~$ ln -s /media/sf_shared /home/pi/shared
     ```
 
 ## VirtualBox: DNS Resolving
 
 1. To allow the XCS to resolve (local) addresses (so we can connect later on to the RPi by using its hostname), we need to set the XCS to use the Host's DNS server.
-    > XCS should be turned off before you can execute this command successfully.
+    > the XCS should be turned off before you can execute this command successfully.
 
     ```
     HOST~$ VBoxManage modifyvm "XCS-rpi" --natdnshostresolver1 on
     ```  
 
-2. Additionally, in Ubuntu versions > 16.04 we also need to set the name-server address manually to the VirtualBox DNS ip (`10.0.2.3`).
+1. After applying the DNS fix, bootup the XCS.
+1. In Ubuntu versions > 16.04 we need to set the name-server address manually to the VirtualBox DNS ip (`10.0.2.3`) to ensure the DNS will be picked up properly.
 
     ```
     XCS~$ sudo apt-get install resolvconf
@@ -222,7 +225,7 @@ Throughout this guide the following prefixes for commands are used:
 
 ## VirtualBox: Headless Boot
 
-1. Now we have SSH-access to the XCS, booting and powering down from the Host-shell would allow us to skip all most all (mouse)handling of VirtualBox (and the activation of extra windows). To do so, we add some aliases to `.bashrc`:
+1. Now that we have SSH-access to the XCS, booting and powering down from the Host-shell would allow us to skip almost all (mouse)handling of VirtualBox (and the activation of extra windows). To do so, we add some aliases to `.bashrc` on the Host:
 
     ```
     HOST~: sudo nano ~/.bashrc
@@ -271,7 +274,7 @@ Source: https://www.raspberrypi.org/documentation/installation/installing-images
     > This download is the Lite version of raspbian and hence does not include a GUI or commonly used application. If a GUI is required, you can add it later via `apt-get` or download a different raspbian version.
 
 1. Connect SDCard to the XCS.
-    > For this you need to open Virtual Box (in case you are connected to a headless system via SSH).
+    > For this you need to open VirtualBox (in case you are connected to a headless system via SSH).
 
 1. Detect SDCard
 
@@ -315,6 +318,7 @@ Source: https://www.raspberrypi.org/documentation/installation/installing-images
     ```
     XCS~$ sudo rm *.img
     ```
+
 ## Next
 
 Having installed the basic components, lets configure the [network/ssh settings of our RPi!](02-network.md)
