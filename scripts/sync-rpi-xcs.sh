@@ -18,7 +18,7 @@ sleep 3
 
 CMD=""
 # Fetch broken symlinks
-RELINK=$(file $ROOTFS/$TARGET_DIR/* | grep "broken symbolic" | awk '{print $1""$6}' )
+RELINK=$(file $ROOTFS/$TARGET_DIR/* | grep "broken symbolic" | awk '{print $1""$NF}' )
 # Fix each symlink
 for i in $RELINK ; do
   IFS=':' # split line by ':'

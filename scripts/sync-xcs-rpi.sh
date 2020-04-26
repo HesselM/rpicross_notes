@@ -19,7 +19,7 @@ sleep 3
 # Updates are pushed into a "cmd", which is send/executed to/on the RPi with ssh.
 CMD=""
 # Fetch corrected symlinks
-RELINK=$(file $ROOTFS/$TARGET_DIR/* | grep "symbolic link to $ROOTFS" | awk '{print $1""$5}' )
+RELINK=$(file $ROOTFS/$TARGET_DIR/* | grep "symbolic link to $ROOTFS" | awk '{print $1""$NF}' )
 # Fix each symlink
 for i in $RELINK ; do
   IFS=':' # split line by ':'
@@ -36,10 +36,3 @@ for i in $RELINK ; do
 done
 # fix links on rpi
 ssh $host "$CMD"
-
-# fix links which are not pointing to /usr or /lib
-CMD=""
-CMD="$CMD ln -sf /etc/alternatives/libblas.so.3-arm-linux-gnueabihf /usr/lib/arm-linux-gnueabihf/libblas.so.3;"
-CMD="$CMD ln -sf /etc/alternatives/liblapack.so.3-arm-linux-gnueabihf /usr/lib/arm-linux-gnueabihf/liblapack.so.3;"
-ssh $host "$CMD"
-
