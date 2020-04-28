@@ -42,11 +42,13 @@ Source: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/co
     ```
 
 1. Edit `boot.txt` so i2c is loaded upon startup
+
     ```
     RPI~$ sudo nano /boot/config.txt
     ```
 
     Add the following lines to the bottom of the file
+
     ```
     #enable i2c
     dtparam=i2c1=on
@@ -54,11 +56,13 @@ Source: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/co
     ```
 
 1. Edit `modules` so the i2c kernel is loaded
+
     ```
     RPI~$ sudo nano /etc/modules
     ```
 
     Add the following lines to the bottom of the file
+
     ```
     #load i2c
     i2c-bcm2708
@@ -66,11 +70,13 @@ Source: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/co
     ```
 
 1. Allow pi-user to use i2c
+
     ```
     RPI~$ sudo adduser pi i2c
     ```
 
 1. Shutdown RPi and disconnect from the power supply
+
     ```
     RPI~$ sudo shutdown now
     ```
@@ -78,6 +84,7 @@ Source: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/co
 1. Connect your i2c device and powerup.
 
 1. Check if an i2c device is found:
+
     ```
     RPI~$ sudo i2cdetect -y 1
        0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
@@ -98,34 +105,40 @@ Source: https://thepihut.com/collections/raspberry-pi-hats/products/rtc-pizero
 
 1. Ensure that the RTC is attached to the RPi and that `i2cdetect` lists it as a i2c device.
 1. Edit `boot.txt` so the RTC is loaded upon startup
+
     ```
     XCS~$ ssh rpizero-local
     RPI~$ sudo nano /boot/config.txt
     ```
 
     Add the following lines to the bottom of the file
+
     ```
     #enable rtc
     dtoverlay=i2c-rtc,ds1307
     ```
 
 1. Edit `modules` so the RTC kernel is loaded
+
     ```
     RPI~$ sudo nano /etc/modules
     ```
 
     Add the following lines to the bottom of the file
+
     ```
     #load rtc
     rtc-ds1307
     ```
 
 1. Allow (re)setting of the hw-clock
+
     ```
     RPI~$ sudo nano /lib/udev/hwclock-set
     ```
 
     Comment out these lines:
+
     ```
     # if [ -e /run/systemd/system ] ; then
     # exit 0
@@ -133,6 +146,7 @@ Source: https://thepihut.com/collections/raspberry-pi-hats/products/rtc-pizero
     ```
 
 1. Reboot to load RTC
+
     ```
     RPI~$ sudo reboot now
     ```
@@ -160,6 +174,7 @@ Source: https://www.kiwi-electronics.nl/io-pi-zero
 1. Shutdown RPi and disconnect from the power supply
 1. Connect the camera and powerup.
 1. After powerup, login via SSH and enable camera
+
     ```
     XCS~$ ssh rpizero-local
     RPI~$ sudo raspi-config
@@ -168,22 +183,26 @@ Source: https://www.kiwi-electronics.nl/io-pi-zero
     Goto `Interfacing options > Camera > Select` and reboot
 
 1. To test the camera, login with SSH with X-server enabled:
+
     ```
     XCS~$ ssh -X rpizero-local
     ```
     >  Take note on the message on login. If you see "Warning: untrusted X11 forwarding setup failed: xauth key data not generated" you might need to use the "-Y" instead of "-X" option.
 
 1. Install the `links2` image viewer
+
     ```
     RPI~$ sudo apt-get install links2
     ```
 
 1. Test the camera
+
     ```
     RPI~$ raspistill -v -o test.jpg
     ```  
 
 1. View the preview.
+
     ```
     RPI~$ links2 -g test.jpg
     ```

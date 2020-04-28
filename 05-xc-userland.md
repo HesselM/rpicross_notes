@@ -36,16 +36,19 @@ The [userland](https://github.com/raspberrypi/userland) repository of the Pi Fou
 ## Preparation
 
 1. Sync RPi with the XCS. This ensures all symbolic links will be corrected.
+
     ```
-    XCS~$ ~/rpicross_notes/scripts/sync-rpi-xcs.sh
+    XCS~$ $XC_RPI_BASE/rpicross_notes/scripts/sync-rpi-xcs.sh rpizero-local-root
     ```
 
 1. Download userland
+
     ```
-    XCS~$ mkdir -p ~/rpi/rootfs/usr/src/
-    XCS~$ cd ~/rpi/rootfs/usr/src/
+    XCS~$ mkdir -p $XC_RPI_ROOTFS/usr/src/
+    XCS~$ cd $XC_RPI_ROOTFS/usr/src/
     XCS~$ git clone https://github.com/raspberrypi/userland.git --depth 1
     ```
+
     > The `userland` repository is downloaded in `rootfs` because the `make install` does not copy the headers of the libraries.
 
 ## Compilation
@@ -53,14 +56,15 @@ The [userland](https://github.com/raspberrypi/userland) repository of the Pi Fou
 1. Create the build location for `userland` and run CMake.
 
     ```
-    XCS~$ mkdir -p ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
-    XCS~$ cd ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
+    XCS~$ mkdir -p $XC_RPI_ROOTFS/usr/src/userland/build/arm-linux/release
+    XCS~$ cd $XC_RPI_ROOTFS/usr/src/userland/build/arm-linux/release
     XCS~$ cmake \
-      -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
+      -D CMAKE_TOOLCHAIN_FILE=$XC_RPI_BASE/rpicross_notes/rpi-generic-toolchain.cmake \
       -D CMAKE_BUILD_TYPE=Release \
       -D ARM64=OFF \
-      /home/pi/rpi/rootfs/usr/src/userland/
+      $XC_RPI_ROOTFS/usr/src/userland/
     ```
+
     This should produce an output similar to:
 
     ```
@@ -89,28 +93,33 @@ The [userland](https://github.com/raspberrypi/userland) repository of the Pi Fou
     ```
 
 1. Next, `make` userland.
+
     ```
     XCS~$ make -j 4
     ```
+
     > `-j 4` tells make to use 4 threads, which speeds up the process.
 
 1. Install the created libraries:
+
     ```
-    XCS~$ make install DESTDIR=/home/pi/rpi/rootfs
+    XCS~$ make install DESTDIR=$XC_RPI_ROOTFS
     ```
 
 1. Remove build and git files from the src (these are not needed on the RPi)
+
     ```
-    XCS~$ cd ~/
-    XCS~$ rm -rf /home/pi/rpi/rootfs/usr/src/userland/build
-    XCS~$ rm -rf /home/pi/rpi/rootfs/usr/src/userland/.git*
+    XCS~$ cd $XC_RPI_ROOTFS
+    XCS~$ rm -rf $XC_RPI_ROOTFS/usr/src/userland/build
+    XCS~$ rm -rf $XC_RPI_ROOTFS/usr/src/userland/.git*
     ```
 
 ## Installation
 
 1. Sync the updated "rootfs" with the RPi:
+
     ```
-    XCS~$ ~/rpicross_notes/scripts/sync-rpi-xcs.sh
+    XCS~$ $XC_RPI_BASE/rpicross_notes/scripts/sync-xcs-rpi.sh rpizero-local-root
     ```
 
 ## Testing
@@ -118,26 +127,34 @@ The [userland](https://github.com/raspberrypi/userland) repository of the Pi Fou
 Testing the compiled `userland`-libraries is done by building our own version of [`raspicam`](https://github.com/raspberrypi/userland.git/trunk/host_applications/linux/apps/raspicam) and creating a picture. Note that this test requires that the RPi has a camera connected and that you have `links2` installed.
 
 1. Create the build-dir and build the application
+
     ```
-    XCS~$ mkdir -p ~/rpi/build/hello/raspicam
-    XCS~$ cd ~/rpi/build/hello/raspicam
+    XCS~$ mkdir -p $XC_RPI_BUILD/hello/raspicam
+    XCS~$ cd $XC_RPI_BUILD/hello/raspicam
     XCS~$ cmake \
-        -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
-        ~/rpicross_notes/hello/raspicam
+        -D CMAKE_TOOLCHAIN_FILE=$XC_RPI_BASE/rpicross_notes/rpi-generic-toolchain.cmake \
+        $XC_RPI_BASE/rpicross_notes/hello/raspicam
     XCS~$ make
     ```
 
 1. Sync and run.
+
     ```
     XCS~$ scp hellocam rpizero-local:~/
     XCS~$ ssh -X rpizero-local
     RPI~$ ./hellocam -v -o testcam.jpg
 
-        hellocam Camera App v1.3.11
+        "hellocam" Camera App (commit Not found)
 
-        Width 3280, Height 2464, quality 85, filename testcam.jpg
-        Time delay 5000, Raw no
+        Camera Name imx219
+        Width 3280, Height 2464, filename testcam.jpg
+        Using camera 0, sensor mode 0
+
+        GPS output Disabled
+
+        Quality 85, Raw no
         Thumbnail enabled Yes, width 64, height 48, quality 35
+        Time delay 5000, Timelapse 0
         Link to latest frame enabled  no
         Full resolution preview No
         Capture method : Single capture
@@ -148,6 +165,7 @@ Testing the compiled `userland`-libraries is done by building our own version of
         Sharpness 0, Contrast 0, Brightness 50
         Saturation 0, ISO 0, Video Stabilisation No, Exposure compensation 0
         Exposure Mode 'auto', AWB Mode 'auto', Image Effect 'none'
+        Flicker Avoid Mode 'off'
         Metering Mode 'average', Colour Effect Enabled No with U = 128, V = 128
         Rotation 0, hflip No, vflip No
         ROI x 0.000000, y 0.000000, w 1.000000 h 1.000000
@@ -165,7 +183,9 @@ Testing the compiled `userland`-libraries is done by building our own version of
 
     RPI~$ links2 -g testcam.jpg
     ```
+
     As a result, a window should be opened and show a snapshot of the camera.
+
     > Depending on the size of the image, this may take a while.
 
 ## Troubleshooting
@@ -187,17 +207,17 @@ Testing the compiled `userland`-libraries is done by building our own version of
 If such message appear during building (`make`) it might be because you need to fix the symlinks of the RPi-filesytem. Try building after syncing (and make sure you remove all build files):
 
 ```
-XCS~$ /home/pi/rpicross_notes/scripts/sync-rpi-xcs.sh
+XCS~$ $XC_RPI_BASE/rpicross_notes/scripts/sync-rpi-xcs.sh rpizero-local-root
 ...
-XCS~$ cd ~/rpi/rootfs/usr/src/userland/
+XCS~$ cd $XC_RPI_ROOTFS/usr/src/userland/
 XCS~$ rm -rf build/*
-XCS~$ mkdir -p ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
-XCS~$ cd ~/rpi/rootfs/usr/src/userland/build/arm-linux/release
+XCS~$ mkdir -p $XC_RPI_ROOTFS/usr/src/userland/build/arm-linux/release
+XCS~$ cd $XC_RPI_ROOTFS/usr/src/userland/build/arm-linux/release
 XCS~$ cmake \
-  -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
+  -D CMAKE_TOOLCHAIN_FILE=$XC_RPI_BASE/rpicross_notes/rpi-generic-toolchain.cmake \
   -D CMAKE_BUILD_TYPE=Release \
   -D ARM64=OFF \
-  /home/pi/rpi/rootfs/usr/src/userland/
+  $XC_RPI_ROOTFS/usr/src/userland/
 XCS~$ make
 ```
 

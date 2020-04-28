@@ -18,9 +18,9 @@
 
 Welcome at this Cross Compilation Guide for a Raspberry Pi.
 
-This repository started as a personal guide to keep track of how to setup a proper system, but grew to a public guide, where it hopefully can help many others too. It also contains toolchains and scripts to ease the cross-compilation process as well as examples and tests to verify the setup.
+This repository started as a personal guide to keep track of how to setup a proper cross-compilation system, but grew to a public guide, where it hopefully can help many others too. It also contains toolchains and scripts to ease the cross-compilation process as well as examples and tests to verify the setup.
 
-The system is build around a VirtualBox running an Ubuntu OS. This VirtualBox will hold all tools for the cross-compilation. A VirtualBox is chosen to ensure that we cannot mess up the main machine with faulty installations or accidentally changing system-critical symbolic links (which happened to me on earlier journeys).
+The system is build within a VirtualBox running an Ubuntu OS. This VirtualBox holds all tools for the cross-compilation. A VirtualBox is chosen to ensure that we cannot mess up the main machine with faulty (library) installations or accidentally changing system-critical symbolic links (which happened to me on earlier journeys).
 
 During this guide the following systems will be configured, (cross)compiled and installed:
 - [Userland](https://github.com/raspberrypi/userland)
@@ -38,7 +38,7 @@ Additionally we setup:
 - Different ROS configurations.
 - and more!
 
-To use this guide, experience with VirtualBox, C, Python and the terminal/nano are assumed. You also need a Raspberry Pi and SD-card reader (as we'll initially configure the Pi via de SDCard, connected to the VirtualBox).
+To use this guide, experience with VirtualBox, C, Python and the terminal/nano are assumed. You also need a Raspberry Pi and SDCard-reader (as we'll initially configure the Pi via the SDCard, connected to the VirtualBox).
 
 # How to Read?
 

@@ -36,23 +36,30 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
 ## Preparation
 
 1. To run OpenCV, additional packages on the RPi are required.
+
     ```
     XCS~$ ssh rpizero-local
     RPI~$ sudo apt-get install python2.7 python-dev python-numpy python3 python3-dev python3-numpy libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
     ```
+
     > Python and numpy need to be installed so `OpenCV` can create the Python-bindings.
+
     > Other libraries are used to process images, generate GUI's (via X-server) and other imaging processes.
 
-1. Sync the updated RPi to "rootfs"
+    > Note that this download might take a while as a lot of packages need to be downloaded and installed.
+
+1. Sync RPi with the XCS. This ensures all symbolic links will be corrected.
+
     ```
-    XCS~$ ~/rpicross_notes/scripts/sync-rpi-xcs.sh
+    XCS~$ $XC_RPI_BASE/rpicross_notes/scripts/sync-rpi-xcs.sh rpizero-local-root
     ```
 
 ## Compilation
 
 1. Download and unzip the `OpenCV` sources.
+
     ```
-    XCS~$ cd ~/rpi/src
+    XCS~$ cd $XC_RPI_SRC
     XCS~$ wget https://github.com/opencv/opencv/archive/4.3.0.zip
     XCS~$ unzip 4.3.0.zip
     XCS~$ rm 4.3.0.zip
@@ -62,8 +69,9 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
     ```
 
 1. After downloading, we need to edit the `OpenCV`-arm toolchain as it does not support the Raspberry Pi Zero `armv6 hf` core properly.
+
     ```
-    XCS~$ nano /home/pi/rpi/src/opencv-4.3.0/platforms/linux/arm.toolchain.cmake
+    XCS~$ nano $XC_RPI_SRC/opencv-4.3.0/platforms/linux/arm.toolchain.cmake
     ```
 
     Change the '-mthumb' flags to '-marm'. The resulting file should look similarly to:
@@ -82,25 +90,26 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
 1. OpenCV comes with it's own toolchain for cross-compilation, but we also need to use our own toolchain as it contains several settings regarding "rootfs". Luckily CMake makes it possible to merge these files. To compile OpenCV a special toolchain (rpi-generic-toolchain-opencv-4.3.0.cmake) is created and placed in this repo. Its contents are:
 
    ```
-   include( /home/pi/rpicross_notes/rpi-generic-toolchain.cmake )
-   include( /home/pi/rpi/src/opencv-4.3.0/cmake/OpenCVMinDepVersions.cmake )
+   include( $ENV{XC_RPI_BASE}/rpicross_notes/rpi-generic-toolchain.cmake )
+   include( $ENV{XC_RPI_SRC}/opencv-4.3.0/cmake/OpenCVMinDepVersions.cmake )
    ```
 
    > If you use a different OpenCV version or directory structure, please make sure you edit this file accordingly.
 
 1. The commands for building `OpenCV` then becomes:
+
     ```
-    XCS~$ mkdir -p ~/rpi/build/opencv
-    XCS~$ cd ~/rpi/build/opencv
+    XCS~$ mkdir -p $XC_RPI_BUILD/opencv
+    XCS~$ cd $XC_RPI_BUILD/opencv
     XCS~$ cmake \
         -D BUILD_TESTS=NO \
         -D BUILD_PERF_TESTS=NO \
         -D BUILD_PYTHON_SUPPORT=ON \
         -D BUILD_NEW_PYTHON_SUPPORT=ON \
-        -D CMAKE_INSTALL_PREFIX=/home/pi/rpi/rootfs/usr \
-        -D OPENCV_EXTRA_MODULES_PATH=/home/pi/rpi/src/opencv_contrib-4.3.0/modules \
-        -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain-opencv-4.3.0.cmake \
-        /home/pi/rpi/src/opencv-4.3.0
+        -D CMAKE_INSTALL_PREFIX=$XC_RPI_ROOTFS/usr \
+        -D OPENCV_EXTRA_MODULES_PATH=$XC_RPI_SRC/opencv_contrib-4.3.0/modules \
+        -D CMAKE_TOOLCHAIN_FILE=$XC_RPI_BASE/rpicross_notes/rpi-generic-toolchain-opencv-4.3.0.cmake \
+        $XC_RPI_SRC/opencv-4.3.0
     ```
 
     Which produces a summary looking like:
@@ -114,7 +123,7 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
     --     Version control (extra):     unknown
     --
     --   Platform:
-    --     Timestamp:                   2020-04-21T18:10:59Z
+    --     Timestamp:                   2020-04-28T10:52:55Z
     --     Host:                        Linux 4.15.0-96-generic x86_64
     --     Target:                      Linux 1 arm
     --     CMake:                       3.10.2
@@ -218,6 +227,7 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
     > Note the detection of libraries such as `gtk`, additional modules such as `freetype` and the proper settings for `Python`.
 
 1. When all is fine, `OpenCV` can be build and installed (which might take a while).
+
     ```
     XCS~$ make -j 4
     XCS~$ make install
@@ -227,9 +237,16 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
 
 ## Installation
 
-1. During the building process "rootfs" has been linked in python-config files. We need to fix this on the RPi
+1. Sync the updated "rootfs" with the RPi:
+
     ```
-    XCS~$ /home/pi/rpicross_notes/scripts/sync-xcs-rpi.sh
+    XCS~$ $XC_RPI_BASE/rpicross_notes/scripts/sync-xcs-rpi.sh rpizero-local-root
+    ```
+
+1. During the building process "rootfs" has been linked in the python-config files of OpenCV for the RPi. We need to fix this on the RPi:
+
+    ```
+    XCS~$ ssh rpizero-local
     RPI~$ sudo nano /usr/local/lib/python2.7/site-packages/cv2/config-2.7.py
     RPI~$ sudo nano /usr/local/lib/python2.7/site-packages/cv2/config.py
     RPI~$ sudo nano /usr/local/lib/python3.7/site-packages/cv2/config-3.6.py
@@ -238,9 +255,10 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
 
     > Depending on the python versions on the RPi and on the XCS, multiple configs might require adjustments. Also note that the config-names depend on the python versions and hence might differ from the above overview.
 
-1. Remove `/home/pi/rpi/rootfs` from the configs:
+1. For each config, remove the "rootfs" reference from the path. The result should look like:
 
     - config-X.py:
+
     ```
     PYTHON_EXTENSIONS_PATHS = [
         os.path.join('/usr/local/lib/python3.7/site-packages/cv2', 'python-3.6')
@@ -248,29 +266,28 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
     ```
 
     - config.py:
+
     ```
     BINARIES_PATHS = [
         os.path.join('/usr', 'lib')
     ] + BINARIES_PATHS
     ```
 
-1. Sync the updated "rootfs" with the RPi:
-    ```
-    XCS~$ /home/pi/rpicross_notes/scripts/sync-xcs-rpi.sh
-    ```
-
-1. After syncing, we can test python-bindings:
+1. You can now test your python-bindings:
 
     - python2:
+
     ```
     RPI~$ PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c 'import cv2; print(cv2.__version__)'
     ```
+
     - python3:
+
     ```
     RPI~$ PYTHONPATH=/usr/local/lib/python3.7/site-packages python3 -c 'import cv2; print(cv2.__version__)'
     ```
 
-    > Both should print out `4.3.0`
+    > Both should print out `4.3.0`. If you encounter any issues, see [Troubleshooting](#troubleshooting).
 
 1. A more permanent way to set `PYTHONPATH` is to use `.bashrc`
 
@@ -279,6 +296,7 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
     ```
 
     Add to following lines:
+
     ```
     #Ensure Python is able to find packages
     export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH
@@ -287,16 +305,21 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
     > Note that you both python3 and python2 use the same `PYTHONPATH`, hence care should be taken when setting this in `.bashrc`: the different versions are not interchangeable!
 
 1. Reload Bash after you set `PYTHONPATH`
+
     ```
     RPI~$ source ~/.bashrc
     ```
+
 1. Testing the bindings can now be done with:
 
     - python2:
+
     ```
     RPI~$ python -c 'import cv2; print(cv2.__version__)'
     ```
+
     - python3:
+
     ```
     RPI~$ python3 -c 'import cv2; print(cv2.__version__)'
     ```
@@ -307,16 +330,18 @@ This section will cross-compile and install OpenCV, its additional modules, gtk 
 To test if OpenCV is compiled and installed properly we're going to [display an image on the RPi](http://docs.opencv.org/4.3.0/db/deb/tutorial_display_image.html). For this we need an image on the RPi. If you have installed the Pi Camera, you can use a previously taken test-image.  
 
 1. Create the build-dir and build the application
+
     ```
-    XCS~$ mkdir -p ~/rpi/build/hello/ocv
-    XCS~$ cd ~/rpi/build/hello/ocv
+    XCS~$ mkdir -p $XC_RPI_BUILD/hello/ocv
+    XCS~$ cd $XC_RPI_BUILD/hello/ocv
     XCS~$ cmake \
-        cmake -D CMAKE_TOOLCHAIN_FILE=/home/pi/rpicross_notes/rpi-generic-toolchain.cmake \
-        ~/rpicross_notes/hello/ocv
+        -D CMAKE_TOOLCHAIN_FILE=$XC_RPI_BASE/rpicross_notes/rpi-generic-toolchain.cmake \
+        $XC_RPI_BASE/rpicross_notes/hello/ocv
     XCS~$ make
     ```
 
 1. Sync and run.
+
     ```
     XCS~$ scp hellocv rpizero-local:~/
     XCS~$ ssh -X rpizero-local
@@ -324,6 +349,7 @@ To test if OpenCV is compiled and installed properly we're going to [display an 
     ```
 
     As a result, a window should be open displaying the image.
+
     > Depending on the size of the image, this may take a while.
 
 
@@ -358,3 +384,14 @@ If your HOST had a different python version (e.g. python3.6) then the RPi (e.g. 
 ```
 RPI~$ sudo cp /usr/local/lib/python3.7/site-packages/cv2/config-3.6.py /usr/local/lib/python3.7/site-packages/cv2/config-3.7.py
 ```
+
+### Gtk-WARNING: cannot open display
+
+```
+(process:7909): Gtk-WARNING **: 12:30:05.379: Locale not supported by C library.
+	Using the fallback 'C' locale.
+
+(Display window:7909): Gtk-WARNING **: 12:30:05.407: cannot open display:
+```
+
+Ensure you are your connected to the RPi with a shell supporting the "-X server". If you do, check if there is a warning upon login on the RPi. If you see "Warning: untrusted X11 forwarding setup failed: xauth key data not generated" you might need to use the "-Y" instead of "-X" option when connecting via SSH.

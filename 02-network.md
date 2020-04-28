@@ -37,6 +37,7 @@ On this page we configure the network settings of the RPi and setup the required
 
 1. If not connected, connect SDCard to the XCS.
 1. Detect SDCard & find largest partition (the RPi filesystem)
+
     ```
     XCS~$ lsblk
       NAME                        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
@@ -53,17 +54,19 @@ On this page we configure the network settings of the RPi and setup the required
     ```
 
 1. Mount SDCard
+
     ```
-    XCS~$ mkdir -p /home/pi/rpi/mnt
-    XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt
+    XCS~$ sudo mount /dev/sdb2 $XC_RPI_MNT
     ```
 
-1. If required, configure the ipaddress handling on the RPi. For example, you can use a static ipaddress (e.g. `192.168.1.100`) as an fallback, when DHCP fails:
+1. If required, configure the ip-address handling on the RPi. For example, you can use a static ip-address (e.g. `192.168.1.100`) as a fallback when DHCP fails:
+
     ```
-    XCS~$ sudo nano /home/pi/rpi/mnt/etc/dhcpcd.conf
+    XCS~$ sudo nano $XC_RPI_MNT/etc/dhcpcd.conf
     ```
 
-    Edit and add the following lines to `dhcpcd.conf` as required for your setup:
+    Edit following lines as required for your setup and add these to the bottom of `dhcpcd.conf`:
+
     ```
     profile static_ip
     static ip_address=192.168.1.100/24
@@ -77,11 +80,13 @@ On this page we configure the network settings of the RPi and setup the required
     > More information on how to manage (multiple) (static) networks be found [here](https://www.raspberrypi.org/forums/viewtopic.php?t=140252).
 
 1. Setup WiFi credentials
+
     ```
-    XCS~$ sudo nano /home/pi/rpi/mnt/etc/wpa_supplicant/wpa_supplicant.conf
+    XCS~$ sudo nano $XC_RPI_MNT/etc/wpa_supplicant/wpa_supplicant.conf
     ```
 
     Add the required credentials. The order equals the connection order. So in this example, `network1` is first tried for setting up a connection, when failing, `network2` is tested.
+
     ```
     network={
       ssid="<network1>"
@@ -99,14 +104,15 @@ On this page we configure the network settings of the RPi and setup the required
 1. To setup SSH we need access to the boot (or smallest) partition on the SDCard. As such, we first need to unmount the large partition and connect the smallest.
 
     ```
-    XCS~$ sudo umount /home/pi/rpi/mnt
-    XCS~$ sudo mount /dev/sdb1 /home/pi/rpi/mnt
+    XCS~$ sudo umount $XC_RPI_MNT
+    XCS~$ sudo mount /dev/sdb1 $XC_RPI_MNT
     ```
 
 1. Add ssh file and we are done.
+
     ```
-    XCS~$ sudo touch /home/pi/rpi/mnt/ssh
-    XCS~$ sudo umount /home/pi/rpi/mnt
+    XCS~$ sudo touch $XC_RPI_MNT/ssh
+    XCS~$ sudo umount $XC_RPI_MNT
     ```
 
 ## Setup Hostname
@@ -114,19 +120,22 @@ On this page we configure the network settings of the RPi and setup the required
 By default, the hostname of a RPi is `raspberrypi`, hence the RPi can be accessed via the dns `raspberrypi.local`. As multiple RPi's might be active in the environment, connection issues may occur. The following steps show how to change the hostname.
 
 1. Mount the largest partition of the SDCard in the XCS.
+
     ```
-    XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt
+    XCS~$ sudo mount /dev/sdb2 $XC_RPI_MNT
     ```
 
 1. Edit `hostname`
+
     ```
-    XCS~$ sudo nano /home/pi/rpi/mnt/etc/hostname
+    XCS~$ sudo nano $XC_RPI_MNT/etc/hostname
     ```
 
 1. Change `raspberrypi` in e.g. `rpizw`
 1. Edit `hosts`
+
     ```
-    XCS~$ sudo nano /home/pi/rpi/mnt/etc/hosts
+    XCS~$ sudo nano $XC_RPI_MNT/etc/hosts
     ```
 
 1. Change `127.0.0.1 raspberrypi` in e.g. `127.0.0.1 rpizw`.
@@ -142,8 +151,9 @@ By default, the hostname of a RPi is `raspberrypi`, hence the RPi can be accesse
     ```
 
 1. Finish setup by unmounting the mounted partition
+
     ```
-    XCS~$ sudo umount /home/pi/rpi/mnt
+    XCS~$ sudo umount $XC_RPI_MNT
     ```
 
 ## First Boot
@@ -152,17 +162,20 @@ Hooray! We can now finally boot the RPi. But before we can continue our quest to
 
 1. Insert the SDCard in the RPi and power it up.
 1. SSH to the RPi (use hostname or ip-address if known)
+
     ```
     XCS~$ ssh pi@rpizw.local
     ```
 
 1. Expand filesystem to use full size of SDCard & reboot
+
     ```
     RPI~$ sudo raspi-config --expand-rootfs
     RPI~$ sudo reboot now
     ```
 
 1. After reboot, connect again & update RPi
+
     ```
     XCS~$ ssh pi@rpizw.local
     RPI~$ sudo apt-get update
@@ -174,6 +187,7 @@ Hooray! We can now finally boot the RPi. But before we can continue our quest to
 Currently, you need to enter your password each time you connect to the RPi. With the use of SSH-keys, we can automate this process.
 
 1. Generate ssh-keys in the XCS.
+
     ```
     XCS~$ cd ~/.ssh
     XCS~$ ssh-keygen -t rsa
@@ -185,24 +199,29 @@ Currently, you need to enter your password each time you connect to the RPi. Wit
       Your public key has been saved in rpizero_rsa.pub.
       ...
     ```
-      > Optionally you can choose a different rsa-name (required if you are planning to use multiple keys for different systems) and set a passphrase (increasing security). In my setup I left the passphrase empty (just hitting enter).
+
+    > Optionally you can choose a different rsa-name (required if you are planning to use multiple keys for different systems) and set a passphrase (increasing security). In my setup I left the passphrase empty (just hitting enter).
 
 1. Set correct permissions of the key-set
+
     ```
     XCS~$ chmod 700 rpizero_rsa rpizero_rsa.pub
     ```
 
 1. Send a copy of the public key to the RPi so the RPi can verify the automated connection upon request.
+
     ```
     XCS~$ cat ~/.ssh/rpizero_rsa.pub | ssh pi@rpizw.local "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
     ```
 
 1. Setup ssh connection in `ssh_config` so we can login by only using a reference
+
     ```
     XCS~$ sudo nano /etc/ssh/ssh_config
     ```
 
     Depending on the configuration of `dhcpcd.conf` on the RPi, add the following lines:
+
     ```
     #connect via static ip
     Host rpizero
@@ -218,9 +237,11 @@ Currently, you need to enter your password each time you connect to the RPi. Wit
       User pi
       Port 22
     ```
+
     > You can edit the `Host XX` lines to any reference you seem fit. This reference is only used in the SSH call `ssh XX` to login to the defined setup.
 
 1. Allow bash to invoke the configuration upon a ssh-call
+
     ```
     XCS~$ ssh-agent bash
     XCS~$ ssh-add /home/pi/.ssh/rpizero_rsa
@@ -228,6 +249,7 @@ Currently, you need to enter your password each time you connect to the RPi. Wit
     ```
 
 1. Test connection:
+
     ```
     XCS~$ ssh rpizero-local
     ```
@@ -239,20 +261,24 @@ Currently, you need to enter your password each time you connect to the RPi. Wit
 For synchronisation with our cross-compile environment the setup required root access over SSH.
 
 1. Login to the RPi the enable root.
+
     ```
     XCS~$ ssh rpizero-local
     ```
 
 1. Setup root-password.   
+
     ```
     RPI~$ sudo passwd root
     New password:
     Retype new password:
     passwd: password updated successfully
     ```
+
     > IMPORTANT: the given password should equal the password for the user `pi` !!
 
 1. Enable root-login
+
     ```
     RPI~$ sudo nano /etc/ssh/sshd_config
     ```
@@ -260,17 +286,20 @@ For synchronisation with our cross-compile environment the setup required root a
     set `PermitRootLogin XXXX` to `PermitRootLogin yes`.
 
 1. Restart ssh service and quit connection
+
     ```
     RPI~$ sudo service ssh restart
     RPI~$ exit
     ```
 
 1. Configure ssh connection in `ssh_config`
+
     ```
     XCS~$ sudo nano /etc/ssh/ssh_config
     ```
 
     Depending on the configuration of `dhcpcd.conf` on the RPi, add the following lines:
+
     ```
     #connect via static ip
     Host rpizero-root
@@ -289,11 +318,13 @@ For synchronisation with our cross-compile environment the setup required root a
     > You can edit the `Host XX` lines to any reference you seem fit. This reference is only used in the SSH call `ssh XX` to login to the defined setup.
 
 1. Send a copy of the ssh-keys for the root user to the RPi:
+
     ```
     XCS~$ cat ~/.ssh/rpizero_rsa.pub | ssh root@rpizw.local "mkdir -p ~/.ssh && cat >>  ~/.ssh/authorized_keys"
     ```
 
 1. Test connection:
+
     ```
     XCS~$ ssh rpizero-local-root
     ```
@@ -305,6 +336,7 @@ For synchronisation with our cross-compile environment the setup required root a
 If your RPi will always be accessed via WiFi, this step can be skipped. If not: in this step we enable SSH access over the USB connector, to ensure we can connect to the RPi in environments without network connectivity.
 
 1. If the RPi is running, shutdown, remove SDCard, connect the SDCard to the XCS and mount the smallest partition.
+
     ```
     $RPI~$ sudo shutdown now
     ```
@@ -323,42 +355,49 @@ If your RPi will always be accessed via WiFi, this step can be skipped. If not: 
       └─sdb2                        8:18   1  7.3G  0 part
       sr0                          11:0    1 55.7M  0 rom   
 
-    XCS~$ sudo mount /dev/sdb1 /home/pi/rpi/mnt
+    XCS~$ sudo mount /dev/sdb1 $XC_RPI_MNT
     ```
 
 1. Update the configuration file
+
     ```
-    XCS~$ sudo nano /home/pi/rpi/mnt/config.txt
+    XCS~$ sudo nano $XC_RPI_MNT/config.txt
     ```
 
     Add the following lines at the bottom of the file:
+
     ```
     #allow ssh over usb
     dtoverlay=dwc2
     ```
 
 1. Update `cmdline.txt`
+
     ```
-    XCS~$ sudo nano /home/pi/rpi/mnt/cmdline.txt
+    XCS~$ sudo nano $XC_RPI_MNT/cmdline.txt
     ```
 
     Add `modules-load=dwc2,g_ether` right after `rootwait`. Because this file is very sensitive to enter, space or tabs, make sure you do not add additional characters to it. After editing the final file might look like:
+
     ```
     dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait modules-load=dwc2,g_ether
     ```
 
 1. Mount largest partition
+
     ```
-    XCS~$ sudo umount /home/pi/rpi/mnt
-    XCS~$ sudo mount /dev/sdb2 /home/pi/rpi/mnt
+    XCS~$ sudo umount $XC_RPI_MNT
+    XCS~$ sudo mount /dev/sdb2 $XC_RPI_MNT
     ```
 
 1. Setup static fallback when DHCP is not providing an IP.
+
     ```
-    XCS~$ sudo nano /home/pi/rpi/mnt/etc/dhcpcd.conf
+    XCS~$ sudo nano $XC_RPI_MNT/etc/dhcpcd.conf
     ```
 
     Add the following lines to `dhcpcd.conf`:
+
     ```
     interface usb0
     fallback static_ip
@@ -379,8 +418,9 @@ If your RPi will always be accessed via WiFi, this step can be skipped. If not: 
     ```
 
 1. Unmount SDCard
+
     ```
-    XCS~$ sudo umount /home/pi/rpi/mnt
+    XCS~$ sudo umount $XC_RPI_MNT
     ```
 
 1. Bootup the RPi with one end of the USB cable connected to your machine and the other end to the USB port of the device. Make sure that in case of the Raspberry Pi Zero you do not connect the USB cable with with the PWR port as this port does not support the USB protocol.
