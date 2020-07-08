@@ -79,6 +79,8 @@ On this page we configure the network settings of the RPi and setup the required
 
     > More information on how to manage (multiple) (static) networks be found [here](https://www.raspberrypi.org/forums/viewtopic.php?t=140252).
 
+    > "/24" indicates a used subnet mask of "255.255.255.0". You can change it to "/16" ("255.255.0.0") or "/8" ("255.0.0.0") as you require.
+
 1. Setup WiFi credentials
 
     ```
