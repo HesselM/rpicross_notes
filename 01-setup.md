@@ -323,7 +323,29 @@ Source: https://www.raspberrypi.org/documentation/installation/installing-images
     > This download is the Lite version of raspbian and hence does not include a GUI or commonly used application. If a GUI is required, you can add it later via `apt-get` or download a different raspbian version.
 
 1. Connect SDCard to the XCS.
-    > For this you need to open VirtualBox (in case you are connected to a headless system via SSH).
+    For this you have two options: 
+    1. Open VirtualBox (in case you are connected to a headless system via SSH) and attach the USB via de user interface
+    1. Use `VBoxManage`:
+        1. List connectable usb-devices on the host. 
+        1. Attach usb (using the UUID) to the XCS
+    ```
+    HOST~$ VBoxManage list usbhost
+    ...
+    UUID:               6f73773c-5558-4e06-8de5-d7fdb74b43bf
+    VendorId:           0x058f (058F)
+    ProductId:          0x8468 (8468)
+    Revision:           1.0 (0100)
+    Port:               4
+    USB version/speed:  0/Super
+    Manufacturer:       Generic
+    Product:            Mass Storage Device
+    SerialNumber:       058F84688461
+    Address:            p=0x8468;v=0x058f;s=0x0004a7b1859bfb7b;l=0x01240000
+    Current State:      Available
+    ...
+    
+    HOST~$ VBoxManage controlvm XCS-rpi usbattach 6f73773c-5558-4e06-8de5-d7fdb74b43bf
+    ```
 
 1. Detect SDCard
 
