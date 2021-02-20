@@ -42,8 +42,9 @@ Throughout this guide the following prefixes for commands are used:
 ## VirtualBox: Setup
 
 1. Download and install [VirtualBox](https://www.virtualbox.org/)
-1. Download [Ubuntu 18.04 (or 16.04) Server LTS](https://www.ubuntu.com/download/server)
-1. Create a new VirtualBox Image:
+1. Download [Ubuntu 20.04 or 18.04Server LTS](https://www.ubuntu.com/download/server)
+    >> When running ROS2 20.04 is required.
+3. Create a new VirtualBox Image:
     - Name: XCS-rpi
     - Type: Linux
     - Version: Ubuntu (64-bit)
@@ -53,8 +54,8 @@ Throughout this guide the following prefixes for commands are used:
         - Type: VMDK
         - Storage: Dynamically allocated
     - Settings:
-        - System > Processor > CPU:	3
-        > Exact value depends on your system capabilities. My Host contains 8 CPU's, hence 3 can be used for the XCS
+        - System > Processor > CPU:	2
+        > Exact value depends on your system capabilities. My Host contains 8 CPU's, hence 2 can be used for the XCS
 
         - Network > Advanced > Port Forwarding > New Rule
         > This rule will be used to connect to the XCS via SSH from the Host
@@ -177,7 +178,7 @@ Throughout this guide the following prefixes for commands are used:
 1. Install the additions
 
     ```
-    XCS~$ sudo mkdir -P /media/cdrom
+    XCS~$ sudo mkdir -p /media/cdrom
     XCS~$ sudo mount /dev/cdrom /media/cdrom
     XCS~$ sudo /media/cdrom/VBoxLinuxAdditions.run
     XCS~$ sudo adduser pi vboxsf
@@ -315,9 +316,10 @@ Source: https://www.raspberrypi.org/documentation/installation/installing-images
 
 1. Download and Unzip the latest Raspbian Lite
 
-    ```
+    ```    
     XCS~$ cd $XC_RPI_IMG
     XCS~$ wget https://downloads.raspberrypi.org/raspbian_lite_latest
+    XCS~$ sudo apt-get install unzip
     XCS~$ unzip raspbian_lite_latest
     ```
     > This download is the Lite version of raspbian and hence does not include a GUI or commonly used application. If a GUI is required, you can add it later via `apt-get` or download a different raspbian version.
