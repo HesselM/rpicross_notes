@@ -233,6 +233,15 @@ Currently, you need to enter your password each time you connect to the RPi. Wit
     ```
     XCS~$ cat ~/.ssh/rpizero_rsa.pub | ssh pi@rpizw.local "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
     ```
+    
+    This step can also be performed locally when the SD card is connected to XCS:
+    
+    ```
+    XCS~$ sudo mount /dev/sdb2 $XC_RPI_MNT
+    XCS~$ mkdir -p $XC_RPI_MNT/home/pi/.ssh
+    XCS~$ cat ~/.ssh/rpizero_rsa.pub >> $XC_RPI_MNT/home/pi/.ssh/authorized_keys
+    XCS~$ sudo umount $XC_RPI_MNT
+    ```
 
 1. Setup ssh connection in `ssh_config` so we can login by only using a reference
 
