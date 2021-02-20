@@ -81,23 +81,41 @@ On this page we configure the network settings of the RPi and setup the required
 
     > "/24" indicates a used subnet mask of "255.255.255.0". You can change it to "/16" ("255.255.0.0") or "/8" ("255.0.0.0") as you require.
 
-1. Setup WiFi credentials
+1. Install `wpa_passphrase` for secure password handling for Wifi setup
 
+    ```
+    XCS~$ sudo apt-get install wpasupplicant
+    ```
+
+1. Create secure network-credentials
+
+    ```
+    XCS~$ wpa_passphrase "<network-ssid>"
+    # reading passphrase from stdin
+    <type-here-your-password>
+    network={
+	    ssid="<network-ssid>"
+	    #psk="<password>"
+        psk=<32-byte-hexadecimal-encrypted-password>
+    }
+    ```
+1. Setup WiFi
+  
     ```
     XCS~$ sudo nano $XC_RPI_MNT/etc/wpa_supplicant/wpa_supplicant.conf
     ```
 
-    Add the required credentials. The order equals the connection order. So in this example, `network1` is first tried for setting up a connection, when failing, `network2` is tested.
+    Add the required `wpa_passphrase`-results to this file. The order equals the connection order. So in this example, `network1` is first tried for setting up a connection, when failing, `network2` is tested.
 
     ```
     network={
-      ssid="<network1>"
-      psk="<password_of_network1>"
+      ssid="<network2-ssid>"
+      psk="<32-byte-hexadecimal-encrypted-password-of-network1>"
     }
 
     network={
-      ssid="<network2>"
-      psk="<password_of_network2>"
+      ssid="<network2-ssid>"
+      psk="<32-byte-hexadecimal-encrypted-password-of-network2>"
     }
     ```
 
