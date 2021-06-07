@@ -187,7 +187,7 @@ Throughout this guide the following prefixes for commands are used:
 
 1. Add shared Folder: Machine > Settings > Shared Folders > Add
     - Select Folder Path on your Host machine
-    - Name: shared
+    - Name: `<FolderName>`
     - Automount
     - Make permanent
 
@@ -202,7 +202,7 @@ Throughout this guide the following prefixes for commands are used:
 1. Create link to home-folder so we can access our (user-)code easily.
 
     ```
-    XCS~$ ln -s /media/sf_shared /home/pi/shared
+    XCS~$ ln -s /media/sf_<FolderName> /home/pi/<FolderName>
     ```
 
 ## VirtualBox: DNS Resolving
