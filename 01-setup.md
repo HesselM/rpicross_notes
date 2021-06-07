@@ -156,6 +156,7 @@ Throughout this guide the following prefixes for commands are used:
       User pi
       Port 2222
     ```
+    > For Windows users the location should be `C:\Users\username\.ssh` or `%USERPROFILE%\.ssh`
 
 1. Test connection:
 
