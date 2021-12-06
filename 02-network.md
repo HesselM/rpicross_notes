@@ -180,6 +180,8 @@ By default, the hostname of a RPi is `raspberrypi`, hence the RPi can be accesse
 
 Hooray! We can now finally boot the RPi. But before we can continue our quest to cross-compiling, we need to do some RPi-maintenance.
 
+> Note: While it is advisable, you can skip this (re)boot step and continue adjusting settings before you actually reboot. Nonetheless, you eventually need to do these steps!
+
 1. Insert the SDCard in the RPi and power it up.
 1. SSH to the RPi (use hostname or ip-address if known)
 
@@ -201,6 +203,18 @@ Hooray! We can now finally boot the RPi. But before we can continue our quest to
     RPI~$ sudo apt-get update
     RPI~$ sudo apt-get dist-upgrade
     ```
+
+    > During update, you might encounter errors like 
+    ```
+    E: Repository 'http://raspbian.raspberrypi.org/raspbian buster InRelease' changed its 'Suite' value from 'stable' to 'oldstable'
+    N: This must be accepted explicitly before updates for this repository can be applied. See apt-secure(8) manpage for details.
+    ```
+
+    > To fix these errors, type in the following and retry:
+    ```
+    sudo apt-get update --allow-releaseinfo-change
+    ```
+
 
 ## SSH from XCS: pi
 
