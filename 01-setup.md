@@ -319,11 +319,11 @@ Source: https://www.raspberrypi.org/documentation/installation/installing-images
 
     ```    
     XCS~$ cd $XC_RPI_IMG
-    XCS~$ wget https://downloads.raspberrypi.org/raspbian_lite_latest
+    XCS~$ wget wget https://downloads.raspberrypi.org/raspios_lite_armhf_latest
     XCS~$ sudo apt-get install unzip
-    XCS~$ unzip raspbian_lite_latest
+    XCS~$ unzip raspios_lite_armhf_latest
     ```
-    > This download is the Lite version of raspbian and hence does not include a GUI or commonly used application. If a GUI is required, you can add it later via `apt-get` or download a different raspbian version.
+    > This download is the Lite version of raspbian and hence does not include a GUI or commonly used application. If a GUI is required, you can add it later via `apt-get` or download a different raspios version.
 
 1. Connect SDCard to the XCS.
     For this you have two options: 
@@ -370,7 +370,7 @@ Source: https://www.raspberrypi.org/documentation/installation/installing-images
 1. Install Raspbian (this might take a while..)
 
     ```
-    XCS~$ sudo dd bs=4M if=$XC_RPI_IMG/2020-02-13-raspbian-buster-lite.img of=/dev/sdb
+    XCS~$ sudo dd bs=4M if=$XC_RPI_IMG/2021-10-30-raspios-bullseye-armhf-lite.img of=/dev/sdb
 
     [sudo] password for pi:
     441+0 records in
@@ -382,9 +382,9 @@ Source: https://www.raspberrypi.org/documentation/installation/installing-images
 
     ```
     XCS~$ sudo dd bs=4M if=/dev/sdb of=from-sd-card.img
-    XCS~$ sudo truncate --reference 2020-02-13-raspbian-buster-lite.img from-sd-card.img
-    XCS~$ sudo diff -s from-sd-card.img 2020-02-13-raspbian-buster-lite.img
-    Files from-sd-card.img and 2020-02-13-raspbian-buster-lite.img are identical
+    XCS~$ sudo truncate --reference 2021-10-30-raspios-bullseye-armhf-lite.img from-sd-card.img
+    XCS~$ sudo diff -s from-sd-card.img 2021-10-30-raspios-bullseye-armhf-lite.img
+    Files from-sd-card.img and 2021-10-30-raspios-bullseye-armhf-lite.imgg are identical
     ```
 
 1. Remove images, we do not need these anymore
